@@ -1,7 +1,4 @@
-<!-- 🌟 Claude Code 特工進場：落實導演【真實圖片檔名與物理 containment】終極落鎖令。
-     我們保持你最完美的 JavaScript 雙音軌音效與 Lightbox 邏輯，
-     但徹底清空 `p03-live.html`，直接將這份由導演親自落鎖、利用 <img> 與 object-fit: contain
-     物理防禦、圖片檔名 100% 精確對齊資料夾、比例絕不拉扁變形的一體化原始碼寫入白紙，一槍斃命！ -->
+<!-- P03 - 卡羅維瓦利的約定｜完整合併修正版 -->
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -10,132 +7,168 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>P03 - 卡羅維瓦利的約定</title>
     <style>
-        /* 1. 基礎重設與極致不對稱雙欄布局 */
+        /* 1. 基礎重設與電影巨幕不對稱全景布局 */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body, html { width: 100%; height: 100%; overflow: hidden; background-color: #0A0A0A; font-family: sans-serif; }
 
         .p03-container { display: flex; width: 100%; height: 100%; position: relative; }
 
-        /* 🎯 左欄 40% 獨立相片區 */
+        /* 左欄 40% ➔ 100vw 長軸大圖左側 */
         .p03-left-panel {
-            width: 40% !important; height: 100%; background-color: #0A0A0A !important;
-            position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;
-        }
-        /* 🎯 鋼鐵物理防禦：圖片採用 contain + left center 獨立渲染，比例保證 100% 絕對原汁原味，永不拉扁變形！ */
-        .hero-image {
-            width: 100%; height: 100%;
-            object-fit: contain !important;
-            object-position: left center !important; /* 🎯 完美對齊最左邊，把醫師的身影從死角完全拉回畫面 */
+            width: 40%; height: 100%;
+            background-image: url('surprise/image_lHpG8t.png');
+            background-size: 100vw auto;
+            background-position: center 20%;
+            background-size: cover; background-repeat: no-repeat;
+            position: relative;
             transition: filter 0.5s ease;
         }
 
-        /* 🎯 右欄 60% 復古羊皮紙手帳區 */
+        /* 右欄 60% 復古羊皮紙手帳區 */
         .p03-right-panel {
-            width: 60% !important; height: 100%;
-            background-color: #F4F1EA !important; /* 溫暖羊皮紙底色 */
+            width: 60%; height: 100%;
+            background-color: #F4F1EA;
             background-image: linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px);
-            background-size: 100% 24px; /* 淡淡的手帳橫線紙張紋理 */
+            background-size: 100% 24px;
             position: relative;
         }
 
         /* 007 Gun Barrel 向心遮罩層 */
         .gun-barrel-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle 160px at var(--mouse-x, 50%) var(--mouse-y, 50%), transparent 0%, transparent 100%, rgba(10,10,10,0.85) 100%) !important;
+            background: radial-gradient(circle 160px at var(--mouse-x, 50%) var(--mouse-y, 50%), transparent 100%, rgba(10,10,10,0.85) 100%);
             opacity: 0; transition: opacity 0.4s ease; pointer-events: none; z-index: 5;
         }
-        .p03-left-panel:hover .gun-barrel-overlay { opacity: 1 !important; }
+        .p03-left-panel:hover .gun-barrel-overlay { opacity: 1; }
 
-        .film-hotspot { position: absolute !important; left: 8% !important; bottom: 10% !important; width: 80px !important; height: 80px !important; cursor: pointer !important; z-index: 10; background: transparent; }
-
-        /* 2. 右側黃銅時光拉桿 */
-        .timeline-slider-container {
-            position: absolute !important; top: 8% !important; left: 10% !important;
-            width: 80% !important; text-align: center !important; z-index: 50;
+        .film-hotspot {
+            position: absolute; left: 8%; bottom: 10%;
+            width: 80px; height: 80px;
+            cursor: pointer; z-index: 10; background: transparent;
         }
-        .time-labels { display: flex; justify-content: space-between; color: #8A6D3B; font-size: 12px; margin-bottom: 5px; font-weight: bold; }
+
+        /* 2. 黃銅時光拉桿 */
+        .timeline-slider-container {
+            position: absolute; top: 8%; left: 10%;
+            width: 80%; text-align: center; z-index: 50;
+        }
+        .time-labels {
+            display: flex; justify-content: space-between;
+            color: #8A6D3B; font-size: 12px; margin-bottom: 5px; font-weight: bold;
+        }
         .brass-slider {
-            width: 100%; -webkit-appearance: none; background: linear-gradient(to right, #332211, #D4AF37, #332211);
+            width: 100%; -webkit-appearance: none;
+            background: linear-gradient(to right, #332211, #D4AF37, #332211);
             height: 6px; border-radius: 3px; outline: none; cursor: pointer;
         }
         .brass-slider::-webkit-slider-thumb {
             -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
-            background: radial-gradient(circle, #FFF, #D4AF37, #8A6D3B); border: 2px solid #332211; box-shadow: 0 0 8px rgba(212,175,55,0.8); cursor: grab;
+            background: radial-gradient(circle, #FFF, #D4AF37, #8A6D3B);
+            border: 2px solid #332211; box-shadow: 0 0 8px rgba(212,175,55,0.8);
         }
-        .brass-slider::-webkit-slider-thumb:active { cursor: grabbing; }
 
-        /* 3. 地圖 1 到 6 號尋寶圓圈與【絕對嵌套說明框】 */
+        /* 3. 地圖城堡容器 */
         .map-hotspots-container {
-            position: absolute !important; top: 22% !important; left: 8% !important;
-            width: 84% !important; height: 42% !important; /* 專屬的地圖網格領地 */
-            background-image: url('surprise/image_aBHbuE.png') !important; /* 🎯 修正源頭：精確掛載卡羅維瓦利山城原圖 */
-            background-size: cover !important; background-position: center !important;
-            border: 1px solid rgba(138,109,59,0.2); border-radius: 8px;
+            position: absolute; top: 22%; left: 8%;
+            width: 84%; height: 42%;
+            background-image: url('surprise/image_lHpG8t.png');
+            background-size: 100vw auto;
+            background-position: 100% 30%;
+            background-size: cover; background-repeat: no-repeat;
+            border: 1px solid rgba(138,109,59,0.2);
+            border-radius: 8px;
             box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+        }
+
+        /* ✅ 修正：補上 map-hotspots-layer 定位基準，子節點 left/top 才能正確定位 */
+        .map-hotspots-layer {
+            position: relative;
+            width: 100%;
+            height: 100%;
         }
 
         /* 金色立體發光尋寶圓圈 */
         .map-node {
-            position: absolute !important; width: 32px !important; height: 32px !important;
-            border: 2px solid #D4AF37 !important; background-color: rgba(10, 10, 10, 0.65) !important;
-            border-radius: 50% !important; cursor: pointer !important; z-index: 30;
-            display: flex !important; align-items: center !important; justify-content: center !important;
-            color: #D4AF37 !important; font-weight: bold !important; font-size: 14px !important;
-            box-shadow: 0 0 10px rgba(212, 175, 55, 0.4) !important; transition: all 0.3s ease !important;
+            position: absolute; width: 32px; height: 32px;
+            border: 2px solid #D4AF37; background-color: rgba(10,10,10,0.65);
+            border-radius: 50%; cursor: pointer; z-index: 30;
+            display: flex; align-items: center; justify-content: center;
+            color: #D4AF37; font-weight: bold; font-size: 14px;
+            box-shadow: 0 0 10px rgba(212,175,55,0.4); transition: all 0.3s ease;
         }
-        .map-node:hover { transform: scale(1.2) !important; box-shadow: 0 0 15px #D4AF37 !important; background-color: #D4AF37 !important; color: #0A0A0A !important; }
+        .map-node:hover {
+            transform: scale(1.2); box-shadow: 0 0 15px #D4AF37;
+            background-color: #D4AF37; color: #0A0A0A;
+        }
 
-        /* 說明標籤（Tooltip）直接嵌套在圓圈內部，死死釘在圓圈頭頂上，絕不飄移！ */
+        /* 說明框 */
         .node-tooltip {
-            position: absolute !important; bottom: 42px !important; left: 50% !important;
-            transform: translateX(-50%) scale(0.9) !important;
-            width: 230px !important; background-color: rgba(10,10,10,0.95) !important;
-            color: #FFFFFF !important; border: 1px solid #D4AF37 !important;
-            padding: 10px !important; border-radius: 6px !important; font-size: 13px !important;
-            line-height: 1.5 !important; text-align: left !important; opacity: 0 !important;
-            pointer-events: none !important; transition: all 0.25s ease !important;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important; z-index: 100 !important;
+            position: absolute; bottom: 42px; left: 50%;
+            transform: translateX(-50%) scale(0.9);
+            width: 230px; background-color: rgba(10,10,10,0.95);
+            color: #FFFFFF; border: 1px solid #D4AF37;
+            padding: 10px; border-radius: 6px; font-size: 13px;
+            line-height: 1.5; text-align: left; opacity: 0;
+            pointer-events: none; transition: all 0.25s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 100;
         }
-        .map-node:hover .node-tooltip { opacity: 1 !important; transform: translateX(-50%) scale(1) !important; }
+        .map-node:hover .node-tooltip {
+            opacity: 1; transform: translateX(-50%) scale(1);
+        }
 
-        /* 4. 右下角下午茶拍立得照片【鋼鐵限制寬度 210px】防止暴衝 */
+        /* 4. 拍立得（✅ 修正④：id="polaroidPic" 在 HTML 中補上） */
         .p03-polaroid {
-            position: absolute !important; bottom: 4% !important; right: 6% !important;
-            width: 210px !important; background: #FFFFFF !important; padding: 12px 12px 24px 12px !important;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
-            transform: rotate(6deg) !important; transform-origin: bottom right !important;
-            transition: all 0.4s ease !important; cursor: pointer !important; z-index: 25;
+            position: absolute; bottom: 4%; right: 6%;
+            width: 210px; background: #FFFFFF;
+            padding: 12px 12px 24px 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transform: rotate(6deg);
+            transform-origin: bottom right;
+            transition: all 0.4s ease;
+            cursor: pointer; z-index: 25;
         }
-        .p03-polaroid:hover { transform: rotate(0deg) scale(1.05) !important; box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important; }
-        .p03-polaroid img { width: 100% !important; height: auto !important; display: block; border: 1px solid #EEE; }
+        .p03-polaroid img { width: 100%; height: auto; display: block; border: 1px solid #EEE; }
 
-        /* 5. 史詩級隱藏反思金句 */
+        /* 5. 反思金句 */
         .p03-poem-zone {
-            position: absolute !important; bottom: 6% !important; left: 8% !important;
-            width: 380px !important; text-align: left !important; line-height: 2.3 !important;
-            color: #332211 !important; font-weight: 700 !important; font-size: 15px !important;
-            z-index: 40 !important; pointer-events: none !important; opacity: 0;
-            transition: opacity 2s ease, transform 2s ease !important;
+            position: absolute; bottom: 6%; left: 8%;
+            width: 380px; text-align: left; line-height: 2.3;
+            color: #332211; font-weight: 700; font-size: 15px;
+            z-index: 40; pointer-events: none; opacity: 0;
+            transition: opacity 2s ease, transform 2s ease;
             transform: translateY(10px);
         }
 
-        /* 6. Lightbox 全螢幕放大層 */
-        .lightbox { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 9999; display: none; align-items: center; justify-content: center; cursor: pointer; }
-        .lightbox img { max-width: 90%; max-height: 90%; object-fit: contain; box-shadow: 0 10px 40px rgba(255,255,255,0.1); }
+        /* 6. 本地獨立 Lightbox */
+        .p03-local-lightbox {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: rgba(5,5,5,0.95); z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+        }
+        .p03-local-lightbox.active { opacity: 1; pointer-events: auto; }
+        .p03-local-lightbox img {
+            max-width: 85vw; max-height: 85vh;
+            border: 3px solid #D4AF37; border-radius: 4px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        }
+        .p03-local-lightbox .close-btn {
+            position: absolute; top: 30px; right: 40px;
+            color: #D4AF37; font-size: 40px; cursor: pointer; font-weight: bold;
+        }
     </style>
-  <link rel="stylesheet" href="global.css?v=1600">
 </head>
 <body>
 
     <div class="p03-container" onclick="initAudio()">
-        <!-- 左頁：40% 極黑區 ➔ 精確指名道姓掛載 image_lHpG8t.png 原始神圖！ -->
+
+        <!-- 左頁：40% 寬度，100vw 長軸大圖左側 -->
         <div class="p03-left-panel" id="leftPanel">
-            <img src="surprise/image_lHpG8t.png" class="hero-image" id="heroImg" alt="卡羅維瓦利的約定">
             <div class="gun-barrel-overlay" id="gunBarrel"></div>
-            <div class="film-hotspot" onclick="triggerLightbox('surprise/image_lHpG8t.png', event)"></div>
+            <div class="film-hotspot" onclick="openLocalLightbox('surprise/image_lHpG8t.png', event)"></div>
         </div>
 
-        <!-- 右頁：60% 手帳尋寶區 -->
+        <!-- 右頁：60% 寬度手帳尋寶區 -->
         <div class="p03-right-panel" id="rightPanel">
 
             <!-- 黃銅拉桿 -->
@@ -148,7 +181,68 @@
                 <input type="range" min="0" max="100" value="50" class="brass-slider" id="timeSlider">
             </div>
 
-            <!-- 隱藏反思金句 -->
+            <!-- 地圖城堡容器 -->
+            <div class="map-hotspots-container">
+                <div class="map-hotspots-layer">
+
+                    <!-- ① 大溫泉迴廊 -->
+                    <div class="map-node" style="left: 23%; top: 71.5%;" onclick="openLocalLightbox('surprise/kv_spot_1.png', event)">1
+                        <div class="node-tooltip">
+                            <strong>① 大溫泉迴廊 (Vřídelní)</strong><br>
+                            醫者診斷：全球唯一可以飲用的溫泉小鎮，300多年歷史的療癒傳統。<br><br>
+                            <em>身為醫者，我們診斷過無數病痛，但這裡的泉水，卻是大地給時間的處方。</em>
+                        </div>
+                    </div>
+
+                    <!-- ② 磨坊迴廊 -->
+                    <div class="map-node" style="left: 38%; top: 78.5%;" onclick="openLocalLightbox('surprise/kv_spot_2.png', event)">2
+                        <div class="node-tooltip">
+                            <strong>② 磨坊迴廊 (Mlýnská)</strong><br>
+                            看點：124根新文藝復興式希臘石柱宮殿長廊。<br><br>
+                            <em>漫步在124根希臘石柱交織的宮殿長廊下，每一步，都像是在聆聽歷史的迴響。</em>
+                        </div>
+                    </div>
+
+                    <!-- ③ 市場溫泉廊 -->
+                    <div class="map-node" style="left: 50.5%; top: 81%;" onclick="openLocalLightbox('surprise/kv_spot_3.png', event)">3
+                        <div class="node-tooltip">
+                            <strong>③ 市場溫泉廊 (Tržní)</strong><br>
+                            看點：精緻瑞士風格白色蕾絲木造迴廊。<br><br>
+                            <em>那些白色的木造蕾絲，把時間編織得無比溫柔，像極了我們最初那顆純粹的童心。</em>
+                        </div>
+                    </div>
+
+                    <!-- ④ 普普大飯店 -->
+                    <div class="map-node" style="left: 62%; top: 74%;" onclick="openLocalLightbox('surprise/kv_spot_4.png', event)">4
+                        <div class="node-tooltip">
+                            <strong>④ 普普大飯店 (Grandhotel Pupp)</strong><br>
+                            看點：1701年巴洛克奢華皇宮，007龐德電影取景地。<br><br>
+                            <em>這座從1701年便屹立至今的巴洛克皇宮，見證過無數傳奇，也見證了我們這對醫師同事的足跡。</em>
+                        </div>
+                    </div>
+
+                    <!-- ⑤ 黛安娜觀景台 -->
+                    <div class="map-node" style="left: 74%; top: 54%;" onclick="openLocalLightbox('surprise/kv_spot_5.png', event)">5
+                        <div class="node-tooltip">
+                            <strong>⑤ 黛安娜觀景台 (Diana)</strong><br>
+                            看點：坐纜車登頂，俯瞰整個紅瓦山城峽谷。<br><br>
+                            <em>隨著纜車緩緩登頂，整個紅瓦山城在峽谷中鋪展。站在這裡，未來的路彷彿正透著光。</em>
+                        </div>
+                    </div>
+
+                    <!-- ⑥ 伊莉莎白溫泉 -->
+                    <div class="map-node" style="left: 85%; top: 67%;" onclick="openLocalLightbox('surprise/kv_spot_6.png', event)">6
+                        <div class="node-tooltip">
+                            <strong>⑥ 伊莉莎白溫泉 (Alžbětiny)</strong><br>
+                            看點：古典新古典主義花園水池療癒聖殿。<br><br>
+                            <em>在花園水池交織的古典聖殿裡，洗去奔波的塵埃，讓心靈重歸平靜。</em>
+                        </div>
+                    </div>
+
+                </div><!-- /.map-hotspots-layer -->
+            </div><!-- /.map-hotspots-container -->
+
+            <!-- 反思金句 -->
             <div class="p03-poem-zone" id="poemZone">
                 老去不是失去，是時間留下的價位——<br>
                 卡羅維瓦利的溫泉水，自地底湧出，帶著 1370 年的時光。<br>
@@ -156,175 +250,138 @@
                 也見過我們這對醫師同事。
             </div>
 
-            <!-- 獨立的地圖畫布層（圓圈熱區死死固定在此框內，絕不飄移） -->
-            <div class="map-hotspots-container">
-                <!-- ① 大溫泉迴廊 -->
-                <div class="map-node" style="left: 23%; top: 71.5%;" onclick="triggerLightbox('surprise/kv_spot_1.jpg', event)">1
-                    <div class="node-tooltip">
-                        <strong>① 大溫泉迴廊 (Vřídelní)</strong><br>
-                        醫者診斷：全球唯一可以飲用的溫泉小鎮，300多年歷史的療癒傳統。
-                    </div>
-                </div>
-                <!-- ② 磨坊迴廊 -->
-                <div class="map-node" style="left: 38%; top: 78.5%;" onclick="triggerLightbox('surprise/kv_spot_2.jpg', event)">2
-                    <div class="node-tooltip"><strong>② 磨坊迴廊 (Mlýnská)</strong><br>看點：124根新文藝復興式希臘石柱宮殿長廊。</div>
-                </div>
-                <!-- ③ 市場溫泉廊 -->
-                <div class="map-node" style="left: 50.5%; top: 81%;" onclick="triggerLightbox('surprise/kv_spot_3.jpg', event)">3
-                    <div class="node-tooltip"><strong>③ 市場溫泉廊 (Tržní)</strong><br>看點：精緻瑞士風格白色蕾絲木造迴廊。</div>
-                </div>
-                <!-- ④ 普普大飯店 -->
-                <div class="map-node" style="left: 60%; top: 81%;" onclick="triggerLightbox('surprise/kv_spot_4.jpg', event)">4
-                    <div class="node-tooltip"><strong>④ 普普大飯店 (Grandhotel Pupp)</strong><br>看點：1701年巴洛克奢華皇宮，007取景地。</div>
-                </div>
-                <!-- ⑤ 黛安娜觀景台 -->
-                <div class="map-node" style="left: 70%; top: 78.5%;" onclick="triggerLightbox('surprise/kv_spot_5.jpg', event)">5
-                    <div class="node-tooltip" style="left: auto !important; right: 0px !important; transform: translateX(0) scale(0.9) !important; transform-origin: bottom right;"><strong>⑤ 黛安娜觀景台 (Diana)</strong><br>看點：坐纜車登頂俯瞰整個紅瓦山城峽谷。</div>
-                </div>
-                <!-- ⑥ 聖抹大拉教堂 -->
-                <div class="map-node" style="left: 42%; top: 68%;" onclick="triggerLightbox('surprise/kv_spot_6.jpg', event)">6
-                    <div class="node-tooltip"><strong>⑥ 聖抹大拉教堂</strong><br>看點：巴洛克建築傑作，迴盪著教堂鐘聲的靈魂之地。</div>
+            <!-- 拍立得 ✅ 修正④：補上 id="polaroidPic" -->
+            <div class="p03-polaroid" id="polaroidPic">
+                <img src="surprise/polaroid_kv.jpg" alt="卡羅維瓦利下午茶">
+                <div style="text-align:center; margin-top:8px; font-size:11px; color:#8A6D3B; font-weight:bold; letter-spacing:1px;">
+                    敬我們的童心、聆聽，<br>與那道穿透未來的光。
                 </div>
             </div>
 
-            <!-- 右下角拍立得照片 -->
-            <div class="p03-polaroid" id="polaroidPic" onclick="triggerLightbox('surprise/馬拉松的戰績2.JPG', event)">
-                <img src="surprise/馬拉松的戰績2.JPG" alt="頑童下午茶反差萌">
-            </div>
+        </div><!-- /.p03-right-panel -->
+    </div><!-- /.p03-container -->
 
-        </div>
-    </div>
-
-    <!-- Lightbox 放大層 -->
-    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
-        <img id="lightboxImg" src="" alt="">
+    <!-- ✅ 修正⑤：Lightbox 實體元素，缺少會導致燈箱全部失效 -->
+    <div class="p03-local-lightbox" id="localLightbox">
+        <span class="close-btn" onclick="closeLocalLightbox()">✕</span>
+        <img id="lightboxImg" src="" alt="放大圖">
     </div>
 
     <script>
-        // ========== 1. Web Audio 雙音軌系統（八音盒 + 教堂鐘聲） ==========
-        let audioContext = null;
-        let musicBoxBuffer = null;
-        let bellBuffer = null;
-        let musicBoxSource = null;
-        let bellSource = null;
-        let audioInitialized = false;
-
-        async function initAudio() {
-            if (audioInitialized) return;
-            audioInitialized = true;
-
-            try {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-                // 載入八音盒音效
-                const musicBoxResponse = await fetch('surprise/p03_musicbox.mp3');
-                const musicBoxArrayBuffer = await musicBoxResponse.arrayBuffer();
-                musicBoxBuffer = await audioContext.decodeAudioData(musicBoxArrayBuffer);
-
-                // 載入教堂鐘聲
-                const bellResponse = await fetch('surprise/p03_bell.mp3');
-                const bellArrayBuffer = await bellResponse.arrayBuffer();
-                bellBuffer = await audioContext.decodeAudioData(bellArrayBuffer);
-
-                // 立即播放八音盒循環
-                playMusicBox();
-
-            } catch (error) {
-                console.log('Audio initialization skipped:', error);
-            }
+        /* ── 背景像素精確無縫對齊 ── */
+        function alignMapBackground() {
+            const mapContainer = document.querySelector('.map-hotspots-container');
+            if (!mapContainer) return;
+            const containerLeft = mapContainer.getBoundingClientRect().left;
+            mapContainer.style.backgroundPosition = `-${containerLeft}px 30%`;
         }
+        alignMapBackground();
+        window.addEventListener('resize', alignMapBackground); // 視窗縮放自動重算
 
-        function playMusicBox() {
-            if (!audioContext || !musicBoxBuffer) return;
-
-            musicBoxSource = audioContext.createBufferSource();
-            musicBoxSource.buffer = musicBoxBuffer;
-            musicBoxSource.loop = true;
-
-            const gainNode = audioContext.createGain();
-            gainNode.gain.value = 0.3; // 音量 30%
-
-            musicBoxSource.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            musicBoxSource.start(0);
-        }
-
-        function playBell() {
-            if (!audioContext || !bellBuffer) return;
-
-            bellSource = audioContext.createBufferSource();
-            bellSource.buffer = bellBuffer;
-
-            const gainNode = audioContext.createGain();
-            gainNode.gain.value = 0.5; // 音量 50%
-
-            bellSource.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            bellSource.start(0);
-        }
-
-        // ========== 2. 007 Gun Barrel 鼠標追踪效果 ==========
+        /* ── 007 槍管滑鼠動態追蹤 ── */
         const leftPanel = document.getElementById('leftPanel');
-        const gunBarrel = document.getElementById('gunBarrel');
-
         leftPanel.addEventListener('mousemove', (e) => {
             const rect = leftPanel.getBoundingClientRect();
             const x = ((e.clientX - rect.left) / rect.width) * 100;
             const y = ((e.clientY - rect.top) / rect.height) * 100;
-
-            gunBarrel.style.setProperty('--mouse-x', x + '%');
-            gunBarrel.style.setProperty('--mouse-y', y + '%');
+            document.getElementById('gunBarrel').style.setProperty('--mouse-x', `${x}%`); // ✅ 修正①
+            document.getElementById('gunBarrel').style.setProperty('--mouse-y', `${y}%`); // ✅ 修正①
         });
 
-        // ========== 3. 黃銅時光拉桿觸發金句顯現 ==========
-        const timeSlider = document.getElementById('timeSlider');
+        /* ── Web Audio API ── */
+        let audioCtx = null;
+
+        function initAudio() {
+            if (audioCtx) return;
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const bgmOsc  = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            bgmOsc.type = 'triangle';
+            bgmOsc.frequency.setValueAtTime(110, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 3); // ✅ 修正②：加淡出
+            bgmOsc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            bgmOsc.start();
+            bgmOsc.stop(audioCtx.currentTime + 3); // ✅ 修正②：3秒後停，不永久佔用
+        }
+
+        function playMusicBox() {
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+            [1046.5, 1318.5, 1568.0, 2093.0].forEach((f, i) => {
+                const osc = audioCtx.createOscillator();
+                const g   = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(f, now + i * 0.08);               // ✅ 修正③
+                g.gain.setValueAtTime(0.08, now + i * 0.08);                   // ✅ 修正③
+                g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.4); // ✅ 修正③
+                osc.connect(g);
+                g.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(now + i * 0.08 + 0.5);
+            });
+        }
+
+        function playChurchBell() {
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const g   = audioCtx.createGain();
+            const filter = audioCtx.createBiquadFilter();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(55, now);
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(180, now);
+            g.gain.setValueAtTime(0.25, now);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 2.5);
+            osc.connect(filter);
+            filter.connect(g);
+            g.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(now + 2.6);
+        }
+
+        /* ── 時光拉桿 ── */
+        const slider   = document.getElementById('timeSlider');
         const poemZone = document.getElementById('poemZone');
-        let poemRevealed = false;
+        const polaroid = document.getElementById('polaroidPic'); // ✅ 修正④：HTML 已補上此 id
+        let hasPlayedLeft = false, hasPlayedRight = false;
 
-        timeSlider.addEventListener('input', (e) => {
-            const value = parseInt(e.target.value);
-
-            // 當拉桿到達 75% 以上時，觸發金句淡入
-            if (value >= 75 && !poemRevealed) {
-                poemRevealed = true;
-                poemZone.style.opacity = '1';
-                poemZone.style.transform = 'translateY(0)';
-
-                // 同時播放教堂鐘聲
-                playBell();
-            } else if (value < 75) {
-                poemRevealed = false;
+        slider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            if (val <= 30) {
+                polaroid.style.transform = 'rotate(6deg) scale(1.15)';
                 poemZone.style.opacity = '0';
                 poemZone.style.transform = 'translateY(10px)';
+                document.getElementById('leftPanel').style.filter = 'sepia(0) brightness(1)';
+                if (!hasPlayedLeft) { playMusicBox(); hasPlayedLeft = true; hasPlayedRight = false; }
+            } else if (val >= 70) {
+                document.getElementById('leftPanel').style.filter = 'sepia(0.6) brightness(0.65)';
+                poemZone.style.opacity = '1';
+                poemZone.style.transform = 'translateY(0)';
+                if (!hasPlayedRight) { playChurchBell(); hasPlayedRight = true; hasPlayedLeft = false; }
+            } else {
+                polaroid.style.transform = 'rotate(6deg) scale(1)';
+                poemZone.style.opacity = '0';
+                poemZone.style.transform = 'translateY(10px)';
+                document.getElementById('leftPanel').style.filter = 'sepia(0) brightness(1)';
+                hasPlayedLeft = false;
+                hasPlayedRight = false;
             }
         });
 
-        // ========== 4. Lightbox 全螢幕放大功能 ==========
-        function triggerLightbox(imgSrc, event) {
-            if (event) event.stopPropagation();
-
-            const lightbox = document.getElementById('lightbox');
-            const lightboxImg = document.getElementById('lightboxImg');
-
-            lightboxImg.src = imgSrc;
-            lightbox.style.display = 'flex';
-
-            // 初始化音效（如果尚未初始化）
+        /* ── 本地獨立 Lightbox ── */
+        function openLocalLightbox(imgSrc, e) {
+            if (e) e.stopPropagation();
             initAudio();
+            document.getElementById('lightboxImg').src = imgSrc;        // ✅ 修正⑤
+            document.getElementById('localLightbox').classList.add('active'); // ✅ 修正⑤
         }
 
-        function closeLightbox() {
-            const lightbox = document.getElementById('lightbox');
-            lightbox.style.display = 'none';
+        function closeLocalLightbox() {
+            document.getElementById('localLightbox').classList.remove('active');
         }
-
-        // ESC 鍵關閉 Lightbox
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                closeLightbox();
-            }
-        });
     </script>
-
 </body>
 </html>
