@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <link rel="stylesheet" href="global.css">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>P06｜布拉格之春的迴旋：舊城、橋影與深夜金光</title>
@@ -98,7 +97,7 @@
     #photo-janhus               { top: 44%; left: 52%; transform: rotate(-3deg); }
     #fragment-clock-death       { bottom: 6%; left: 40%; transform: rotate(-8deg); filter: blur(0.3px); }
     #fragment-apostles-mechanism{ top: 12%; left: 58%; transform: rotate(6deg); }
-    #photo-bridgetower          { top: 5%;  left: 74%; width: 320px; z-index: 10; filter: brightness(0.7) contrast(1.1); }
+    #photo-bridgetower          { top: 5%;  left: 74%; width: 320px; z-index: 10; filter: hue-rotate(35deg) brightness(0.32) contrast(1.15); }
     #photo-bridge-statue        { top: 8%;  left: 88%; width: 175px; transform: rotate(-1deg); }
 
     /* =====================================================
@@ -145,7 +144,6 @@
       77%, 93%     { opacity: 1; transform: translateY(0); }
     }
   </style>
-  <link rel="stylesheet" href="global.css?v=1600">
 </head>
 <body>
 
@@ -215,29 +213,5 @@
 
   </div>
 
-  <audio id="bgm" loop preload="auto"
-    src="surprise/Audio Library 音樂庫 免費背景音樂下載 歌名_ 9th Symphony, Finale 作者_ Beethoven_128k 2.mp3">
-  </audio>
-
-  <script>
-    /* 點擊頁面任意處啟動配樂（瀏覽器安全限制） */
-    const bgm = document.getElementById('bgm');
-    bgm.volume = 0;
-
-    document.addEventListener('click', initMusic, { once: true });
-
-    function initMusic() {
-      bgm.play().then(() => {
-        /* 3 秒緩慢淡入 */
-        let vol = 0;
-        const step = 0.35 / 30;
-        const fade = setInterval(() => {
-          vol = Math.min(vol + step, 0.35);
-          bgm.volume = vol;
-          if (vol >= 0.35) clearInterval(fade);
-        }, 100);
-      }).catch(err => console.warn('BGM play failed:', err));
-    }
-  </script>
 </body>
 </html>

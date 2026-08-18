@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <link rel="stylesheet" href="global.css">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>P07｜皇家之路：記憶登高朝聖地圖</title>
@@ -37,12 +36,16 @@
       transform: scale(1.06);
     }
 
-    /* 蜿蜒路線改用 SVG，直線隱藏 */
-    .map-container::before { display: none; }
-    .winding-path {
+    /* 蜿蜒鋼軌：用 clip-path 斜切製造蜿蜒感，從右下往左上 */
+    .map-container::before {
+      content: '';
       position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      z-index: 2; pointer-events: none;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 6px; height: 100%;
+      background: linear-gradient(to top, #ff007f 0%, #d4af37 40%, rgba(212,175,55,0.3) 70%, transparent 100%);
+      box-shadow: 0 0 10px rgba(212,175,55,0.25);
+      z-index: 2;
     }
 
     /* 站點容器：順序翻轉，01在下、06在上（flex-direction: column-reverse） */
@@ -60,23 +63,23 @@
     .trail-station.is-visible { opacity: 1; transform: translateY(0); }
     .trail-station:nth-child(even) { justify-content: flex-end; }
 
-    /* 足跡圓點：跟隨階梯左右交錯 */
+    /* 足跡圓點：呼吸發光 */
     .footprint-node {
-      position: absolute; top: 20px;
+      position: absolute; top: 20px; left: 50%;
+      transform: translateX(-50%) scale(0.7);
       width: 20px; height: 20px;
-      background: #ff007f; border: 3px solid #ff007f;
+      background: #08080c; border: 3px solid rgba(255,255,255,0.25);
       border-radius: 50%; z-index: 10;
-      animation: nodeGlow 1.5s infinite ease-in-out;
-      transform: translateX(-50%);
+      transition: all 0.6s cubic-bezier(0.2,0.8,0.2,1);
     }
-    /* 奇數站點（01,03,05）足跡圈在卡片右邊 */
-    .trail-station:nth-child(odd)  .footprint-node { left: 38%; }
-    /* 偶數站點（02,04,06）足跡圈在卡片左邊 */
-    .trail-station:nth-child(even) .footprint-node { left: 62%; }
-
+    .trail-station.is-visible .footprint-node {
+      background: #ff007f; border-color: #ff007f;
+      transform: translateX(-50%) scale(1.1);
+      animation: nodeGlow 2s infinite ease-in-out;
+    }
     @keyframes nodeGlow {
-      0%, 100% { box-shadow: 0 0 5px #ff007f; opacity: 0.6; transform: translateX(-50%) scale(0.9); }
-      50%       { box-shadow: 0 0 20px #ff007f, 0 0 35px rgba(255,0,127,0.6); opacity: 1; transform: translateX(-50%) scale(1.2); }
+      0%, 100% { box-shadow: 0 0 8px #ff007f; }
+      50%       { box-shadow: 0 0 18px #ff007f, 0 0 14px rgba(255,0,127,0.8); }
     }
 
     /* 起點引導人物背影（站點01） */
@@ -93,42 +96,17 @@
       100% { transform: translateX(-50%) translateY(-10px); }
     }
 
-    /* 足跡圓點可點擊 */
-    .footprint-node { cursor: pointer; }
-
-    /* 記憶卡片：預設隱藏，點燈後才出現 */
+    /* 記憶卡片 */
     .memory-card {
-      width: 35%; background: rgba(15,15,20,0.88);
+      width: 44%; background: rgba(15,15,20,0.88);
       border: 1px solid rgba(212,175,55,0.2); border-radius: 8px;
       padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-      box-sizing: border-box;
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.3s ease;
+      box-sizing: border-box; cursor: pointer;
+      transition: box-shadow 0.3s ease;
     }
-    .trail-station:nth-child(odd)  .memory-card { transform: rotate(-1.5deg) translateY(12px); }
-    .trail-station:nth-child(even) .memory-card { transform: rotate(1.5deg)  translateY(12px); }
-
-    .trail-station.card-visible .memory-card {
-      opacity: 1; pointer-events: auto;
-    }
-    .trail-station:nth-child(odd).card-visible  .memory-card { transform: rotate(-1.5deg) translateY(0); }
-    .trail-station:nth-child(even).card-visible .memory-card { transform: rotate(1.5deg)  translateY(0); }
     .memory-card:hover { box-shadow: 0 0 20px rgba(212,175,55,0.3), 0 10px 30px rgba(0,0,0,0.6); }
-
-    /* 第一站下方配圖：全寬跨頁，最底層 */
-    .start-photo-wrap {
-      width: 100%; margin: 0;
-      position: relative; z-index: 6;
-      transition: opacity 1.2s ease;
-    }
-    .start-photo-wrap img {
-      width: 100%; display: block;
-      border-radius: 0;
-      filter: brightness(0.75) contrast(1.05);
-    }
-    body.reveal-finale .start-photo-wrap {
-      opacity: 0; pointer-events: none;
-    }
+    .trail-station:nth-child(odd)  .memory-card { transform: rotate(-1.5deg); }
+    .trail-station:nth-child(even) .memory-card { transform: rotate(1.5deg); }
 
     /* 點擊提示文字（只在01顯示） */
     .tap-hint {
@@ -166,7 +144,7 @@
     .trail-footer {
       text-align: center; position: relative; z-index: 10; padding: 60px 0 40px;
     }
-    .trail-footer h2 { font-size: 1.4rem; color: #c41e3a; letter-spacing: 0.15em; margin-top: 20px; text-shadow: 0 0 20px rgba(196,30,58,0.4); }
+    .trail-footer h2 { font-size: 1.4rem; color: #d4af37; letter-spacing: 0.15em; margin-top: 20px; }
 
     /* 蓋章獎賞效果 */
     .finale-stamp {
@@ -180,48 +158,20 @@
     }
     .finale-btn {
       display: inline-block; margin-top: 20px;
-      padding: 12px 28px; border: 2px solid #c41e3a;
-      color: #c41e3a; border-radius: 30px; cursor: pointer;
+      padding: 12px 28px; border: 2px solid #d4af37;
+      color: #d4af37; border-radius: 30px; cursor: pointer;
       font-size: 1rem; letter-spacing: 0.1em;
-      background: rgba(196,30,58,0.08);
+      background: rgba(212,175,55,0.08);
       transition: all 0.3s ease; z-index: 20; position: relative;
     }
-    .finale-btn:hover { background: rgba(196,30,58,0.25); box-shadow: 0 0 16px rgba(196,30,58,0.4); }
+    .finale-btn:hover { background: rgba(212,175,55,0.25); }
   </style>
-  <link rel="stylesheet" href="global.css?v=1600">
 </head>
 <body>
 
   <div class="hero-fixed-bg"></div>
 
-  <audio id="finale-bgm" preload="auto"
-    src="surprise/nastelbom-motivational-music-495881.mp3">
-  </audio>
-
   <div class="map-container">
-    <!-- 蜿蜒路線：從右下角到左上角的 S 形曲線 -->
-    <svg class="winding-path" preserveAspectRatio="none" viewBox="0 0 100 100">
-      <defs>
-        <linearGradient id="pathGrad" x1="0.38" y1="1" x2="0.62" y2="0">
-          <stop offset="0%"   stop-color="#ff007f"/>
-          <stop offset="40%"  stop-color="#d4af37"/>
-          <stop offset="100%" stop-color="rgba(212,175,55,0.25)"/>
-        </linearGradient>
-        <filter id="glow">
-          <feGaussianBlur stdDeviation="0.6" result="blur"/>
-          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-      </defs>
-      <!-- 左下(38,95) → 右(62,79) → 左(38,63) → 右(62,47) → 左(38,31) → 右上(62,10) -->
-      <path d="M 38,95
-               C 50,90 50,82 62,79
-               C 72,76 28,66 38,63
-               C 48,60 52,50 62,47
-               C 72,44 28,34 38,31
-               C 48,28 52,13 62,10"
-            fill="none" stroke="url(#pathGrad)" stroke-width="1.2"
-            stroke-linecap="round" filter="url(#glow)"/>
-    </svg>
 
     <!-- 終章（頂部）：滾到最上面看到蓋章獎賞 -->
     <footer class="trail-footer" id="finaleZone">
@@ -235,8 +185,8 @@
 
       <!-- 站點 01（起點，在螢幕最下方，讀者第一眼看到） -->
       <div class="trail-station" id="station-01">
-        <div class="footprint-node" onclick="onNodeClick(this, 1)"></div>
-        <div class="memory-card">
+        <div class="footprint-node"></div>
+        <div class="memory-card" onclick="highlightStation(this)">
           <div class="photo-wrapper m-photo">
             <img src="surprise/image_fR_FA9.png" alt="小城區起點">
           </div>
@@ -251,8 +201,8 @@
 
       <!-- 站點 02 -->
       <div class="trail-station">
-        <div class="footprint-node" onclick="onNodeClick(this, 2)"></div>
-        <div class="memory-card">
+        <div class="footprint-node"></div>
+        <div class="memory-card" onclick="highlightStation(this)">
           <div class="photo-wrapper s-photo">
             <img src="surprise/image_-rPWeY.jpeg" alt="坎帕島黃色企鵝">
           </div>
@@ -263,8 +213,8 @@
 
       <!-- 站點 03 -->
       <div class="trail-station">
-        <div class="footprint-node" onclick="onNodeClick(this, 3)"></div>
-        <div class="memory-card">
+        <div class="footprint-node"></div>
+        <div class="memory-card" onclick="highlightStation(this)">
           <div class="photo-wrapper m-photo">
             <img src="surprise/image_Eca1S4.png" alt="約翰藍儂牆">
           </div>
@@ -276,8 +226,8 @@
 
       <!-- 站點 04 -->
       <div class="trail-station">
-        <div class="footprint-node" onclick="onNodeClick(this, 4)"></div>
-        <div class="memory-card">
+        <div class="footprint-node"></div>
+        <div class="memory-card" onclick="highlightStation(this)">
           <div class="photo-wrapper m-photo">
             <img src="surprise/image_Ex9PZd.png" alt="皇家之路石階">
           </div>
@@ -288,8 +238,8 @@
 
       <!-- 站點 05 -->
       <div class="trail-station">
-        <div class="footprint-node" onclick="onNodeClick(this, 5)"></div>
-        <div class="memory-card">
+        <div class="footprint-node"></div>
+        <div class="memory-card" onclick="highlightStation(this)">
           <div class="photo-wrapper s-photo">
             <img src="surprise/image_7jQQNK.png" alt="布拉格城堡大門">
           </div>
@@ -301,8 +251,8 @@
 
       <!-- 站點 06（終點，在螢幕最上方） -->
       <div class="trail-station">
-        <div class="footprint-node" onclick="onNodeClick(this, 6)"></div>
-        <div class="memory-card">
+        <div class="footprint-node"></div>
+        <div class="memory-card" onclick="highlightStation(this)">
           <div class="photo-wrapper m-photo">
             <img src="surprise/image_111llO.png" alt="聖維特大教堂">
           </div>
@@ -319,85 +269,40 @@
       <p>由河岸走向高處的登城旅程 ↑</p>
     </header>
 
-    <!-- 小城區全寬地圖：常駐底層，終章時消失，結束後重現 -->
-    <div class="start-photo-wrap">
-      <img src="surprise/img_0000.png" alt="小城區起點地圖">
-    </div>
-
   </div>
 
   <script>
-    const bgm = document.getElementById('finale-bgm');
-    let musicStarted = false;
-    let finaleTimer = null;
-    const cardTimers = {}; /* 每站的自動收回計時器 */
-
     document.addEventListener("DOMContentLoaded", function () {
       /* 滾動觸發站點淡入 */
       const stations = document.querySelectorAll('.trail-station');
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-          if (entry.isIntersecting) entry.target.classList.add('is-visible');
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+          }
         });
       }, { threshold: 0.1 });
       stations.forEach(s => observer.observe(s));
 
-      /* 滾到頂部時自動觸發終章視覺（不觸發音樂） */
+      /* 滾到頂部時自動觸發終章 */
       const finaleObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-          if (entry.isIntersecting) setTimeout(() => triggerFinale(), 600);
+          if (entry.isIntersecting) {
+            setTimeout(() => triggerFinale(), 600);
+          }
         });
       }, { threshold: 0.5 });
       const finale = document.getElementById('finaleZone');
       if (finale) finaleObserver.observe(finale);
     });
 
-    /* 點呼吸燈：顯示卡片，5 秒後自動收回 */
-    function onNodeClick(nodeEl, stationNum) {
-      const station = nodeEl.parentElement;
-      station.classList.add('card-visible');
-
-      /* 清除舊計時器，重新計時 */
-      if (cardTimers[stationNum]) clearTimeout(cardTimers[stationNum]);
-      cardTimers[stationNum] = setTimeout(() => {
-        station.classList.remove('card-visible');
-      }, 5000);
-
-      /* 第一顆燈：配樂開始淡入 */
-      if (stationNum === 1 && !musicStarted) {
-        musicStarted = true;
-        bgm.volume = 0;
-        bgm.currentTime = 0;
-        bgm.play().then(() => {
-          let vol = 0;
-          const fadeIn = setInterval(() => {
-            vol = Math.min(vol + 0.04, 0.7);
-            bgm.volume = vol;
-            if (vol >= 0.7) clearInterval(fadeIn);
-          }, 60);
-        }).catch(() => {});
-      }
-
-      /* 第六顆燈：立刻觸發教堂背景全開，17 秒後淡出重置 */
-      if (stationNum === 6) {
-        triggerFinale();
-        if (finaleTimer) clearTimeout(finaleTimer);
-        finaleTimer = setTimeout(() => {
-          document.body.classList.remove('reveal-finale');
-          const fadeOut = setInterval(() => {
-            bgm.volume = Math.max(bgm.volume - 0.04, 0);
-            if (bgm.volume <= 0) {
-              clearInterval(fadeOut);
-              bgm.pause();
-              bgm.currentTime = 0;
-              musicStarted = false; /* 重置，允許重新互動 */
-            }
-          }, 80);
-        }, 17000);
-      }
+    /* 卡片點擊發光 */
+    function highlightStation(card) {
+      document.querySelectorAll('.memory-card').forEach(c => c.style.boxShadow = '');
+      card.style.boxShadow = '0 0 30px rgba(212,175,55,0.6), 0 10px 30px rgba(0,0,0,0.6)';
     }
 
-    /* 終章視覺（蓋章＋背景） */
+    /* 終章蓋章＋背景放大 */
     function triggerFinale() {
       document.body.classList.add('reveal-finale');
     }

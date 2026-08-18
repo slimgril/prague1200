@@ -1,339 +1,293 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <link rel="stylesheet" href="global.css">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>P08｜城堡檔案室 The Archive of St. Vitus</title>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #0d0a08; font-family: "PingFang TC","Heiti TC",sans-serif; overflow: hidden; height: 100vh; width: 100vw; }
 
+    body {
+      background: #0d0a08;
+      font-family: "PingFang TC", "Heiti TC", sans-serif;
+      overflow: hidden; height: 100vh; width: 100vw;
+    }
+
+    /* 檔案室桌面 */
     #archive-desk {
-      position: relative; width: 100%; height: 100%;
+      position: relative;
+      width: 100%; height: 100%;
       background-color: #1a130f;
       background-image:
-        repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(255,255,255,0.012) 40px, rgba(255,255,255,0.012) 41px),
-        repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,0.012) 40px, rgba(255,255,255,0.012) 41px);
+        repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(255,255,255,0.015) 40px, rgba(255,255,255,0.015) 41px),
+        repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,0.015) 40px, rgba(255,255,255,0.015) 41px);
       overflow: hidden;
     }
-    #bg-layer {
-      position: absolute; inset: 0;
-      background: url('surprise/p08-bg.jpg') center/cover no-repeat;
-      opacity: 0.55; filter: blur(2px) brightness(0.8);
-      pointer-events: none; z-index: 0;
-    }
+
+    /* 桌面暗角 */
     #archive-desk::after {
       content: '';
       position: absolute; inset: 0;
-      background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.75) 100%);
+      background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%);
       pointer-events: none; z-index: 1;
     }
 
+    /* 頁面標題 */
     .desk-title {
-      position: absolute; top: 20px; left: 50%;
+      position: absolute; top: 24px; left: 50%;
       transform: translateX(-50%);
-      text-align: center; z-index: 10; pointer-events: none;
+      text-align: center; z-index: 5; pointer-events: none;
     }
-    .desk-title h1 { font-size: 1.8rem; color: rgba(212,175,55,0.95); letter-spacing: 0.35em; font-weight: 400; text-shadow: 0 0 20px rgba(212,175,55,0.5); }
-    .desk-title p  { font-size: 1.1rem; color: rgba(255,0,127,0.9); letter-spacing: 0.2em; margin-top: 8px; text-shadow: 0 0 10px rgba(255,0,127,0.4); }
+    .desk-title h1 {
+      font-size: 1.1rem; color: rgba(212,175,55,0.7);
+      letter-spacing: 0.3em; font-weight: 300;
+    }
+    .desk-title p {
+      font-size: 0.75rem; color: rgba(255,0,127,0.6);
+      letter-spacing: 0.2em; margin-top: 4px;
+    }
 
     /* 檔案卡片 */
     .document-item {
       position: absolute;
       background: #fff;
-      padding: 6px 6px 28px 6px;
-      box-shadow: 10px 12px 28px rgba(0,0,0,0.75), 2px 2px 6px rgba(0,0,0,0.4);
+      padding: 8px 8px 32px 8px;
+      box-shadow: 10px 10px 25px rgba(0,0,0,0.7), 2px 2px 8px rgba(0,0,0,0.4);
       cursor: pointer; z-index: 2;
-      transition: transform 0.35s cubic-bezier(0.2,0.8,0.2,1),
-                  box-shadow 0.35s ease;
+      transition: transform 0.3s cubic-bezier(0.2,0.8,0.2,1),
+                  box-shadow 0.3s ease, z-index 0s;
     }
-
-    /* ① 立體懸浮：陰影拉大模擬拿起 */
     .document-item:hover {
-      transform: var(--rot) scale(1.12) translateY(-14px) !important;
-      box-shadow: 28px 28px 40px rgba(0,0,0,0.8), 0 0 25px rgba(212,175,55,0.2) !important;
-      z-index: 50 !important;
+      transform: var(--base-rotate) scale(1.08) translateY(-8px) !important;
+      box-shadow: 18px 18px 40px rgba(0,0,0,0.8), 0 0 20px rgba(212,175,55,0.2);
+      z-index: 50;
     }
-
     .document-item img {
-      width: 170px; height: 128px;
+      width: 180px; height: 135px;
       object-fit: cover; display: block;
-      filter: contrast(1.05) saturate(0.88);
+      filter: contrast(1.05) saturate(0.9);
+    }
+    /* 圖片載入失敗占位 */
+    .document-item img.error-placeholder {
+      background: #2a2a2a;
+      display: flex; align-items: center; justify-content: center;
     }
 
+    /* 手寫標籤 */
     .doc-label {
-      position: absolute; bottom: 3px; left: 0; right: 0;
+      position: absolute; bottom: 4px; left: 0; right: 0;
       text-align: center;
       font-family: 'Caveat', cursive;
-      font-size: 0.8rem; color: #2a2a2a; line-height: 1.2; padding: 0 4px;
+      font-size: 0.85rem; color: #333;
+      padding: 0 4px; line-height: 1.2;
     }
 
-    /* ② 紅色印章呼吸燈 */
+    /* 紅色分類標記 */
     .doc-stamp {
-      position: absolute; top: -10px; right: -10px;
-      background: #8b0000; color: #ffe; font-size: 0.65rem;
-      letter-spacing: 0.06em; padding: 4px 10px; border-radius: 3px;
-      font-family: monospace; transform: rotate(4deg);
-      animation: stampPulse 1.8s ease-in-out infinite;
-      z-index: 20; cursor: pointer;
-    }
-    @keyframes stampPulse {
-      0%, 100% { box-shadow: 0 0 4px rgba(200,0,0,0.5); opacity: 0.8; }
-      50%       { box-shadow: 0 0 14px rgba(255,0,0,1), 0 0 28px rgba(255,50,50,0.6); opacity: 1; }
+      position: absolute; top: -8px; right: -8px;
+      background: #8b0000; color: #fff;
+      font-size: 0.55rem; letter-spacing: 0.05em;
+      padding: 2px 6px; border-radius: 2px;
+      font-family: monospace; transform: rotate(3deg);
     }
 
-    /* ③ Lightbox 遮罩 */
+    /* Lightbox */
     #lightbox {
       position: fixed; inset: 0;
-      background: rgba(0,0,0,0);
+      background: rgba(0,0,0,0); 
       display: flex; align-items: center; justify-content: center;
       z-index: 100; pointer-events: none;
-      transition: background 0.3s ease;
+      transition: background 0.4s ease;
     }
-    #lightbox.active { background: rgba(4,2,1,0.88); pointer-events: auto; }
-
-    .lb-inner {
-      max-width: 680px; width: 92%;
-      opacity: 0;
-      text-align: center; position: relative;
+    #lightbox.active {
+      background: rgba(5,3,2,0.93);
+      pointer-events: auto;
     }
-    /* 旋轉飛入動畫 */
-    @keyframes spinFlyIn {
-      0%   { opacity: 0; transform: scale(0.08) rotate(380deg) translateY(120px); }
-      55%  { opacity: 1; transform: scale(1.06) rotate(-6deg) translateY(-12px); }
-      75%  { transform: scale(0.97) rotate(2deg) translateY(4px); }
-      100% { opacity: 1; transform: scale(1) rotate(0deg) translateY(0); }
+    .lightbox-inner {
+      max-width: 700px; width: 90%;
+      opacity: 0; transform: scale(0.9);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      text-align: center;
     }
-    /* 關閉時螺旋飛走 */
-    @keyframes spinFlyOut {
-      0%   { opacity: 1; transform: scale(1) rotate(0deg); }
-      100% { opacity: 0; transform: scale(0.05) rotate(-340deg) translateY(80px); }
+    #lightbox.active .lightbox-inner {
+      opacity: 1; transform: scale(1);
     }
-    #lightbox.active .lb-inner {
-      animation: spinFlyIn 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-    }
-    #lightbox.closing .lb-inner {
-      animation: spinFlyOut 0.4s cubic-bezier(0.4, 0, 1, 1) forwards;
-    }
-
-    .lb-inner img {
-      width: 100%; max-height: 50vh; object-fit: contain;
+    .lightbox-inner img {
+      width: 100%; max-height: 55vh;
+      object-fit: contain;
       border: 5px solid #fff;
-      box-shadow: 0 0 50px rgba(0,0,0,0.9);
+      box-shadow: 0 0 40px rgba(0,0,0,0.8);
     }
-    .lb-diagnosis {
-      margin-top: 16px;
-      background: rgba(20,14,10,0.96);
-      border: 1px solid rgba(212,175,55,0.28);
-      border-radius: 4px; padding: 14px 18px; text-align: left;
-      min-height: 90px;
+    .lightbox-diagnosis {
+      margin-top: 20px;
+      background: rgba(26,19,15,0.95);
+      border: 1px solid rgba(212,175,55,0.3);
+      border-radius: 4px; padding: 16px 20px;
+      text-align: left;
     }
-    .lb-label  { font-size: 0.65rem; color: #ff007f; letter-spacing: 0.2em; margin-bottom: 6px; font-family: monospace; }
-    .lb-title  { font-size: 1.05rem; color: #d4af37; font-family: 'Caveat',cursive; margin-bottom: 8px; }
-    .lb-text   { font-size: 0.82rem; color: #bbb; line-height: 1.75; min-height: 2em; }
-
-    /* 打字機游標 */
-    .lb-text::after { content: '▍'; animation: blink 0.7s infinite; color: #ff007f; }
-    .lb-text.done::after { display: none; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-
-    .lb-close {
-      position: absolute; top: -36px; right: 0;
-      color: rgba(255,255,255,0.45); font-size: 2rem;
-      cursor: pointer; transition: color 0.2s; line-height: 1;
+    .diagnosis-label {
+      font-size: 0.7rem; color: #ff007f;
+      letter-spacing: 0.2em; margin-bottom: 8px;
+      font-family: monospace;
     }
-    .lb-close:hover { color: #fff; }
+    .diagnosis-title {
+      font-size: 1.1rem; color: #d4af37;
+      font-family: 'Caveat', cursive; margin-bottom: 8px;
+    }
+    .diagnosis-text {
+      font-size: 0.85rem; color: #ccc; line-height: 1.7;
+    }
+    .lightbox-close {
+      position: absolute; top: 20px; right: 24px;
+      color: rgba(255,255,255,0.5); font-size: 2rem;
+      cursor: pointer; line-height: 1;
+      transition: color 0.2s;
+    }
+    .lightbox-close:hover { color: #fff; }
 
+    /* 提示文字 */
     .desk-hint {
-      position: absolute; bottom: 16px; left: 50%;
+      position: absolute; bottom: 20px; left: 50%;
       transform: translateX(-50%);
-      font-size: 0.65rem; color: rgba(255,255,255,0.18);
+      font-size: 0.7rem; color: rgba(255,255,255,0.2);
       letter-spacing: 0.15em; z-index: 5; pointer-events: none;
       animation: hintFade 3s infinite;
     }
-    @keyframes hintFade { 0%,100%{opacity:.18} 50%{opacity:.55} }
+    @keyframes hintFade {
+      0%, 100% { opacity: 0.2; } 50% { opacity: 0.6; }
+    }
   </style>
-  <link rel="stylesheet" href="global.css?v=1600">
 </head>
 <body>
+
 <div id="archive-desk">
-  <div id="bg-layer"></div>
+
   <div class="desk-title">
     <h1>THE ARCHIVE OF ST. VITUS</h1>
     <p>城堡檔案室｜點擊任一檔案，解鎖塵封的記憶</p>
   </div>
 
-  <div class="document-item"
-       style="left:5%;top:30%;--rot:rotate(-9deg);transform:rotate(-9deg);"
-       data-img="surprise/p08-exterior.jpg"
-       data-rot="-9deg"
-       data-title="聖維特大教堂・外觀側翼"
-       data-diagnosis="診斷：哥德尖塔仰望症。症狀：無法停止數教堂尖頂數量，反覆從1數到無限。建議療程：由台大醫院、哈佛醫學院畢業名醫粘曉青與鄭惠文醫師共同處方——放下相機，用眼睛代替鏡頭，至少靜看三分鐘。">
-    <img src="surprise/p08-exterior.jpg" alt="教堂外觀側翼">
-    <div class="doc-stamp">EXTERIOR</div>
-    <div class="doc-label">Gothic Facade<br>South Wing</div>
-  </div>
-
-  <div class="document-item"
-       style="left:21%;top:23%;--rot:rotate(6deg);transform:rotate(6deg);"
-       data-img="surprise/p08-altar-window.jpg"
-       data-rot="6deg"
-       data-title="哥德拱頂・聖壇仰角全景"
-       data-diagnosis="診斷：垂直空間迷失症。症狀：仰望哥德拱頂與聖壇的瞬間，忘記自己站在地上，靈魂已飄至頂部的肋架券之間。建議療程：由台大醫院、哈佛醫學院畢業名醫粘曉青與鄭惠文醫師共同處方——緩緩低頭，用腳踩實地板，提醒自己重力仍然存在。">
-    <img src="surprise/p08-altar-window.jpg" alt="聖壇彩繪玻璃單窗">
-    <div class="doc-stamp">SACRED</div>
-    <div class="doc-label">Gothic Vaults & Altar<br>Vertical Infinity</div>
-  </div>
-
-  <div class="document-item"
-       style="left:40%;top:27%;--rot:rotate(-4deg);transform:rotate(-4deg);"
-       data-img="surprise/p08-altar-full.jpg"
-       data-rot="-4deg"
-       data-title="金色聖壇・正面廣角全景"
-       data-diagnosis="診斷：黃金聖壇震撼症。症狀：直視金色聖壇正面超過一分鐘後，眼睛開始將所有普通建築自動標記為『不夠格』。建議療程：深呼吸，接受這是六百年工匠用一生換來的傑作，你只需要靜靜站在它面前，就已值回票價。">
-    <img src="surprise/p08-altar-full.jpg" alt="金色聖壇全景">
+  <!-- 檔案卡片 1 -->
+  <div class="document-item" style="left:6%;top:18%;--base-rotate:rotate(-8deg);transform:rotate(-8deg);"
+       data-img="surprise/image_Ex9PZd.png"
+       data-title="聖維特大教堂・天文鐘前"
+       data-diagnosis="診斷：時空眩暈症。症狀：站在六百年前的石板地上，忘記今天幾號。建議療程：由台大醫院、哈佛醫學院畢業名醫粘曉青與鄭惠文醫師陪同，在天文鐘前靜候整點鐘聲，每日一次，連續三天。">
+    <img src="surprise/image_Ex9PZd.png" alt="聖維特天文鐘">
     <div class="doc-stamp">CLASSIFIED</div>
-    <div class="doc-label">High Altar Frontal<br>600 Years of Gold</div>
+    <div class="doc-label">Subject: Gothic Vaults<br>Date: Spring 2024</div>
   </div>
 
-  <div class="document-item"
-       style="left:61%;top:24%;--rot:rotate(8deg);transform:rotate(8deg);"
-       data-img="surprise/p08-doctors-inside.jpg"
-       data-rot="8deg"
-       data-title="粘曉青・鄭惠文醫師・教堂內留影"
-       data-diagnosis="診斷：名醫光環加乘效應。症狀：兩位台大醫院、哈佛醫學院畢業名醫同時出現在教堂中，周圍的聖人雕像集體感到壓力。建議療程：繼續微笑，這是整座教堂六百年來見過最美的臨床表情。">
-    <img src="surprise/p08-doctors-inside.jpg" alt="兩位醫師教堂內合照">
-    <div class="doc-stamp">PERSONAL</div>
-    <div class="doc-label">Dr. Nian & Dr. Jheng<br>St. Vitus, Spring 2024</div>
-  </div>
-
-  <div class="document-item"
-       style="left:10%;top:62%;--rot:rotate(11deg);transform:rotate(11deg);"
-       data-img="surprise/p08-doctors-mucha.jpg"
-       data-rot="11deg"
-       data-title="慕夏彩繪玻璃前・雙人留影"
-       data-diagnosis="診斷：慕夏色彩感染症。症狀：站在慕夏設計的彩繪玻璃前超過三分鐘後，開始用青金石藍和玫瑰茜紅形容所有事物。建議療程：接受感染，此症狀終身不退，且無需治療。">
-    <img src="surprise/p08-doctors-mucha.jpg" alt="慕夏彩窗前合照">
-    <div class="doc-stamp">MUCHA</div>
-    <div class="doc-label">Alphonse Mucha Window<br>Art Nouveau Glory</div>
-  </div>
-
-  <div class="document-item"
-       style="left:35%;top:60%;--rot:rotate(-12deg);transform:rotate(-12deg);"
-       data-img="surprise/p08-stained-glass.jpg"
-       data-rot="-12deg"
-       data-title="高聳彩繪玻璃・聖人群像"
-       data-diagnosis="診斷：垂直透視眩暈。症狀：仰拍彩繪玻璃後，回到平地仍感覺地板在往上傾斜。建議療程：坐在教堂長椅上，讓視線水平，聆聽管風琴聲，待平衡感恢復。">
-    <img src="surprise/p08-stained-glass.jpg" alt="高聳彩繪玻璃特寫">
-    <div class="doc-stamp">EVIDENCE</div>
-    <div class="doc-label">Stained Glass<br>Saints in Light</div>
-  </div>
-
-  <div class="document-item"
-       style="left:62%;top:58%;--rot:rotate(5deg);transform:rotate(5deg);"
-       data-img="surprise/p08-vaults.jpg"
-       data-rot="5deg"
-       data-title="哥德拱頂・肋架券仰望"
-       data-diagnosis="診斷：拱頂凝視症。症狀：仰望教堂肋架拱頂超過兩分鐘後，開始懷疑中世紀工匠是外星人。建議療程：將此疑惑保留至回台灣後，在門診空檔與同事分享，療效顯著。">
-    <img src="surprise/p08-vaults.jpg" alt="哥德拱頂仰角">
-    <div class="doc-stamp">ARCHIVE</div>
-    <div class="doc-label">Gothic Vaults<br>Medieval Engineering</div>
-  </div>
-
-  <div class="document-item"
-       style="left:80%;top:33%;--rot:rotate(-7deg);transform:rotate(-7deg);"
-       data-img="surprise/p08-panorama.jpg"
-       data-rot="-7deg"
-       data-title="聖維特大教堂・城堡廣場全景"
-       data-diagnosis="診斷：全景震撼後遺症。症狀：看過教堂全景後，覺得台北101忽然變矮了。建議療程：此為正常的布拉格之春副作用，建議每年服用一次，持續終身。">
-    <img src="surprise/p08-panorama.jpg" alt="教堂全景廣場">
+  <!-- 檔案卡片 2 -->
+  <div class="document-item" style="left:22%;top:10%;--base-rotate:rotate(5deg);transform:rotate(5deg);"
+       data-img="surprise/image_111llO.png"
+       data-title="布拉格之春・市民會館"
+       data-diagnosis="診斷：音樂性心律不整。症狀：聽見管風琴聲後，心跳不自覺與琴鍵同步。建議療程：於市民會館就座，閉目聆聽德弗札克，待心律恢復為正常的 78 BPM 為止。">
+    <img src="surprise/image_111llO.png" alt="市民會館">
     <div class="doc-stamp">TOP SECRET</div>
-    <div class="doc-label">St. Vitus Cathedral<br>Castle Square Panorama</div>
+    <div class="doc-label">Spring Music Festival<br>600 Years of Silence</div>
+  </div>
+
+  <!-- 檔案卡片 3 -->
+  <div class="document-item" style="left:42%;top:15%;--base-rotate:rotate(-3deg);transform:rotate(-3deg);"
+       data-img="surprise/image_fUPCtw.png"
+       data-title="老城橋塔・查理大橋出口"
+       data-diagnosis="診斷：橋塔凝視症。症狀：仰望哥德尖塔超過五分鐘後，脖子僵硬，靈魂出竅。建議療程：由兩位名醫共同處方——立即轉身，讓伏爾塔瓦河的微風將靈魂吹回。">
+    <img src="surprise/image_fUPCtw.png" alt="老城橋塔">
+    <div class="doc-stamp">EVIDENCE</div>
+    <div class="doc-label">Old Town Bridge Tower<br>circa XIV Century</div>
+  </div>
+
+  <!-- 檔案卡片 4 -->
+  <div class="document-item" style="left:62%;top:8%;--base-rotate:rotate(9deg);transform:rotate(9deg);"
+       data-img="surprise/image_fR_FA9.png"
+       data-title="小城區・石板路起點"
+       data-diagnosis="診斷：石板路上癮症。症狀：踩上古老石板後，雙腿自動切換至「漫遊模式」，無法停止。建議療程：允許症狀持續發作，這是布拉格給旅人最溫柔的處方。">
+    <img src="surprise/image_fR_FA9.png" alt="小城區石板路">
+    <div class="doc-stamp">FIELD NOTE</div>
+    <div class="doc-label">Malá Strana District<br>Royal Road, Day 3</div>
+  </div>
+
+  <!-- 檔案卡片 5 -->
+  <div class="document-item" style="left:12%;top:52%;--base-rotate:rotate(12deg);transform:rotate(12deg);"
+       data-img="surprise/image_9KIY5C.png"
+       data-title="查理大橋・聖人雕像"
+       data-diagnosis="診斷：雕像對視後遺症。症狀：與三十座聖人雕像對視後，開始懷疑自己也是一座值得被記錄的雕像。建議療程：自信地繼續走完整座橋，此症狀為布拉格之春的正常副作用。">
+    <img src="surprise/image_9KIY5C.png" alt="查理大橋雕像">
+    <div class="doc-stamp">ARCHIVE</div>
+    <div class="doc-label">Charles Bridge Statues<br>30 Witnesses</div>
+  </div>
+
+  <!-- 檔案卡片 6 -->
+  <div class="document-item" style="left:38%;top:50%;--base-rotate:rotate(-11deg);transform:rotate(-11deg);"
+       data-img="surprise/image_7jQQNK.png"
+       data-title="城堡山・私人特寫"
+       data-diagnosis="診斷：光影中毒。症狀：在慕夏的彩繪玻璃前停留過久，眼睛開始以 1.5 倍飽和度看世界。建議療程：在聖維特教堂前靜坐十分鐘，待視覺恢復正常色域為止。">
+    <img src="surprise/image_7jQQNK.png" alt="城堡山特寫">
+    <div class="doc-stamp">PERSONAL</div>
+    <div class="doc-label">Castle Hill Summit<br>Classified Memory</div>
+  </div>
+
+  <!-- 檔案卡片 7 -->
+  <div class="document-item" style="left:65%;top:48%;--base-rotate:rotate(6deg);transform:rotate(6deg);"
+       data-img="surprise/image_oxeP6p.png"
+       data-title="火藥塔・黃昏夕照"
+       data-diagnosis="診斷：夕陽依存症。症狀：目送夕陽沒入火藥塔後，拒絕離開，執意等待明天的日落。建議療程：由同行的旅伴溫柔牽手，帶離現場，前往最近的咖啡館進行緊急補糖治療。">
+    <img src="surprise/image_oxeP6p.png" alt="火藥塔夕照">
+    <div class="doc-stamp">SUNSET LOG</div>
+    <div class="doc-label">Powder Tower<br>Golden Hour Record</div>
   </div>
 
   <div class="desk-hint">— 點擊任一檔案，解鎖塵封的診斷報告 —</div>
+
 </div>
 
 <!-- Lightbox -->
 <div id="lightbox">
-  <div class="lb-inner" id="lbInner">
-    <span class="lb-close" onclick="closeLb()">×</span>
+  <span class="lightbox-close" onclick="closeLightbox()">×</span>
+  <div class="lightbox-inner">
     <img id="lb-img" src="" alt="">
-    <div class="lb-diagnosis">
-      <div class="lb-label">▌ MEDICAL ARCHIVE REPORT ／ 旅行病歷摘要</div>
-      <div class="lb-title" id="lb-title"></div>
-      <div class="lb-text"  id="lb-text"></div>
+    <div class="lightbox-diagnosis">
+      <div class="diagnosis-label">▌ MEDICAL ARCHIVE REPORT ／ 旅行病歷摘要</div>
+      <div class="diagnosis-title" id="lb-title"></div>
+      <div class="diagnosis-text" id="lb-text"></div>
     </div>
   </div>
 </div>
 
 <script>
-  /* 圖片載入失敗 */
+  /* 圖片載入失敗處理 */
   document.querySelectorAll('.document-item img').forEach(img => {
     img.addEventListener('error', function() {
-      this.style.cssText = 'width:170px;height:128px;background:#1a1a1a;display:block;';
+      this.src = '';
+      this.style.cssText = 'width:180px;height:135px;background:#222;display:block;';
       this.alt = '遺失的歷史';
     });
   });
 
-  /* 打字機效果 */
-  let typeTimer = null;
-  function typewriter(el, text, speed) {
-    el.classList.remove('done');
-    el.textContent = '';
-    let i = 0;
-    clearInterval(typeTimer);
-    typeTimer = setInterval(() => {
-      if (i < text.length) {
-        el.textContent += text[i++];
-      } else {
-        clearInterval(typeTimer);
-        el.classList.add('done');
-      }
-    }, speed || 35);
-  }
-
-  /* 開啟 Lightbox */
+  /* Lightbox 開啟 */
   document.querySelectorAll('.document-item').forEach(item => {
     item.addEventListener('click', function(e) {
       e.stopPropagation();
-      const rot = this.dataset.rot || '0deg';
-      const lbInner = document.getElementById('lbInner');
-      lbInner.style.setProperty('--src-rot', rot);
-
+      const lb = document.getElementById('lightbox');
       document.getElementById('lb-img').src = this.dataset.img;
       document.getElementById('lb-title').textContent = this.dataset.title;
-
-      const lb = document.getElementById('lightbox');
-      lb.classList.remove('closing');
+      document.getElementById('lb-text').textContent = this.dataset.diagnosis;
       lb.classList.add('active');
-
-      /* 打字機延遲啟動（等圖片放大動畫結束） */
-      const textEl = document.getElementById('lb-text');
-      textEl.textContent = '';
-      textEl.classList.remove('done');
-      setTimeout(() => typewriter(textEl, this.dataset.diagnosis, 30), 500);
     });
   });
 
-  /* 關閉 Lightbox，飛回原位 */
-  function closeLb() {
-    const lb = document.getElementById('lightbox');
-    clearInterval(typeTimer);
-    lb.classList.add('closing');
-    setTimeout(() => {
-      lb.classList.remove('active', 'closing');
-      document.getElementById('lb-img').src = '';
-      document.getElementById('lb-text').textContent = '';
-    }, 350);
+  /* Lightbox 關閉 */
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('active');
   }
-
-  document.getElementById('lightbox').addEventListener('click', e => {
-    if (e.target === e.currentTarget) closeLb();
+  document.getElementById('lightbox').addEventListener('click', function(e) {
+    if (e.target === this) closeLightbox();
   });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeLightbox();
+  });
 </script>
+
 </body>
 </html>
