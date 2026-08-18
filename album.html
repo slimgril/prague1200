@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>布拉格1200 · 精選相簿</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --nav-h: 52px;
+      --bg: #0c0c0c;
+      --gold: #c8a84b;
+      --muted: #555;
+      --text: #ddd;
+      --serif: 'Georgia', 'Times New Roman', serif;
+      --sans: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--serif);
+      padding-top: var(--nav-h);
+    }
+
+    /* ── 頂部固定導覽 ── */
+    #topnav {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: var(--nav-h);
+      background: rgba(8,8,8,0.96);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid #1e1e1e;
+      display: flex; align-items: center;
+      padding: 0 32px; gap: 0;
+      z-index: 300;
+    }
+    #topnav .brand {
+      font-size: 0.72rem; letter-spacing: 0.3em;
+      color: var(--gold); margin-right: auto;
+      font-family: var(--sans); text-transform: uppercase;
+    }
+    .nav-days { display: flex; gap: 2px; }
+    .nav-days a {
+      font-family: var(--sans); font-size: 0.68rem;
+      letter-spacing: 0.15em; color: var(--muted);
+      text-decoration: none; padding: 7px 14px;
+      border-radius: 3px;
+      transition: color .2s, background .2s;
+    }
+    .nav-days a:hover, .nav-days a.active {
+      color: var(--gold); background: rgba(200,168,75,.1);
+    }
+
+    /* ── Hero ── */
+    #hero {
+      height: 100vh; position: relative;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    #hero-bg {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center;
+      filter: brightness(0.25) blur(4px);
+    }
+    #hero-content {
+      position: relative; z-index: 1;
+      text-align: center; padding: 0 32px;
+    }
+    #hero-content .eyebrow {
+      font-family: var(--sans); font-size: 0.65rem;
+      letter-spacing: 0.5em; color: var(--gold);
+      text-transform: uppercase; margin-bottom: 20px;
+    }
+    #hero-content h1 {
+      font-size: clamp(3rem, 8vw, 7rem);
+      font-weight: 300; letter-spacing: 0.1em;
+      color: #fff; line-height: 0.95;
+    }
+    #hero-content .tagline {
+      margin-top: 24px; font-size: clamp(0.8rem, 1.5vw, 1rem);
+      color: rgba(255,255,255,0.45); letter-spacing: 0.2em;
+      font-family: var(--sans);
+    }
+    #hero-scroll {
+      position: absolute; bottom: 36px; left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--sans); font-size: 0.6rem;
+      letter-spacing: 0.4em; color: var(--muted);
+      text-transform: uppercase;
+      animation: scrollHint 2.4s ease-in-out infinite;
+    }
+    @keyframes scrollHint {
+      0%,100% { opacity: 0.4; transform: translateX(-50%) translateY(0); }
+      50% { opacity: 0.9; transform: translateX(-50%) translateY(5px); }
+    }
+
+    /* ── 全幅情緒轉場 ── */
+    .interlude {
+      position: relative; width: 100%; height: 85vh;
+      overflow: hidden; display: flex; align-items: flex-end;
+    }
+    .interlude-bg {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      filter: brightness(0.5);
+      cursor: pointer;
+    }
+    .interlude-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%);
+    }
+    .interlude-text {
+      position: relative; z-index: 1;
+      padding: 48px 56px; max-width: 700px;
+    }
+    .interlude-text .ilu-label {
+      font-family: var(--sans); font-size: 0.62rem;
+      letter-spacing: 0.45em; color: var(--gold);
+      text-transform: uppercase; margin-bottom: 12px;
+      display: block;
+    }
+    .interlude-text h2 {
+      font-size: clamp(1.6rem, 4vw, 3.2rem);
+      font-weight: 300; color: #fff;
+      letter-spacing: 0.06em; line-height: 1.15;
+    }
+
+    /* ── 日期區段 ── */
+    .day-section {
+      padding: 72px 0 48px;
+    }
+    .day-header {
+      display: grid;
+      grid-template-columns: 1fr 3fr 1fr;
+      align-items: baseline;
+      padding: 0 32px 24px;
+      border-bottom: 1px solid #1c1c1c;
+      margin-bottom: 0;
+    }
+    .day-num {
+      font-size: clamp(4rem, 10vw, 9rem);
+      font-weight: 300; color: #1a1a1a;
+      line-height: 0.85; letter-spacing: -0.02em;
+      user-select: none;
+    }
+    .day-title-block { padding: 0 24px; }
+    .day-title-block h2 {
+      font-size: clamp(1rem, 2.5vw, 1.7rem);
+      font-weight: 300; color: var(--gold);
+      letter-spacing: 0.18em;
+    }
+    .day-title-block .day-count {
+      font-family: var(--sans); font-size: 0.68rem;
+      letter-spacing: 0.15em; color: var(--muted);
+      margin-top: 6px;
+    }
+    .day-rule { border-left: 1px solid #1c1c1c; height: 40px; }
+
+    /* ── 雜誌格狀 ── */
+    .mag-grid {
+      display: grid;
+      gap: 3px;
+      padding: 3px;
+    }
+
+    /* 第一張特大 + 4張右側 */
+    .mag-grid .featured {
+      grid-column: 1 / 3;
+      grid-row: 1 / 3;
+      aspect-ratio: 3 / 2;
+    }
+    .mag-grid .small { aspect-ratio: 4 / 3; }
+
+    /* 預設 6 欄 */
+    .photo-grid-wrap {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 3px; padding: 3px;
+    }
+    @media (max-width: 1100px) { .photo-grid-wrap { grid-template-columns: repeat(4, 1fr); } }
+    @media (max-width: 700px)  { .photo-grid-wrap { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 440px)  { .photo-grid-wrap { grid-template-columns: repeat(2, 1fr); } }
+
+    /* 首張大圖佔 2 欄 × 2 行 */
+    .photo-grid-wrap .thumb-featured {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+
+    .thumb {
+      overflow: hidden;
+      background: #111;
+      cursor: pointer;
+      position: relative;
+    }
+    .thumb, .thumb-featured { aspect-ratio: 4 / 3; }
+    .thumb-featured { aspect-ratio: 4 / 3; }
+
+    .thumb img, .thumb-featured img {
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+      transition: transform 0.4s ease, filter 0.3s ease;
+    }
+    .thumb:hover img, .thumb-featured:hover img {
+      transform: scale(1.04);
+      filter: brightness(1.08);
+    }
+
+    /* ── Lightbox ── */
+    #lightbox {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.93);
+      z-index: 1000; align-items: center; justify-content: center;
+      flex-direction: column;
+    }
+    #lightbox.open { display: flex; }
+
+    #lb-img {
+      max-width: 90vw; max-height: 86vh;
+      object-fit: contain; display: block;
+      border-radius: 1px;
+      box-shadow: 0 0 80px rgba(0,0,0,0.9);
+      user-select: none;
+    }
+    #lb-close {
+      position: fixed; top: 18px; right: 26px;
+      background: none; border: none;
+      color: rgba(255,255,255,0.5); font-size: 1.8rem;
+      cursor: pointer; z-index: 1002; line-height: 1;
+      transition: color .2s;
+    }
+    #lb-close:hover { color: #fff; }
+    .lb-nav {
+      position: fixed; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,0.07); border: none;
+      color: rgba(255,255,255,0.6); font-size: 2.2rem;
+      width: 52px; height: 80px;
+      cursor: pointer; z-index: 1002;
+      border-radius: 3px;
+      transition: background .2s, color .2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lb-nav:hover { background: rgba(255,255,255,0.15); color: #fff; }
+    #lb-prev { left: 10px; }
+    #lb-next { right: 10px; }
+    #lb-info {
+      position: fixed; bottom: 22px; left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--sans); font-size: 0.65rem;
+      letter-spacing: 0.2em; color: rgba(255,255,255,0.35);
+    }
+
+    /* ── 頁尾 ── */
+    #footer {
+      margin-top: 80px;
+      padding: 64px 32px 100px;
+      border-top: 1px solid #181818;
+      text-align: center;
+    }
+    #footer .footer-eyebrow {
+      font-family: var(--sans); font-size: 0.6rem;
+      letter-spacing: 0.5em; color: var(--gold);
+      text-transform: uppercase; margin-bottom: 48px;
+    }
+    .stats {
+      display: flex; flex-wrap: wrap;
+      justify-content: center; gap: 40px 64px;
+      margin-bottom: 56px;
+    }
+    .stat { text-align: center; }
+    .stat-n {
+      display: block; font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 300; color: #fff; letter-spacing: 0.04em;
+    }
+    .stat-l {
+      display: block; font-family: var(--sans);
+      font-size: 0.62rem; letter-spacing: 0.25em;
+      color: var(--muted); margin-top: 8px;
+      text-transform: uppercase;
+    }
+    #footer .closing {
+      font-family: var(--sans); font-size: 0.7rem;
+      letter-spacing: 0.35em; color: #333;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<nav id="topnav">
+  <div class="brand">布拉格 1200 &nbsp;·&nbsp; 精選相簿</div>
+  <div class="nav-days" id="nav-days"></div>
+</nav>
+
+<section id="hero">
+  <div id="hero-bg"></div>
+  <div id="hero-content">
+    <p class="eyebrow">Prague · 布拉格 · 2026</p>
+    <h1>布拉格<br>1200</h1>
+    <p class="tagline">從 5,000 張照片中保留下來的瞬間</p>
+  </div>
+  <div id="hero-scroll">Scroll ↓</div>
+</section>
+
+<main id="album-root"></main>
+
+<footer id="footer">
+  <p class="footer-eyebrow">Mission Complete</p>
+  <div class="stats">
+    <div class="stat"><span class="stat-n">6</span><span class="stat-l">旅行天數</span></div>
+    <div class="stat"><span class="stat-n">5,000<sup style="font-size:.5em">+</sup></span><span class="stat-l">原始照片</span></div>
+    <div class="stat"><span class="stat-n" id="stat-sel">—</span><span class="stat-l">精選照片</span></div>
+    <div class="stat"><span class="stat-n">17,000</span><span class="stat-l">平均步數 / 日</span></div>
+  </div>
+  <p class="closing">布拉格 1200 計畫完成</p>
+</footer>
+
+<!-- Lightbox -->
+<div id="lightbox">
+  <button id="lb-close">✕</button>
+  <button class="lb-nav" id="lb-prev">‹</button>
+  <img id="lb-img" src="" alt="">
+  <button class="lb-nav" id="lb-next">›</button>
+  <div id="lb-info"></div>
+</div>
+
+<script>
+// 每幾個 day 插一次情緒大圖
+const INTERLUDE_EVERY = 3;
+
+const DAY_META = {
+  day1: '抵達布拉格',
+  day2: '舊城區 · 查理大橋',
+  day3: '小城區 · 城堡山',
+  day4: '城堡區 · 皇家之路',
+  day5: '庫倫洛夫',
+  day6: '維也納 · 歸途',
+};
+
+let allPhotos = [];
+let lbIndex = 0;
+
+async function init() {
+  const days = await fetch('album-manifest.json').then(r => r.json());
+  const root = document.getElementById('album-root');
+  const navEl = document.getElementById('nav-days');
+  let total = 0;
+
+  // Hero 背景：day3 中間那張
+  const heroDay = days[2] || days[0];
+  if (heroDay) {
+    const pick = heroDay.photos[Math.floor(heroDay.photos.length / 2)];
+    document.getElementById('hero-bg').style.backgroundImage = `url('${pick.src}')`;
+  }
+
+  days.forEach((day, di) => {
+    total += day.count;
+    const startIdx = allPhotos.length;
+    day.photos.forEach(p => allPhotos.push(p.src));
+
+    // ── 每 3 個 day 後插情緒轉場 ──
+    if (di > 0 && di % INTERLUDE_EVERY === 0) {
+      const prevDay = days[di - 1];
+      const heroP = prevDay.photos[Math.floor(prevDay.photos.length * 0.55)];
+      const meta = DAY_META[prevDay.id] || prevDay.label;
+      const ilu = document.createElement('div');
+      ilu.className = 'interlude';
+      ilu.innerHTML = `
+        <img class="interlude-bg" src="${heroP.src}" alt="" loading="lazy">
+        <div class="interlude-overlay"></div>
+        <div class="interlude-text">
+          <span class="ilu-label">${prevDay.label} · Impressions</span>
+          <h2>${meta}</h2>
+        </div>`;
+      // 點擊大圖進 lightbox
+      const globalIdx = startIdx - prevDay.count + Math.floor(prevDay.photos.length * 0.55);
+      ilu.querySelector('.interlude-bg').addEventListener('click', () => openLb(globalIdx));
+      root.appendChild(ilu);
+    }
+
+    // ── 導覽連結 ──
+    const a = document.createElement('a');
+    a.href = `#${day.id}`;
+    a.textContent = day.label;
+    navEl.appendChild(a);
+
+    // ── Day 區段 ──
+    const section = document.createElement('section');
+    section.className = 'day-section';
+    section.id = day.id;
+
+    const meta = DAY_META[day.id] || day.label;
+    section.innerHTML = `
+      <div class="day-header">
+        <div class="day-num">${String(di + 1).padStart(2, '0')}</div>
+        <div class="day-title-block">
+          <h2>${meta}</h2>
+          <p class="day-count">${day.count} 張精選</p>
+        </div>
+        <div class="day-rule"></div>
+      </div>
+      <div class="photo-grid-wrap" id="grid-${day.id}"></div>`;
+    root.appendChild(section);
+
+    // ── 渲染縮圖（首張特大）──
+    const grid = section.querySelector('.photo-grid-wrap');
+    day.photos.forEach((p, pi) => {
+      const el = document.createElement('div');
+      const featuredPos = [0, 3, 1, 4, 0, 2][di] ?? 0;
+      const isFeatured = pi === featuredPos;
+      el.className = isFeatured ? 'thumb thumb-featured' : 'thumb';
+
+      const img = document.createElement('img');
+      img.src = p.src;
+      img.alt = '';
+      img.loading = 'lazy';
+      img.decoding = 'async';
+
+      const gIdx = startIdx + pi;
+      el.addEventListener('click', () => openLb(gIdx));
+      el.appendChild(img);
+      grid.appendChild(el);
+    });
+  });
+
+  document.getElementById('stat-sel').textContent = total.toLocaleString();
+
+  // ── 導覽高亮 ──
+  const sections = document.querySelectorAll('.day-section');
+  const links = document.querySelectorAll('.nav-days a');
+  new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting)
+        links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === `#${e.target.id}`));
+    });
+  }, { rootMargin: '-35% 0px -60% 0px' }).observe
+    ? sections.forEach(s =>
+        new IntersectionObserver(entries => {
+          entries.forEach(e => {
+            if (e.isIntersecting)
+              links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === `#${e.target.id}`));
+          });
+        }, { rootMargin: '-35% 0px -60% 0px' }).observe(s)
+      )
+    : null;
+}
+
+// ── Lightbox ──
+const lb   = document.getElementById('lightbox');
+const lbImg = document.getElementById('lb-img');
+const lbInfo = document.getElementById('lb-info');
+
+function openLb(idx) {
+  lbIndex = (idx + allPhotos.length) % allPhotos.length;
+  lbImg.src = allPhotos[lbIndex];
+  lbInfo.textContent = `${lbIndex + 1}  /  ${allPhotos.length}`;
+  lb.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLb() {
+  lb.classList.remove('open');
+  lbImg.src = '';
+  document.body.style.overflow = '';
+}
+function moveLb(dir) {
+  openLb(lbIndex + dir);
+}
+
+document.getElementById('lb-close').addEventListener('click', closeLb);
+document.getElementById('lb-prev').addEventListener('click', () => moveLb(-1));
+document.getElementById('lb-next').addEventListener('click', () => moveLb(1));
+lb.addEventListener('click', e => { if (e.target === lb) closeLb(); });
+
+document.addEventListener('keydown', e => {
+  if (!lb.classList.contains('open')) return;
+  if (e.key === 'ArrowLeft')  moveLb(-1);
+  if (e.key === 'ArrowRight') moveLb(1);
+  if (e.key === 'Escape')     closeLb();
+});
+
+// 觸控滑動
+let _tx = 0;
+lb.addEventListener('touchstart', e => { _tx = e.touches[0].clientX; }, { passive: true });
+lb.addEventListener('touchend',   e => {
+  const dx = e.changedTouches[0].clientX - _tx;
+  if (Math.abs(dx) > 40) moveLb(dx < 0 ? 1 : -1);
+});
+
+init();
+</script>
+</body>
+</html>

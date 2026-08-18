@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <link rel="stylesheet" href="global.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>P07｜皇家之路：記憶登高朝聖地圖</title>
+  <style>
+    body {
+      margin: 0; background: #08080c; color: #fff;
+      font-family: "PingFang TC", "Heiti TC", "Microsoft JhengHei", sans-serif;
+      overflow-x: hidden;
+    }
+
+    .map-container {
+      position: relative; width: 100%; max-width: 850px;
+      margin: 0 auto; padding: 80px 20px 120px; box-sizing: border-box;
+      background-image:
+        linear-gradient(rgba(212,175,55,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(212,175,55,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* 背景底圖：平時半透明，終點揭幕時放大全亮 */
+    .hero-fixed-bg {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-image: url('surprise/image_111llO.png');
+      background-size: cover; background-position: center;
+      opacity: 0.15; filter: blur(2px) brightness(0.6);
+      z-index: 1; pointer-events: none;
+      transition: opacity 1.2s ease, filter 1.2s ease, transform 1.2s ease;
+      transform: scale(1);
+    }
+    body.reveal-finale .hero-fixed-bg {
+      opacity: 0.92;
+      filter: blur(0px) brightness(0.9);
+      transform: scale(1.06);
+    }
+
+    /* 蜿蜒路線改用 SVG，直線隱藏 */
+    .map-container::before { display: none; }
+    .winding-path {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 2; pointer-events: none;
+    }
+
+    /* 站點容器：順序翻轉，01在下、06在上（flex-direction: column-reverse） */
+    .stations-wrapper {
+      display: flex;
+      flex-direction: column-reverse;
+    }
+
+    .trail-station {
+      position: relative; width: 100%; margin-bottom: 140px;
+      display: flex; justify-content: flex-start; z-index: 5;
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .trail-station.is-visible { opacity: 1; transform: translateY(0); }
+    .trail-station:nth-child(even) { justify-content: flex-end; }
+
+    /* 足跡圓點：跟隨階梯左右交錯 */
+    .footprint-node {
+      position: absolute; top: 20px;
+      width: 20px; height: 20px;
+      background: #ff007f; border: 3px solid #ff007f;
+      border-radius: 50%; z-index: 10;
+      animation: nodeGlow 1.5s infinite ease-in-out;
+      transform: translateX(-50%);
+    }
+    /* 奇數站點（01,03,05）足跡圈在卡片右邊 */
+    .trail-station:nth-child(odd)  .footprint-node { left: 38%; }
+    /* 偶數站點（02,04,06）足跡圈在卡片左邊 */
+    .trail-station:nth-child(even) .footprint-node { left: 62%; }
+
+    @keyframes nodeGlow {
+      0%, 100% { box-shadow: 0 0 5px #ff007f; opacity: 0.6; transform: translateX(-50%) scale(0.9); }
+      50%       { box-shadow: 0 0 20px #ff007f, 0 0 35px rgba(255,0,127,0.6); opacity: 1; transform: translateX(-50%) scale(1.2); }
+    }
+
+    /* 起點引導人物背影（站點01） */
+    .pilgrim-guide {
+      position: absolute;
+      bottom: -30px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 2.2rem;
+      animation: pilgrimWalk 2s ease-in-out infinite alternate;
+      z-index: 20; pointer-events: none;
+    }
+    @keyframes pilgrimWalk {
+      0%   { transform: translateX(-50%) translateY(0); }
+      100% { transform: translateX(-50%) translateY(-10px); }
+    }
+
+    /* 足跡圓點可點擊 */
+    .footprint-node { cursor: pointer; }
+
+    /* 記憶卡片：預設隱藏，點燈後才出現 */
+    .memory-card {
+      width: 35%; background: rgba(15,15,20,0.88);
+      border: 1px solid rgba(212,175,55,0.2); border-radius: 8px;
+      padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      box-sizing: border-box;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.3s ease;
+    }
+    .trail-station:nth-child(odd)  .memory-card { transform: rotate(-1.5deg) translateY(12px); }
+    .trail-station:nth-child(even) .memory-card { transform: rotate(1.5deg)  translateY(12px); }
+
+    .trail-station.card-visible .memory-card {
+      opacity: 1; pointer-events: auto;
+    }
+    .trail-station:nth-child(odd).card-visible  .memory-card { transform: rotate(-1.5deg) translateY(0); }
+    .trail-station:nth-child(even).card-visible .memory-card { transform: rotate(1.5deg)  translateY(0); }
+    .memory-card:hover { box-shadow: 0 0 20px rgba(212,175,55,0.3), 0 10px 30px rgba(0,0,0,0.6); }
+
+    /* 第一站下方配圖：全寬跨頁，最底層 */
+    .start-photo-wrap {
+      width: 100%; margin: 0;
+      position: relative; z-index: 6;
+      transition: opacity 1.2s ease;
+    }
+    .start-photo-wrap img {
+      width: 100%; display: block;
+      border-radius: 0;
+      filter: brightness(0.75) contrast(1.05);
+    }
+    body.reveal-finale .start-photo-wrap {
+      opacity: 0; pointer-events: none;
+    }
+
+    /* 點擊提示文字（只在01顯示） */
+    .tap-hint {
+      font-size: 0.75rem; color: rgba(255,255,255,0.4);
+      margin-top: 8px; letter-spacing: 0.1em; text-align: center;
+      animation: hintBlink 2s infinite;
+    }
+    @keyframes hintBlink {
+      0%, 100% { opacity: 0.4; }
+      50%       { opacity: 1; }
+    }
+
+    .photo-wrapper {
+      position: relative; width: 100%; overflow: hidden;
+      border-radius: 4px; background: #000; margin-bottom: 12px;
+    }
+    .photo-wrapper img { width: 100%; height: auto; display: block; filter: contrast(1.05); }
+
+    .m-photo { width: 100%; }
+    .s-photo { width: 85%; margin: 0 auto; }
+
+    .station-title { font-size: 1.1rem; font-weight: bold; color: #d4af37; margin: 0 0 6px 0; letter-spacing: 0.1em; }
+    .station-desc  { font-size: 0.9rem; color: #ccc; line-height: 1.6; margin: 0; letter-spacing: 0.05em; }
+    .magenta-caption { color: #ff007f; font-size: 0.85rem; font-weight: 500; margin-top: 8px; display: block; }
+
+    /* 開場（最下方，讀者第一眼看到） */
+    .trail-header {
+      text-align: center; position: relative; z-index: 10; padding: 40px 0 20px;
+      order: 999;
+    }
+    .trail-header h1 { font-size: 1.6rem; color: #fff; letter-spacing: 0.2em; margin-bottom: 10px; }
+    .trail-header p  { font-size: 1rem; color: #ff007f; letter-spacing: 0.1em; }
+
+    /* 終章（最上方，滾到頂端看到） */
+    .trail-footer {
+      text-align: center; position: relative; z-index: 10; padding: 60px 0 40px;
+    }
+    .trail-footer h2 { font-size: 1.4rem; color: #c41e3a; letter-spacing: 0.15em; margin-top: 20px; text-shadow: 0 0 20px rgba(196,30,58,0.4); }
+
+    /* 蓋章獎賞效果 */
+    .finale-stamp {
+      display: inline-block;
+      font-size: 5rem; margin-bottom: 16px;
+      opacity: 0; transform: scale(2) rotate(-15deg);
+      transition: all 0.8s cubic-bezier(0.2,0.8,0.2,1);
+    }
+    body.reveal-finale .finale-stamp {
+      opacity: 1; transform: scale(1) rotate(-8deg);
+    }
+    .finale-btn {
+      display: inline-block; margin-top: 20px;
+      padding: 12px 28px; border: 2px solid #c41e3a;
+      color: #c41e3a; border-radius: 30px; cursor: pointer;
+      font-size: 1rem; letter-spacing: 0.1em;
+      background: rgba(196,30,58,0.08);
+      transition: all 0.3s ease; z-index: 20; position: relative;
+    }
+    .finale-btn:hover { background: rgba(196,30,58,0.25); box-shadow: 0 0 16px rgba(196,30,58,0.4); }
+  </style>
+  <link rel="stylesheet" href="global.css?v=1600">
+</head>
+<body>
+
+  <div class="hero-fixed-bg"></div>
+
+  <audio id="finale-bgm" preload="auto"
+    src="surprise/nastelbom-motivational-music-495881.mp3">
+  </audio>
+
+  <div class="map-container">
+    <!-- 蜿蜒路線：從右下角到左上角的 S 形曲線 -->
+    <svg class="winding-path" preserveAspectRatio="none" viewBox="0 0 100 100">
+      <defs>
+        <linearGradient id="pathGrad" x1="0.38" y1="1" x2="0.62" y2="0">
+          <stop offset="0%"   stop-color="#ff007f"/>
+          <stop offset="40%"  stop-color="#d4af37"/>
+          <stop offset="100%" stop-color="rgba(212,175,55,0.25)"/>
+        </linearGradient>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="0.6" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <!-- 左下(38,95) → 右(62,79) → 左(38,63) → 右(62,47) → 左(38,31) → 右上(62,10) -->
+      <path d="M 38,95
+               C 50,90 50,82 62,79
+               C 72,76 28,66 38,63
+               C 48,60 52,50 62,47
+               C 72,44 28,34 38,31
+               C 48,28 52,13 62,10"
+            fill="none" stroke="url(#pathGrad)" stroke-width="1.2"
+            stroke-linecap="round" filter="url(#glow)"/>
+    </svg>
+
+    <!-- 終章（頂部）：滾到最上面看到蓋章獎賞 -->
+    <footer class="trail-footer" id="finaleZone">
+      <div class="finale-stamp">🏅</div>
+      <h2>當音樂穿過城市，記憶在最高處定格。</h2>
+      <div class="finale-btn" onclick="triggerFinale()">✨ 解鎖朝聖紀念章</div>
+    </footer>
+
+    <!-- 站點容器：column-reverse 讓01在底部、06在頂部 -->
+    <div class="stations-wrapper">
+
+      <!-- 站點 01（起點，在螢幕最下方，讀者第一眼看到） -->
+      <div class="trail-station" id="station-01">
+        <div class="footprint-node" onclick="onNodeClick(this, 1)"></div>
+        <div class="memory-card">
+          <div class="photo-wrapper m-photo">
+            <img src="surprise/image_fR_FA9.png" alt="小城區起點">
+          </div>
+          <h3 class="station-title">01. 跨越伏爾塔瓦河</h3>
+          <p class="station-desc">離開查理大橋的最後一道橋影，腳步踏上小城區的古老石板路，朝聖的旅程正式轉向高處。</p>
+          <span class="magenta-caption">歷史在身後，現在在眼前。</span>
+          <div class="tap-hint">↑ 向上滑動，繼續朝聖之路</div>
+        </div>
+        <!-- 引導人物背影 -->
+        <div class="pilgrim-guide">🚶‍♀️</div>
+      </div>
+
+      <!-- 站點 02 -->
+      <div class="trail-station">
+        <div class="footprint-node" onclick="onNodeClick(this, 2)"></div>
+        <div class="memory-card">
+          <div class="photo-wrapper s-photo">
+            <img src="surprise/image_-rPWeY.jpeg" alt="坎帕島黃色企鵝">
+          </div>
+          <h3 class="station-title">02. 坎帕島的黃色企鵝</h3>
+          <p class="station-desc">河岸邊靜靜排列的黃色企鵝，在歷史厚重的伏爾塔瓦河畔，像是一抹現代而幽默的記憶註腳。</p>
+        </div>
+      </div>
+
+      <!-- 站點 03 -->
+      <div class="trail-station">
+        <div class="footprint-node" onclick="onNodeClick(this, 3)"></div>
+        <div class="memory-card">
+          <div class="photo-wrapper m-photo">
+            <img src="surprise/image_Eca1S4.png" alt="約翰藍儂牆">
+          </div>
+          <h3 class="station-title">03. 藍儂牆的自由色彩</h3>
+          <p class="station-desc">即使色彩層層覆蓋，牆面上的樂句與符號依然在低吟著對自由的渴望。這裡不是景點，而是一段有溫度的停留。</p>
+          <span class="magenta-caption">記憶不是照順序排列，外在世界與內心交織。</span>
+        </div>
+      </div>
+
+      <!-- 站點 04 -->
+      <div class="trail-station">
+        <div class="footprint-node" onclick="onNodeClick(this, 4)"></div>
+        <div class="memory-card">
+          <div class="photo-wrapper m-photo">
+            <img src="surprise/image_Ex9PZd.png" alt="皇家之路石階">
+          </div>
+          <h3 class="station-title">04. 攀登皇家之路</h3>
+          <p class="station-desc">沿著國王加冕遊行的歷史軌跡一步一步登高。街道兩側的巴洛克建築緩緩退後，空氣開始變得清冷而知性。</p>
+        </div>
+      </div>
+
+      <!-- 站點 05 -->
+      <div class="trail-station">
+        <div class="footprint-node" onclick="onNodeClick(this, 5)"></div>
+        <div class="memory-card">
+          <div class="photo-wrapper s-photo">
+            <img src="surprise/image_7jQQNK.png" alt="布拉格城堡大門">
+          </div>
+          <h3 class="station-title">05. 城堡山之巔</h3>
+          <p class="station-desc">穿過巍峨的門垛與歷史的戒備，兩位女醫師以專業而悠然的步調，終於抵達了這座俯瞰整座城市的權力與歷史中樞。</p>
+          <span class="magenta-caption">一步一腳印，洗滌靈魂的終點。</span>
+        </div>
+      </div>
+
+      <!-- 站點 06（終點，在螢幕最上方） -->
+      <div class="trail-station">
+        <div class="footprint-node" onclick="onNodeClick(this, 6)"></div>
+        <div class="memory-card">
+          <div class="photo-wrapper m-photo">
+            <img src="surprise/image_111llO.png" alt="聖維特大教堂">
+          </div>
+          <h3 class="station-title">06. 聖維特的金色微光</h3>
+          <p class="station-desc">當玫瑰窗的彩繪玻璃將陽光折射成碎裂的金光時，布拉格之春的旅程在這裡得到了最完美的洗禮與安放。</p>
+        </div>
+      </div>
+
+    </div><!-- end stations-wrapper -->
+
+    <!-- 開場標題（最下方，讀者第一眼看到） -->
+    <header class="trail-header">
+      <h1>P07｜皇家之路：記憶登高</h1>
+      <p>由河岸走向高處的登城旅程 ↑</p>
+    </header>
+
+    <!-- 小城區全寬地圖：常駐底層，終章時消失，結束後重現 -->
+    <div class="start-photo-wrap">
+      <img src="surprise/img_0000.png" alt="小城區起點地圖">
+    </div>
+
+  </div>
+
+  <script>
+    const bgm = document.getElementById('finale-bgm');
+    let musicStarted = false;
+    let finaleTimer = null;
+    const cardTimers = {}; /* 每站的自動收回計時器 */
+
+    document.addEventListener("DOMContentLoaded", function () {
+      /* 滾動觸發站點淡入 */
+      const stations = document.querySelectorAll('.trail-station');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) entry.target.classList.add('is-visible');
+        });
+      }, { threshold: 0.1 });
+      stations.forEach(s => observer.observe(s));
+
+      /* 滾到頂部時自動觸發終章視覺（不觸發音樂） */
+      const finaleObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) setTimeout(() => triggerFinale(), 600);
+        });
+      }, { threshold: 0.5 });
+      const finale = document.getElementById('finaleZone');
+      if (finale) finaleObserver.observe(finale);
+    });
+
+    /* 點呼吸燈：顯示卡片，5 秒後自動收回 */
+    function onNodeClick(nodeEl, stationNum) {
+      const station = nodeEl.parentElement;
+      station.classList.add('card-visible');
+
+      /* 清除舊計時器，重新計時 */
+      if (cardTimers[stationNum]) clearTimeout(cardTimers[stationNum]);
+      cardTimers[stationNum] = setTimeout(() => {
+        station.classList.remove('card-visible');
+      }, 5000);
+
+      /* 第一顆燈：配樂開始淡入 */
+      if (stationNum === 1 && !musicStarted) {
+        musicStarted = true;
+        bgm.volume = 0;
+        bgm.currentTime = 0;
+        bgm.play().then(() => {
+          let vol = 0;
+          const fadeIn = setInterval(() => {
+            vol = Math.min(vol + 0.04, 0.7);
+            bgm.volume = vol;
+            if (vol >= 0.7) clearInterval(fadeIn);
+          }, 60);
+        }).catch(() => {});
+      }
+
+      /* 第六顆燈：立刻觸發教堂背景全開，17 秒後淡出重置 */
+      if (stationNum === 6) {
+        triggerFinale();
+        if (finaleTimer) clearTimeout(finaleTimer);
+        finaleTimer = setTimeout(() => {
+          document.body.classList.remove('reveal-finale');
+          const fadeOut = setInterval(() => {
+            bgm.volume = Math.max(bgm.volume - 0.04, 0);
+            if (bgm.volume <= 0) {
+              clearInterval(fadeOut);
+              bgm.pause();
+              bgm.currentTime = 0;
+              musicStarted = false; /* 重置，允許重新互動 */
+            }
+          }, 80);
+        }, 17000);
+      }
+    }
+
+    /* 終章視覺（蓋章＋背景） */
+    function triggerFinale() {
+      document.body.classList.add('reveal-finale');
+    }
+  </script>
+
+</body>
+</html>

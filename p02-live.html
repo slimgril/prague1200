@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <link rel="stylesheet" href="global.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<title>P02 Live — 120小時的破關鑰匙</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:#111;display:flex;align-items:center;justify-content:center;font-family:-apple-system,'Helvetica Neue',sans-serif}
+
+/* ── OUTER WRAPPER ── */
+.p02-page{
+  width:min(1280px,100vw);
+  height:min(720px,100vh);
+  display:flex;
+  overflow:hidden;
+  border:1px solid #2a2a2a;
+}
+
+/* ══════════════════════════════
+   LEFT PANEL — 40% tech black
+══════════════════════════════ */
+.p02-left{
+  flex:0 0 40%;
+  background:#0D0D0D;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  color:#fff;
+}
+
+/* A: Title — anchored top 15% */
+.p02-title-block{
+  position:absolute;top:15%;left:10%;
+}
+.p02-main-title{
+  font-size:clamp(22px,3.5vw,34px);
+  font-weight:700;
+  color:#fff;
+  line-height:1.15;
+  letter-spacing:-0.5px;
+}
+.p02-pvp-label{
+  font-size:9px;font-weight:700;letter-spacing:4px;
+  color:#D4AF37;text-transform:uppercase;margin-top:8px;
+}
+
+/* B: Orange card — centred at 38% */
+.p02-card-wrap{
+  position:absolute;top:34%;left:50%;transform:translateX(-50%);
+  width:min(280px,76%);
+  display:flex;flex-direction:column;align-items:center;gap:0;
+}
+.p02-card{cursor:pointer;user-select:none;width:100%}
+.p02-card-inner{
+  background:#FF5A00;border-radius:12px;
+  padding:18px 18px 14px;
+  box-shadow:0 8px 32px rgba(255,90,0,.35),0 2px 8px rgba(0,0,0,.4);
+  transition:transform .15s cubic-bezier(.34,1.56,.64,1),box-shadow .2s;
+}
+.p02-card:hover .p02-card-inner{
+  box-shadow:0 12px 40px rgba(255,90,0,.55),0 4px 12px rgba(0,0,0,.5);
+}
+.p02-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.p02-card-passtext{font-size:22px;font-weight:900;color:#fff;line-height:1}
+.p02-card-passtext span{font-size:11px;font-weight:400;opacity:.8;display:block;letter-spacing:1px}
+.p02-card-logo{
+  font-size:11px;font-weight:900;letter-spacing:2px;color:rgba(255,255,255,.7);
+  border:1.5px solid rgba(255,255,255,.5);padding:2px 6px;border-radius:3px;
+}
+.p02-card-mid{font-size:7px;letter-spacing:3px;color:rgba(255,255,255,.6);text-transform:uppercase;margin-bottom:14px}
+.p02-card-bot{display:flex;align-items:flex-end;justify-content:space-between}
+.p02-card-valid{font-size:7px;color:rgba(255,255,255,.55);letter-spacing:1px;line-height:1.6}
+.p02-qr{width:42px;height:42px;flex-shrink:0}
+
+/* Hint text below card — pulse animation */
+.p02-hint{ display:none; }
+
+/* C: Stats — anchored at 72% */
+.p02-stats{
+  position:absolute;top:72%;left:10%;
+  display:flex;flex-direction:column;gap:8px;
+}
+.p02-stat{
+  font-size:clamp(11px,1.8vw,13px);font-weight:600;
+  color:#FF5A00;letter-spacing:1px;
+}
+.p02-stat span{color:rgba(255,255,255,.4);font-weight:400}
+.p02-stat.key{font-size:clamp(12px,2vw,14.5px);font-weight:800}
+.p02-stat.new-entry{color:#FFD700}
+
+/* ── GUN button — positioned at card bottom-right ── */
+.p02-gun{
+  position:absolute;
+  bottom:-28px; right:-60px;
+  width:90px; height:58px;
+  cursor:pointer;
+  user-select:none;z-index:10;
+  transition:transform .15s ease;
+  filter:drop-shadow(0 3px 10px rgba(212,175,55,.4));
+}
+.p02-gun:hover{ filter:drop-shadow(0 4px 16px rgba(255,215,0,.65)); transform:scale(1.07); }
+.p02-gun.fired{
+  animation:gun-recoil .25s ease-out forwards;
+  pointer-events:none;
+}
+.p02-gun.ready{ pointer-events:auto; animation:none; }
+@keyframes gun-recoil{
+  0%  {transform:translateX(0) rotate(0deg)}
+  25% {transform:translateX(-10px) rotate(-8deg)}
+  100%{transform:translateX(0) rotate(0deg)}
+}
+
+/* Muzzle flash */
+.p02-muzzle{
+  position:absolute;right:-20px;top:10px;
+  width:26px;height:26px;border-radius:50%;
+  background:radial-gradient(circle, #fff 0%,#FFD700 40%,#FF5A00 70%,transparent 100%);
+  opacity:0;pointer-events:none;transform:scale(0);
+}
+.p02-muzzle.bang{
+  animation:bang .28s ease-out forwards;
+}
+@keyframes bang{
+  0%  {opacity:1;transform:scale(0.3)}
+  35% {opacity:1;transform:scale(1.6)}
+  100%{opacity:0;transform:scale(0.9)}
+}
+
+/* idle gun sparkle — pulses gold glow */
+.p02-gun-svg{
+  animation:gun-sparkle 2.6s ease-in-out infinite;
+}
+.p02-gun.fired .p02-gun-svg{ animation:none; filter:none; }
+@keyframes gun-sparkle{
+  0%,100%{filter:brightness(1) drop-shadow(0 0 3px rgba(212,175,55,.3))}
+  50%    {filter:brightness(1.45) drop-shadow(0 0 14px rgba(255,215,0,.9))}
+}
+/* Floating ★ sparks around gun */
+.p02-spark{
+  position:absolute;color:#FFD700;
+  font-size:9px;line-height:1;pointer-events:none;
+  animation:twinkle var(--d) var(--delay) ease-in-out infinite;opacity:0;
+}
+.p02-gun.fired .p02-spark{ animation:none;opacity:0; }
+@keyframes twinkle{
+  0%,100%{opacity:0;transform:scale(.4) rotate(0deg)}
+  50%    {opacity:1;transform:scale(1.3) rotate(180deg)}
+}
+
+/* Lightbox */
+.p02-lightbox{
+  position:fixed;inset:0;z-index:9999;
+  background:rgba(0,0,0,.88);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity .3s ease;
+}
+.p02-lightbox.open{ opacity:1;pointer-events:auto; }
+.p02-lightbox img{
+  max-width:80vw;max-height:80vh;
+  object-fit:contain;border-radius:4px;
+  box-shadow:0 0 60px rgba(0,0,0,.8);
+  transform:scale(.85);transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+}
+.p02-lightbox.open img{ transform:scale(1); }
+.p02-lightbox-close{
+  position:absolute;top:20px;right:28px;
+  color:rgba(255,255,255,.5);font-size:32px;cursor:pointer;
+  transition:color .2s;line-height:1;
+}
+.p02-lightbox-close:hover{ color:#fff; }
+
+.p02-counter{
+  position:absolute;top:7%;left:50%;transform:translateX(-50%);
+  text-align:center;z-index:20;pointer-events:none;
+  opacity:0;transition:opacity .35s;
+}
+.p02-counter.running{ opacity:1; }
+.p02-counter-num{
+  font-family:'Courier New',monospace;
+  font-size:clamp(28px,5vw,44px);font-weight:900;
+  color:#FF5A00;letter-spacing:3px;line-height:1;
+  text-shadow:0 0 24px rgba(255,90,0,.7),0 0 6px rgba(255,90,0,.4);
+  min-width:5ch;display:inline-block;
+}
+.p02-counter-label{
+  font-size:9px;letter-spacing:4px;text-transform:uppercase;
+  color:#D4AF37;margin-top:5px;
+  animation:counter-pulse 0.6s ease-in-out infinite;
+}
+@keyframes counter-pulse{
+  0%,100%{opacity:.7} 50%{opacity:1}
+}
+
+/* ══════════════════════════════
+   RIGHT PANEL — 60% dark grid
+══════════════════════════════ */
+.p02-right{
+  flex:1;
+  background:#1A1A1A;
+  position:relative;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  background-image:
+    linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+
+/* D: SVG Map */
+.p02-map-wrap{width:85%;position:relative}
+.p02-prague-map{width:100%;height:auto;display:block;overflow:visible}
+.p02-prague-map text{font-family:-apple-system,'Helvetica Neue',sans-serif}
+.p02-node-label   {font-size:14px;font-weight:700;transition:fill .4s ease}
+.p02-node-sublabel{font-size:11px;font-weight:500;transition:fill .4s ease}
+.p02-dot {transition:fill .3s ease}
+.p02-ping{transform-origin:center;opacity:0;transition:fill .3s,opacity .3s}
+.p02-ping.active{opacity:1;animation:ping 1.6s ease-out infinite}
+@keyframes ping{0%{transform:scale(1);opacity:.6}100%{transform:scale(3.5);opacity:0}}
+
+/* Polaroid frames in SVG */
+.polaroid-frame{
+  transition:opacity .5s ease,transform .5s cubic-bezier(.34,1.56,.64,1);
+  opacity:.15;
+}
+.polaroid-frame.lit{opacity:1;transform:translateY(-5px)}
+.polaroid-img{
+  display:block;width:68px;height:52px;object-fit:cover;
+  border:0;
+}
+.polaroid-white{
+  background:#fff;padding:4px 4px 14px;
+  box-shadow:2px 4px 12px rgba(0,0,0,.5);
+}
+.polaroid-cap{
+  font-size:7px;color:#555;text-align:center;
+  margin-top:2px;font-style:italic;letter-spacing:.5px;
+}
+
+/* E: Quote — bottom-center of right panel, hidden until runner finishes */
+.p02-quote{
+  position:absolute;bottom:16%;left:50%;transform:translateX(-50%) scale(0.9);
+  font-style:italic;font-weight:600;
+  color:#D4AF37;text-align:center;
+  font-size:clamp(18px,2.8vw,28px);
+  width:92%;line-height:1.8;
+  opacity:0;
+  transition:opacity 2.5s ease-out,transform 2.5s ease-out;
+  pointer-events:none;white-space:nowrap;
+  text-shadow:0 2px 20px rgba(212,175,55,.35);
+}
+.p02-quote.revealed{
+  opacity:1;transform:translateX(-50%) scale(1);
+  pointer-events:auto;
+}
+
+/* ambient status */
+.p02-ambient-btn{
+  position:absolute;top:8px;right:12px;
+  font-size:9px;letter-spacing:1px;color:rgba(255,255,255,.2);
+  cursor:pointer;user-select:none;
+  transition:color .3s;
+}
+.p02-ambient-btn:hover{color:rgba(255,255,255,.5)}
+</style>
+  <link rel="stylesheet" href="global.css?v=1600">
+</head>
+<body>
+
+<div class="p02-page">
+
+  <!-- ══ LEFT 40% ══ -->
+  <div class="p02-left">
+
+    <!-- A: Title -->
+    <div class="p02-title-block">
+      <div class="p02-main-title">120小時的<br>破關鑰匙</div>
+      <div class="p02-pvp-label">PRAGUE VISITOR PASS</div>
+    </div>
+
+    <!-- B: Card + GO button overlapping bottom-right -->
+    <div class="p02-card-wrap" style="position:relative">
+      <div class="p02-card" id="pvp-card">
+        <div class="p02-card-inner">
+          <div class="p02-card-top">
+            <div class="p02-card-passtext">120h<br><span>e-Pass</span></div>
+            <div class="p02-card-logo">PVP</div>
+          </div>
+          <div class="p02-card-mid">PRAGUE VISITOR PASS</div>
+          <div class="p02-card-bot">
+            <div class="p02-card-valid">VALID 120 HOURS<br>70+ EXPERIENCES</div>
+            <svg class="p02-qr" viewBox="0 0 21 21" fill="white">
+              <rect x="0" y="0" width="7" height="7"/>
+              <rect x="1" y="1" width="5" height="5" fill="#FF5A00"/>
+              <rect x="2" y="2" width="3" height="3" fill="white"/>
+              <rect x="14" y="0" width="7" height="7"/>
+              <rect x="15" y="1" width="5" height="5" fill="#FF5A00"/>
+              <rect x="16" y="2" width="3" height="3" fill="white"/>
+              <rect x="0" y="14" width="7" height="7"/>
+              <rect x="1" y="15" width="5" height="5" fill="#FF5A00"/>
+              <rect x="2" y="16" width="3" height="3" fill="white"/>
+              <rect x="9" y="0" width="1" height="1"/><rect x="11" y="0" width="1" height="1"/>
+              <rect x="10" y="2" width="1" height="1"/><rect x="8" y="3" width="1" height="1"/>
+              <rect x="12" y="3" width="1" height="1"/><rect x="9" y="5" width="1" height="1"/>
+              <rect x="11" y="6" width="1" height="1"/><rect x="10" y="9" width="1" height="1"/>
+              <rect x="8" y="8" width="1" height="1"/><rect x="12" y="8" width="1" height="1"/>
+              <rect x="9" y="11" width="1" height="1"/><rect x="11" y="10" width="1" height="1"/>
+              <rect x="10" y="13" width="1" height="1"/><rect x="9" y="14" width="1" height="1"/>
+              <rect x="11" y="15" width="1" height="1"/><rect x="8" y="16" width="1" height="1"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <!-- GUN — overlaps card bottom-right, fires to start -->
+      <div class="p02-gun" id="start-btn" role="button" aria-label="鳴槍起跑">
+        <svg class="p02-gun-svg" viewBox="0 0 90 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Barrel -->
+          <rect x="28" y="16" width="58" height="11" rx="3" fill="#D4AF37"/>
+          <!-- Muzzle end cap -->
+          <rect x="83" y="14" width="4" height="15" rx="1.5" fill="#8b6914"/>
+          <!-- Ejection port -->
+          <rect x="52" y="17" width="12" height="5" rx="1" fill="#8b6914"/>
+          <!-- Receiver body -->
+          <rect x="18" y="16" width="38" height="26" rx="3" fill="#C8971F"/>
+          <!-- Slide top detail -->
+          <rect x="28" y="16" width="38" height="5" rx="2" fill="#D4AF37"/>
+          <!-- Trigger guard (arc) -->
+          <path d="M 34 38 Q 42 52 56 44 L 56 38 Z" fill="#8b6914"/>
+          <!-- Trigger -->
+          <rect x="42" y="32" width="3.5" height="11" rx="1.5" fill="#4a3200"/>
+          <!-- Grip -->
+          <rect x="18" y="34" width="18" height="22" rx="4" fill="#b8860b"/>
+          <!-- Grip serrations -->
+          <line x1="21" y1="39" x2="34" y2="39" stroke="#8b6914" stroke-width="1" opacity=".7"/>
+          <line x1="21" y1="43" x2="34" y2="43" stroke="#8b6914" stroke-width="1" opacity=".7"/>
+          <line x1="21" y1="47" x2="34" y2="47" stroke="#8b6914" stroke-width="1" opacity=".7"/>
+          <line x1="21" y1="51" x2="34" y2="51" stroke="#8b6914" stroke-width="1" opacity=".7"/>
+          <!-- Hammer -->
+          <path d="M 16 16 L 22 10 L 26 14 L 20 20 Z" fill="#8b6914"/>
+          <!-- Sight (front) -->
+          <rect x="80" y="12" width="4" height="5" rx="1" fill="#ffe066"/>
+          <!-- Sight (rear) -->
+          <rect x="38" y="13" width="6" height="4" rx="1" fill="#ffe066"/>
+        </svg>
+        <!-- Muzzle flash -->
+        <div class="p02-muzzle" id="muzzle-flash"></div>
+        <!-- Idle sparkles -->
+        <span class="p02-spark" style="top:-8px;left:10px;--d:1.8s;--delay:0s">★</span>
+        <span class="p02-spark" style="top:2px;left:-10px;--d:2.2s;--delay:.4s">✦</span>
+        <span class="p02-spark" style="top:-10px;right:15px;--d:1.6s;--delay:.8s">★</span>
+        <span class="p02-spark" style="bottom:0px;right:5px;--d:2.0s;--delay:.2s">✦</span>
+        <span class="p02-spark" style="bottom:-6px;left:20px;--d:1.9s;--delay:.6s">★</span>
+      </div>
+      <!-- Hint text (hidden) -->
+      <div class="p02-hint" id="pvp-hint"></div>
+    </div>
+
+    <!-- C: Stats -->
+    <div class="p02-stats">
+      <div class="p02-stat">⏱ <span>TIME:</span> 120 Hours (Total)</div>
+      <div class="p02-stat key">👟 <span>DISTANCE:</span> 10.5 km / DAY</div>
+      <div class="p02-stat new-entry">📊 <span>TOTAL:</span> 52.5 km Challenge</div>
+      <div class="p02-stat">🏰 <span>TARGETS:</span> 70+ Experiences</div>
+    </div>
+
+  </div><!-- /.p02-left -->
+
+  <!-- ══ RIGHT 60% ══ -->
+  <div class="p02-right">
+    <div class="p02-ambient-btn" id="ambient-btn" title="Toggle ambient sound">♪ ambient</div>
+    <div class="p02-ambient-btn" id="test-sound-btn" style="right:90px" title="Test sound">🔊 test</div>
+
+    <!-- Live running counter (appears during run) -->
+    <div class="p02-counter" id="run-counter">
+      <div class="p02-counter-num" id="counter-num">0.0</div>
+      <div class="p02-counter-label">❤ KM · RUNNING</div>
+    </div>
+
+    <!-- D: SVG Prague map with inline polaroid foreignObjects -->
+    <div class="p02-map-wrap">
+      <svg viewBox="0 0 620 520" class="p02-prague-map">
+
+        <!-- Defs: glow filter for runner -->
+        <defs>
+          <filter id="runner-glow" x="-100%" y="-100%" width="300%" height="300%">
+            <feGaussianBlur stdDeviation="4" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- Vltava River S-curve (id for runner path) -->
+        <path id="river-path" d="M 300 520 Q 250 420 350 310 T 250 110 T 300 0"
+              stroke="#2a2a2a" stroke-width="10" fill="none"/>
+
+        <!-- Runner: orange particle following river, hidden initially -->
+        <g id="runner" opacity="0" filter="url(#runner-glow)">
+          <!-- Glowing core -->
+          <circle r="7" fill="#FF5A00"/>
+          <!-- Outer glow ring -->
+          <circle r="13" fill="none" stroke="#FF5A00" stroke-width="2" opacity="0.5"/>
+          <circle r="20" fill="none" stroke="#FFD700" stroke-width="1" opacity="0.3"/>
+          <animateMotion id="run-anim" dur="4.5s" fill="freeze" begin="indefinite"
+                         keyPoints="1;0" keyTimes="0;1" calcMode="linear">
+            <mpath href="#river-path"/>
+          </animateMotion>
+        </g>
+
+        <!-- Charles Bridge -->
+        <line x1="280" y1="240" x2="330" y2="220"
+              stroke="#D4AF37" stroke-width="3" stroke-dasharray="6 3" fill="none"/>
+        <text x="295" y="262" fill="#D4AF37" font-size="11"
+              text-anchor="middle" font-style="italic">查理大橋</text>
+        <!-- Charles Bridge polaroids: 2 photos side by side -->
+        <foreignObject x="210" y="235" width="90" height="78" class="polaroid-frame" id="po-bridge1">
+          <div xmlns="http://www.w3.org/1999/xhtml" class="polaroid-white">
+            <img class="polaroid-img" src="surprise/查理大橋.JPG" alt="查理大橋">
+            <div class="polaroid-cap">查理大橋</div>
+          </div>
+        </foreignObject>
+        <foreignObject x="305" y="245" width="90" height="78" class="polaroid-frame" id="po-bridge2">
+          <div xmlns="http://www.w3.org/1999/xhtml" class="polaroid-white">
+            <img class="polaroid-img" src="surprise/查理大橋1.JPG" alt="查理大橋 2">
+            <div class="polaroid-cap">查理大橋 · 夜</div>
+          </div>
+        </foreignObject>
+
+        <!-- Node 1: Old Town Hall & Clock — 2 photos -->
+        <g class="map-node" id="node-clock">
+          <circle cx="380" cy="220" r="30" class="p02-ping" fill="rgba(60,60,60,.15)" stroke="none"/>
+          <circle cx="380" cy="220" r="8"  class="p02-dot"  fill="#555" stroke="#aaa" stroke-width="2"/>
+          <text x="410" y="214" class="p02-node-label"    fill="#888">舊市政廳與天文鐘</text>
+          <text x="410" y="232" class="p02-node-sublabel" fill="#666">Old Town Hall &amp; Clock</text>
+          <!-- Polaroid 1: 天文鐘 -->
+          <foreignObject x="408" y="105" width="90" height="78" class="polaroid-frame" id="po-clock">
+            <div xmlns="http://www.w3.org/1999/xhtml" class="polaroid-white">
+              <img class="polaroid-img" src="surprise/天文鐘.JPG" alt="天文鐘">
+              <div class="polaroid-cap">天文鐘</div>
+            </div>
+          </foreignObject>
+          <!-- Polaroid 2: 舊市政廳 -->
+          <foreignObject x="503" y="118" width="90" height="78" class="polaroid-frame" id="po-clock2">
+            <div xmlns="http://www.w3.org/1999/xhtml" class="polaroid-white">
+              <img class="polaroid-img" src="surprise/舊市政廳.JPG" alt="舊市政廳">
+              <div class="polaroid-cap">舊市政廳</div>
+            </div>
+          </foreignObject>
+        </g>
+
+        <!-- Node 2: Prague Castle — 1 photo -->
+        <g class="map-node" id="node-castle">
+          <circle cx="195" cy="165" r="30" class="p02-ping" fill="rgba(60,60,60,.15)" stroke="none"/>
+          <circle cx="195" cy="165" r="8"  class="p02-dot"  fill="#555" stroke="#aaa" stroke-width="2"/>
+          <text x="10"  y="157" class="p02-node-label"    fill="#888">布拉格城堡區</text>
+          <text x="10"  y="175" class="p02-node-sublabel" fill="#666">Prague Castle</text>
+          <!-- Polaroid: 皇宮 -->
+          <foreignObject x="10" y="62" width="90" height="78" class="polaroid-frame" id="po-castle">
+            <div xmlns="http://www.w3.org/1999/xhtml" class="polaroid-white">
+              <img class="polaroid-img" src="surprise/皇宮-74CE-4A17-B7CF-AC7E18343767.PNG" alt="布拉格城堡">
+              <div class="polaroid-cap">布拉格城堡</div>
+            </div>
+          </foreignObject>
+        </g>
+
+        <!-- Node 3: Powder Tower — 1 photo -->
+        <g class="map-node" id="node-powder">
+          <circle cx="450" cy="270" r="30" class="p02-ping" fill="rgba(60,60,60,.15)" stroke="none"/>
+          <circle cx="450" cy="270" r="8"  class="p02-dot"  fill="#555" stroke="#aaa" stroke-width="2"/>
+          <text x="480" y="263" class="p02-node-label"    fill="#888">火藥塔</text>
+          <text x="480" y="281" class="p02-node-sublabel" fill="#666">Powder Tower</text>
+          <!-- Polaroid: 火藥塔 -->
+          <foreignObject x="480" y="182" width="90" height="78" class="polaroid-frame" id="po-powder">
+            <div xmlns="http://www.w3.org/1999/xhtml" class="polaroid-white">
+              <img class="polaroid-img" src="surprise/火藥塔.JPG" alt="火藥塔">
+              <div class="polaroid-cap">火藥塔城門</div>
+            </div>
+          </foreignObject>
+        </g>
+
+      </svg>
+    </div>
+
+    <!-- E: Quote -->
+    <div class="p02-quote">「放下聽診器，每天 10.5 公里，我們布拉格見。」</div>
+
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="p02-lightbox" id="lightbox">
+  <span class="p02-lightbox-close" id="lb-close">✕</span>
+  <img id="lb-img" src="" alt="">
+</div>
+
+<script>
+(function(){
+  /* ══════════════════════════════════════════
+     AUDIO ENGINE
+  ══════════════════════════════════════════ */
+  let ctx = null;
+  let ambientRunning = false;
+  let ambientNodes = [];
+
+  function getCtx(){
+    if(!ctx) ctx = new(window.AudioContext||window.webkitAudioContext)();
+    // Force resume if browser suspended it
+    if(ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  }
+
+  /* ── Ambient: low drone + clock tick ── */
+  function startAmbient(){
+    if(ambientRunning) return;
+    ambientRunning = true;
+    const ac = getCtx();
+
+    // 1. Warm low drone (60 Hz, organ-like)
+    const drone = ac.createOscillator();
+    const droneG = ac.createGain();
+    drone.type = 'triangle';
+    drone.frequency.value = 60;
+    droneG.gain.value = 0.03;
+    drone.connect(droneG); droneG.connect(ac.destination);
+    drone.start();
+    ambientNodes.push(drone, droneG);
+
+    // 2. Subtle harmonic overtone (120 Hz)
+    const over = ac.createOscillator();
+    const overG = ac.createGain();
+    over.type = 'sine';
+    over.frequency.value = 120;
+    overG.gain.value = 0.015;
+    over.connect(overG); overG.connect(ac.destination);
+    over.start();
+    ambientNodes.push(over, overG);
+
+    // 3. Clock tick every 1.8s
+    function tick(){
+      if(!ambientRunning) return;
+      const a = getCtx();
+      const o = a.createOscillator();
+      const g = a.createGain();
+      o.type = 'square';
+      o.frequency.setValueAtTime(1600, a.currentTime);
+      o.frequency.exponentialRampToValueAtTime(800, a.currentTime+0.04);
+      g.gain.setValueAtTime(0.06, a.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, a.currentTime+0.05);
+      o.connect(g); g.connect(a.destination);
+      o.start(a.currentTime);
+      o.stop(a.currentTime+0.06);
+      setTimeout(tick, 1800 + Math.random()*400);
+    }
+    setTimeout(tick, 800);
+
+    // 4. Church bell shimmer every 12s
+    function bell(){
+      if(!ambientRunning) return;
+      const a = getCtx();
+      [523, 659, 784].forEach((freq, i) => {
+        const o = a.createOscillator();
+        const g = a.createGain();
+        o.type = 'sine';
+        o.frequency.value = freq;
+        g.gain.setValueAtTime(0, a.currentTime + i*0.08);
+        g.gain.linearRampToValueAtTime(0.04, a.currentTime + i*0.08 + 0.05);
+        g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + i*0.08 + 2.5);
+        o.connect(g); g.connect(a.destination);
+        o.start(a.currentTime + i*0.08);
+        o.stop(a.currentTime + i*0.08 + 2.6);
+      });
+      setTimeout(bell, 12000);
+    }
+    setTimeout(bell, 3000);
+  }
+
+  function stopAmbient(){
+    ambientRunning = false;
+    ambientNodes.forEach(n => { try{ n.stop?.(); n.disconnect?.(); }catch(e){} });
+    ambientNodes = [];
+  }
+
+  /* ── Card beep ── */
+  function beep(){
+    const a = getCtx();
+    const o = a.createOscillator();
+    const g = a.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(1046, a.currentTime);
+    o.frequency.setValueAtTime(880,  a.currentTime+0.05);
+    g.gain.setValueAtTime(0.35, a.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, a.currentTime+0.25);
+    o.connect(g); g.connect(a.destination);
+    o.start(a.currentTime); o.stop(a.currentTime+0.26);
+  }
+
+  /* ── Race start fanfare (gun + ascending trumpet call) ── */
+  function raceFanfare(){
+    const a = getCtx();
+
+    // 🥁 Kick drum at t=0
+    const kickOsc = a.createOscillator();
+    const kickG   = a.createGain();
+    kickOsc.type = 'sine';
+    kickOsc.frequency.setValueAtTime(140, a.currentTime);
+    kickOsc.frequency.exponentialRampToValueAtTime(40, a.currentTime+0.12);
+    kickG.gain.setValueAtTime(0.55, a.currentTime);
+    kickG.gain.exponentialRampToValueAtTime(0.001, a.currentTime+0.18);
+    kickOsc.connect(kickG); kickG.connect(a.destination);
+    kickOsc.start(a.currentTime); kickOsc.stop(a.currentTime+0.2);
+
+    // 🔫 Gun noise burst
+    const bang = a.createBuffer(1, Math.floor(a.sampleRate*0.12), a.sampleRate);
+    const bd   = bang.getChannelData(0);
+    for(let i=0;i<bd.length;i++) bd[i]=(Math.random()*2-1)*Math.exp(-i/(a.sampleRate*0.03));
+    const bSrc = a.createBufferSource();
+    bSrc.buffer = bang;
+    const bFlt = a.createBiquadFilter(); bFlt.type='bandpass'; bFlt.frequency.value=1400;
+    const bG   = a.createGain();
+    bG.gain.setValueAtTime(0.45, a.currentTime);
+    bG.gain.exponentialRampToValueAtTime(0.001, a.currentTime+0.12);
+    bSrc.connect(bFlt); bFlt.connect(bG); bG.connect(a.destination);
+    bSrc.start(a.currentTime);
+
+    // 🎺 Trumpet fanfare: ta-ta-ta-TAAA!
+    // C5  E5  G5  C6  (sawtooth for brass feel)
+    const fanfare = [
+      { f:523,  t:0.08,  dur:0.10 },
+      { f:659,  t:0.18,  dur:0.10 },
+      { f:784,  t:0.27,  dur:0.10 },
+      { f:1047, t:0.36,  dur:0.48 },   // long final note
+    ];
+    fanfare.forEach(({f, t, dur}) => {
+      const o  = a.createOscillator();
+      const g  = a.createGain();
+      o.type   = 'sawtooth';
+      o.frequency.value = f;
+      g.gain.setValueAtTime(0,    a.currentTime+t);
+      g.gain.linearRampToValueAtTime(0.28, a.currentTime+t+0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, a.currentTime+t+dur);
+      o.connect(g); g.connect(a.destination);
+      o.start(a.currentTime+t); o.stop(a.currentTime+t+dur+0.02);
+    });
+
+    // 🎶 Vibrato on the final long note
+    const vib  = a.createOscillator();
+    const vibG = a.createGain();
+    vib.frequency.value = 5.5; vibG.gain.value = 18;
+    vib.connect(vibG);
+    // connect vibrato to the last note's oscillator frequency
+    // (already embedded above — this adds a parallel shimmer)
+    const shimmer = a.createOscillator();
+    const shimG   = a.createGain();
+    shimmer.type  = 'sine'; shimmer.frequency.value = 1047*1.005;
+    shimG.gain.setValueAtTime(0,    a.currentTime+0.36);
+    shimG.gain.linearRampToValueAtTime(0.10, a.currentTime+0.38);
+    shimG.gain.exponentialRampToValueAtTime(0.001, a.currentTime+0.84);
+    shimmer.connect(shimG); shimG.connect(a.destination);
+    shimmer.start(a.currentTime+0.36); shimmer.stop(a.currentTime+0.86);
+
+    // 🥁 Snare roll just before runner launches
+    [0.10, 0.14, 0.18, 0.22, 0.26, 0.30].forEach((t, i) => {
+      const nb  = a.createBuffer(1, Math.floor(a.sampleRate*0.04), a.sampleRate);
+      const nd  = nb.getChannelData(0);
+      for(let j=0;j<nd.length;j++) nd[j]=(Math.random()*2-1)*Math.exp(-j/(a.sampleRate*0.015));
+      const ns  = a.createBufferSource(); ns.buffer = nb;
+      const nf  = a.createBiquadFilter(); nf.type='highpass'; nf.frequency.value=2000;
+      const ng  = a.createGain();
+      ng.gain.setValueAtTime(0.12 + i*0.025, a.currentTime+t);
+      ng.gain.exponentialRampToValueAtTime(0.001, a.currentTime+t+0.04);
+      ns.connect(nf); nf.connect(ng); ng.connect(a.destination);
+      ns.start(a.currentTime+t);
+    });
+  }
+
+  /* ── Church bell (quote reveal) ── */
+  function churchBell(){
+    const a = getCtx();
+    [[523,2.2],[659,1.8],[784,1.4],[1046,0.9]].forEach(([freq,dur],i)=>{
+      const o = a.createOscillator();
+      const g = a.createGain();
+      o.type = 'sine'; o.frequency.value = freq;
+      g.gain.setValueAtTime(0, a.currentTime+i*0.11);
+      g.gain.linearRampToValueAtTime(0.09, a.currentTime+i*0.11+0.06);
+      g.gain.exponentialRampToValueAtTime(0.001, a.currentTime+i*0.11+dur);
+      o.connect(g); g.connect(a.destination);
+      o.start(a.currentTime+i*0.11);
+      o.stop(a.currentTime+i*0.11+dur+0.05);
+    });
+  }
+
+  function energyTick(i){
+    const a = getCtx();
+    const isLast = (i === 2);
+
+    // High-freq radar ping
+    const o = a.createOscillator();
+    const g = a.createGain();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(2400 - i*200, a.currentTime);
+    o.frequency.exponentialRampToValueAtTime(600, a.currentTime + 0.12);
+    g.gain.setValueAtTime(0.18, a.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + 0.18);
+    o.connect(g); g.connect(a.destination);
+    o.start(a.currentTime); o.stop(a.currentTime+0.2);
+
+    if(isLast){
+      // Low rumble tail for final node
+      const sub = a.createOscillator();
+      const subG = a.createGain();
+      sub.type = 'sine';
+      sub.frequency.setValueAtTime(80, a.currentTime+0.15);
+      sub.frequency.exponentialRampToValueAtTime(40, a.currentTime+0.8);
+      subG.gain.setValueAtTime(0, a.currentTime+0.15);
+      subG.gain.linearRampToValueAtTime(0.12, a.currentTime+0.2);
+      subG.gain.exponentialRampToValueAtTime(0.001, a.currentTime+0.9);
+      sub.connect(subG); subG.connect(a.destination);
+      sub.start(a.currentTime+0.15); sub.stop(a.currentTime+1.0);
+    }
+  }
+
+  /* ══════════════════════════════════════════
+     INTERACTIONS
+  ══════════════════════════════════════════ */
+  const card     = document.getElementById('pvp-card');
+  const startBtn = document.getElementById('start-btn');
+  const ambBtn   = document.getElementById('ambient-btn');
+  let firing     = false;   // replaces activated — resets after sequence
+
+  // Start ambient on first click
+  document.addEventListener('click', function startAmbientOnce(){
+    startAmbient();
+    document.removeEventListener('click', startAmbientOnce);
+  }, {once:true});
+
+  // Ambient toggle
+  ambBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    if(ambientRunning){ stopAmbient(); ambBtn.textContent='♪ off'; }
+    else { startAmbient(); ambBtn.textContent='♪ ambient'; }
+  });
+
+  // 🔊 Test sound button
+  document.getElementById('test-sound-btn')?.addEventListener('click', e => {
+    e.stopPropagation();
+    const a = getCtx();
+    const o = a.createOscillator();
+    const g = a.createGain();
+    o.type = 'sine'; o.frequency.value = 880;
+    g.gain.setValueAtTime(0.4, a.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, a.currentTime+0.4);
+    o.connect(g); g.connect(a.destination);
+    o.start(); o.stop(a.currentTime+0.42);
+    console.log('AudioContext state:', a.state);
+  });
+
+  /* ── Gold star particle burst ── */
+  function burstStars(){
+    const statsEl = document.querySelector('.p02-stats');
+    if(!statsEl) return;
+    const rect = statsEl.getBoundingClientRect();
+    for(let i=0;i<18;i++){
+      const star = document.createElement('div');
+      star.textContent = '★';
+      star.style.cssText = `
+        position:fixed;
+        left:${rect.left + rect.width*0.6}px;
+        top:${rect.top + rect.height*0.5}px;
+        color:#FFD700;font-size:${10+Math.random()*10}px;
+        pointer-events:none;z-index:9999;
+        transition:transform ${0.6+Math.random()*0.5}s ease-out,opacity ${0.5+Math.random()*0.4}s ease-out;
+        opacity:1;
+      `;
+      document.body.appendChild(star);
+      requestAnimationFrame(()=>{
+        const angle = (Math.random()*360)*Math.PI/180;
+        const dist  = 40+Math.random()*80;
+        star.style.transform=`translate(${Math.cos(angle)*dist}px,${Math.sin(angle)*dist}px) scale(0)`;
+        star.style.opacity='0';
+      });
+      setTimeout(()=>star.remove(), 1200);
+    }
+  }
+
+  /* ── Full reset (called after sequence, re-enables gun) ── */
+  function resetAll(){
+    const gun    = document.getElementById('start-btn');
+    const runner = document.getElementById('runner');
+    const quote  = document.querySelector('.p02-quote');
+
+    // Reset counter
+    const counterWrap = document.getElementById('run-counter');
+    const counterNum  = document.getElementById('counter-num');
+    if(counterWrap) counterWrap.classList.remove('running');
+    if(counterNum)  counterNum.textContent = '0.0';
+
+    // Restore gun glow (remove fired state)
+    gun.classList.remove('fired');
+
+    // Reset runner to bottom
+    if(runner) runner.style.opacity = '0';
+
+    // Reset map nodes to grey
+    document.querySelectorAll('.map-node').forEach(node => {
+      node.querySelector('.p02-dot').style.fill   = '#555';
+      node.querySelector('.p02-dot').style.stroke = '#aaa';
+      const ping = node.querySelector('.p02-ping');
+      ping.style.fill = 'rgba(60,60,60,.15)';
+      ping.classList.remove('active');
+      node.querySelector('.p02-node-label').style.fill    = '#888';
+      node.querySelector('.p02-node-sublabel').style.fill = '#666';
+    });
+
+    // Reset polaroids to dim
+    ['po-clock','po-clock2','po-castle','po-powder','po-bridge1','po-bridge2'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.classList.remove('lit');
+    });
+
+    // Hide quote
+    if(quote) quote.classList.remove('revealed');
+
+    // Re-enable
+    firing = false;
+  }
+
+  /* ── Main trigger sequence ── */
+  function triggerSequence(){
+    if(firing) return;
+    firing = true;
+
+    const gun    = document.getElementById('start-btn');
+    const muzzle = document.getElementById('muzzle-flash');
+    const runner = document.getElementById('runner');
+    const runAnim= document.getElementById('run-anim');
+
+    // 🔫 Gun fires: recoil + muzzle flash
+    gun.classList.add('fired');
+    muzzle.classList.add('bang');
+    setTimeout(()=> muzzle.classList.remove('bang'), 320);
+
+    // Card bounce
+    const inner = card.querySelector('.p02-card-inner');
+    inner.style.transform = 'scale(1.05)';
+    setTimeout(()=>{ inner.style.transform = ''; }, 150);
+
+    // Gunshot + fanfare
+    raceFanfare();
+
+    // 🏃 Launch runner along Vltava river (bottom → top, 4.5s)
+    if(runner && runAnim){
+      runner.style.opacity = '1';
+      runAnim.beginElement();
+    }
+
+    // ── Live KM counter (0.0 → 52.5 over 4.5s) ──
+    (function(){
+      const counterWrap = document.getElementById('run-counter');
+      const counterNum  = document.getElementById('counter-num');
+      if(!counterWrap || !counterNum) return;
+      counterNum.textContent = '0.0';
+      counterWrap.classList.add('running');
+      const DURATION = 4500;
+      const TARGET   = 52.5;
+      const t0 = performance.now();
+      function tick(now){
+        const p = Math.min((now - t0) / DURATION, 1);
+        const ease = p < 0.5 ? 2*p*p : -1+(4-2*p)*p;
+        counterNum.textContent = (ease * TARGET).toFixed(1);
+        if(p < 1){ requestAnimationFrame(tick); }
+        else {
+          counterNum.textContent = TARGET.toFixed(1);
+          setTimeout(()=> counterWrap.classList.remove('running'), 900);
+        }
+      }
+      requestAnimationFrame(tick);
+    })();
+
+    // Node lighting timed to runner position (4.5s total):
+    //   Powder Tower  (~33%) → 1500ms
+    //   Charles Bridge (~44%) → 1980ms  (兩張一起亮)
+    //   Old Town Hall (~55%) → 2475ms
+    //   Prague Castle (~78%) → 3510ms
+    const nodeData = [
+      { id:'node-powder', po:['po-powder'],              t:1500, audioIdx:0 },
+      { id:null,          po:['po-bridge1','po-bridge2'], t:1980, audioIdx:null },
+      { id:'node-clock',  po:['po-clock','po-clock2'],   t:2475, audioIdx:1 },
+      { id:'node-castle', po:['po-castle'],              t:3510, audioIdx:2 },
+    ];
+
+    nodeData.forEach(function({id, po, t, audioIdx}){
+      setTimeout(function(){
+        if(id){
+          const node = document.getElementById(id);
+          if(node){
+            node.querySelector('.p02-dot').style.fill   = '#FF5A00';
+            node.querySelector('.p02-dot').style.stroke = '#fff';
+            const ping = node.querySelector('.p02-ping');
+            ping.style.fill = 'rgba(255,90,0,.25)';
+            ping.classList.add('active');
+            node.querySelector('.p02-node-label').style.fill    = '#FFFFFF';
+            node.querySelector('.p02-node-sublabel').style.fill = '#FF7733';
+          }
+        }
+        po.forEach(pid => {
+          const polar = document.getElementById(pid);
+          if(polar) polar.classList.add('lit');
+        });
+        if(audioIdx !== null) energyTick(audioIdx);
+      }, t);
+    });
+
+    // Runner finishes at ~4.5s → stars, bell, quote
+    setTimeout(burstStars, 4650);
+    setTimeout(function(){
+      churchBell();
+      const quote = document.querySelector('.p02-quote');
+      if(quote) quote.classList.add('revealed');
+    }, 4900);
+
+    // 🔄 Auto-reset after display (quote shown for ~3.5s) → gun sparkles again
+    setTimeout(resetAll, 9000);
+  }
+
+  card.addEventListener('click',     triggerSequence);
+  startBtn.addEventListener('click', triggerSequence);
+
+  /* ── Lightbox for polaroid photos ── */
+  const lb      = document.getElementById('lightbox');
+  const lbImg   = document.getElementById('lb-img');
+  const lbClose = document.getElementById('lb-close');
+
+  document.querySelectorAll('.polaroid-frame').forEach(frame => {
+    const img = frame.querySelector('img');
+    if(!img) return;
+    frame.style.cursor = 'pointer';
+    frame.addEventListener('click', e => {
+      e.stopPropagation();
+      lbImg.src = img.src;
+      lb.classList.add('open');
+    });
+  });
+
+  lbClose.addEventListener('click', () => lb.classList.remove('open'));
+  lb.addEventListener('click', e => { if(e.target===lb) lb.classList.remove('open'); });
+  document.addEventListener('keydown', e => { if(e.key==='Escape') lb.classList.remove('open'); });
+
+})();
+</script>
+</body>
+</html>

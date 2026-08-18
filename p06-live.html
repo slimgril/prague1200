@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <link rel="stylesheet" href="global.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>P06｜布拉格之春的迴旋：舊城、橋影與深夜金光</title>
+  <style>
+    body {
+      margin: 0;
+      background: #050505;
+      font-family: "PingFang TC", "Heiti TC", "Microsoft JhengHei", sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* 電影視窗：position:relative 讓固定字幕能定位 */
+    .cinema-window {
+      width: 100%;
+      height: 540px;
+      overflow: hidden;
+      position: relative;
+      background: #000;
+      box-shadow: inset 0 0 60px rgba(0,0,0,0.95);
+      margin: 40px 0;
+    }
+
+    /* 全景軌道：在底層移動 */
+    .panorama-rail {
+      width: 300%;
+      height: 100%;
+      position: absolute;
+      top: 0; left: 0;
+      display: flex;
+      animation: moviePan 60s linear infinite;
+      will-change: transform;
+      transform: translate3d(0, 0, 0);
+    }
+
+    .cinema-window:hover .panorama-rail {
+      animation-play-state: paused;
+    }
+
+    @keyframes moviePan {
+      0%   { transform: translate3d(0, 0, 0); }
+      100% { transform: translate3d(-66.666%, 0, 0); }
+    }
+
+    /* 三段背景 */
+    .time-slice {
+      width: 33.333%; height: 100%;
+      background-size: cover; background-position: center;
+      position: relative;
+    }
+    .slice-left  { background-image: url('surprise/image_oxeP6p.png');  filter: brightness(0.65) contrast(1.05); }
+    .slice-mid   { background-image: url('surprise/image_111llO.png');  filter: brightness(0.6)  contrast(1.1);  }
+    .slice-right { background-image: url('surprise/image_9KIY5C.png');  filter: brightness(0.35) contrast(1.15); }
+
+    .time-slice::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(to right, rgba(5,5,5,0.85) 0%, transparent 12%, transparent 88%, rgba(5,5,5,0.85) 100%);
+      pointer-events: none;
+    }
+
+    .music-overlay {
+      position: absolute;
+      top: 0; left: 33.333%; width: 33.333%; height: 100%;
+      background: radial-gradient(circle at center, transparent 40%, rgba(212,175,55,0.06) 70%, transparent 100%);
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    /* 照片卡片 */
+    .photo-card {
+      position: absolute;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.65);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .photo-card img { width: 100%; height: auto; display: block; }
+
+    .edge-vignette {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(circle, transparent 65%, rgba(5,5,5,0.45) 100%);
+      pointer-events: none;
+    }
+
+    .b-size { width: 310px; border-radius: 6px; z-index: 10; }
+    .c-size { width: 210px; border-radius: 4px; z-index: 12; border: 2px solid rgba(255,255,255,0.85); }
+    .d-size { width: 125px; border-radius: 2px; z-index: 15; opacity: 0.78; }
+
+    #photo-oldtown-street       { top: 24%; left: 4%;  transform: rotate(-1.5deg); }
+    #photo-castle-tower         { top: 10%; left: 18%; transform: rotate(2deg); }
+    #photo-clocktower           { top: 16%; left: 36%; transform: rotate(-2deg); }
+    #photo-dr-closeup           { top: 6%;  left: 44%; transform: rotate(3deg); z-index: 14; }
+    #photo-janhus               { top: 44%; left: 52%; transform: rotate(-3deg); }
+    #fragment-clock-death       { bottom: 6%; left: 40%; transform: rotate(-8deg); filter: blur(0.3px); }
+    #fragment-apostles-mechanism{ top: 12%; left: 58%; transform: rotate(6deg); }
+    #photo-bridgetower          { top: 5%;  left: 74%; width: 320px; z-index: 10; filter: brightness(0.7) contrast(1.1); }
+    #photo-bridge-statue        { top: 8%;  left: 88%; width: 175px; transform: rotate(-1deg); }
+
+    /* =====================================================
+       字幕層：移出 panorama-rail，固定在 cinema-window 上
+       ===================================================== */
+    .subtitle-layer {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 30;
+    }
+
+    .movie-subtitle {
+      position: absolute;
+      width: 60%;
+      left: 20%;
+      color: rgba(255,255,255,0.95);
+      font-size: 1.15rem; line-height: 1.8; letter-spacing: 0.15em;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.95);
+      text-align: center;
+      opacity: 0;
+    }
+    .magenta-text { color: #ff007f; font-weight: 500; }
+    .movie-caption { font-size: 1.35rem; font-weight: bold; letter-spacing: 0.05em; margin-bottom: 6px; }
+
+    /* 三段字幕垂直位置（固定在視窗黃金比例） */
+    .subtitle-left  { top: 42%; animation: subtitleLeft  60s linear infinite; }
+    .subtitle-mid   { top: 38%; animation: subtitleMid   60s linear infinite; }
+    .subtitle-right { top: 45%; animation: subtitleRight 60s linear infinite; }
+
+    /* 左段：0~20秒 */
+    @keyframes subtitleLeft {
+      0%, 30%, 100% { opacity: 0; transform: translateY(10px); }
+      5%, 25%       { opacity: 1; transform: translateY(0); }
+    }
+    /* 中段：20~45秒 */
+    @keyframes subtitleMid {
+      0%, 35%, 68%, 100% { opacity: 0; transform: translateY(10px); }
+      40%, 63%           { opacity: 1; transform: translateY(0); }
+    }
+    /* 右段：45~60秒 */
+    @keyframes subtitleRight {
+      0%, 72%, 98% { opacity: 0; transform: translateY(10px); }
+      77%, 93%     { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+  <link rel="stylesheet" href="global.css?v=1600">
+</head>
+<body>
+
+  <div class="cinema-window">
+
+    <!-- 底層：移動的全景軌道 -->
+    <div class="panorama-rail">
+      <div class="time-slice slice-left"></div>
+      <div class="time-slice slice-mid"></div>
+      <div class="time-slice slice-right"></div>
+      <div class="music-overlay"></div>
+
+      <div class="photo-card c-size" id="photo-oldtown-street">
+        <img src="surprise/image_fR_FA9.png" alt="老城街道合照">
+        <div class="edge-vignette"></div>
+      </div>
+      <div class="photo-card b-size" id="photo-castle-tower">
+        <img src="surprise/image_-rPWeY.png" alt="中世紀風合照">
+        <div class="edge-vignette"></div>
+      </div>
+      <div class="photo-card b-size" id="photo-clocktower">
+        <img src="surprise/image_Ex9PZd.png" alt="天文鐘樓雙人合照">
+        <div class="edge-vignette"></div>
+      </div>
+      <div class="photo-card c-size" id="photo-dr-closeup">
+        <img src="surprise/image_7jQQNK.png" alt="單人溫柔特寫">
+        <div class="edge-vignette"></div>
+      </div>
+      <div class="photo-card c-size" id="photo-janhus">
+        <img src="surprise/image_5-SNAy.png" alt="胡斯雕像合照">
+        <div class="edge-vignette"></div>
+      </div>
+      <div class="photo-card d-size" id="fragment-clock-death">
+        <img src="surprise/image_KkSKiY.png" alt="天文鐘死神碎片">
+        <div class="edge-vignette"></div>
+      </div>
+      <div class="photo-card d-size" id="fragment-apostles-mechanism">
+        <img src="surprise/image__Oqjd2.png" alt="天文鐘內部使徒碎片">
+        <div class="edge-vignette"></div>
+      </div>
+      <div class="photo-card" id="photo-bridgetower">
+        <img src="surprise/image_fUPCtw.png" alt="老城橋塔全景實景照">
+        <div class="edge-vignette"></div>
+      </div>
+      <div class="photo-card c-size" id="photo-bridge-statue">
+        <img src="surprise/image_9KIY5C.png" alt="聖方濟沙勿略雕像">
+        <div class="edge-vignette"></div>
+      </div>
+    </div>
+
+    <!-- 上層：固定不動的字幕層 -->
+    <div class="subtitle-layer">
+      <div class="movie-subtitle subtitle-left magenta-text">
+        穿過火藥塔的陰影，<br>
+        舊城開始慢慢亮起。
+      </div>
+      <div class="movie-subtitle subtitle-mid">
+        <div class="movie-caption">Spring was not only a season. It was a sound.</div>
+        <span class="magenta-text">春天不只是一個季節，<br>也是一座城市被音樂喚醒的聲音。</span>
+      </div>
+      <div class="movie-subtitle subtitle-right magenta-text">
+        走到查理大橋時，<br>
+        布拉格不再是景點，<br>
+        而是一段會反覆播放的記憶。
+      </div>
+    </div>
+
+  </div>
+
+  <audio id="bgm" loop preload="auto"
+    src="surprise/Audio Library 音樂庫 免費背景音樂下載 歌名_ 9th Symphony, Finale 作者_ Beethoven_128k 2.mp3">
+  </audio>
+
+  <script>
+    /* 點擊頁面任意處啟動配樂（瀏覽器安全限制） */
+    const bgm = document.getElementById('bgm');
+    bgm.volume = 0;
+
+    document.addEventListener('click', initMusic, { once: true });
+
+    function initMusic() {
+      bgm.play().then(() => {
+        /* 3 秒緩慢淡入 */
+        let vol = 0;
+        const step = 0.35 / 30;
+        const fade = setInterval(() => {
+          vol = Math.min(vol + step, 0.35);
+          bgm.volume = vol;
+          if (vol >= 0.35) clearInterval(fade);
+        }, 100);
+      }).catch(err => console.warn('BGM play failed:', err));
+    }
+  </script>
+</body>
+</html>

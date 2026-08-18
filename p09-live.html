@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <link rel="stylesheet" href="global.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>P09｜CK小鎮：童話感染病歷</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Caveat:wght@400;600;700&family=Noto+Sans+TC:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #1a2a5e;
+      --navy-light: #2d4080;
+      --border: #3a5298;
+      --ink: #1c2a4a;
+      --stamp-red: rgba(192, 57, 43, 0.82);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: #0A0A0A;
+      font-family: "PingFang TC","Heiti TC","Microsoft JhengHei",sans-serif;
+    }
+
+    .p09-spread { display: flex; width: 100%; height: 100%; }
+
+    /* ── 左頁：電影大圖 ── */
+    .p09-left {
+      width: 42%; height: 100%;
+      position: relative; overflow: hidden; background: #0A0A0A;
+    }
+    .p09-left img.hero {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center;
+      filter: brightness(0.88) contrast(1.06); display: block;
+    }
+    .p09-left-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.72) 0%, transparent 42%);
+      pointer-events: none;
+    }
+    .p09-left-caption {
+      position: absolute; left: 28px; right: 24px; bottom: 36px; z-index: 3;
+    }
+    .p09-left-caption .eyebrow {
+      font-size: 0.62rem; letter-spacing: 0.38em;
+      color: rgba(255,0,127,0.85); font-family: monospace; margin-bottom: 10px;
+    }
+    .p09-left-caption h1 {
+      font-size: 1.55rem; font-weight: 300; letter-spacing: 0.22em;
+      color: #fff; margin-bottom: 12px;
+    }
+    .p09-left-caption p {
+      font-family: 'Caveat', cursive; font-size: 1.15rem; color: rgba(255,255,255,0.88);
+    }
+    .p09-steps {
+      position: absolute; top: 28px; left: 28px; z-index: 3;
+      font-weight: 200; letter-spacing: 0.08em; color: #fff;
+    }
+    .p09-steps .n { font-size: 1.8rem; color: rgba(212,175,55,0.92); }
+    .p09-steps .u { font-size: 0.62rem; color: rgba(255,255,255,0.45); letter-spacing: 0.18em; margin-top: 2px; }
+
+    /* ── 右頁：病歷表 ── */
+    .p09-right {
+      width: 58%; height: 100%;
+      background: #dde3ee;
+      display: flex; align-items: stretch; justify-content: center;
+      padding: 18px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .chart {
+      flex: 1;
+      background: #fff;
+      border-radius: 14px;
+      border: 2.5px solid var(--border);
+      padding: 18px 22px 16px;
+      position: relative;
+      display: flex; flex-direction: column;
+      box-shadow: 0 8px 32px rgba(26,42,94,0.16);
+      min-width: 0;
+    }
+
+    .chart-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px; flex-shrink: 0;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .heart-logo { width: 46px; height: 46px; flex-shrink: 0; }
+    .clinic-zh {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1.15rem; font-weight: 700; color: var(--navy); letter-spacing: 2px;
+    }
+    .clinic-en {
+      font-family: 'Noto Sans TC', sans-serif;
+      font-size: 0.62rem; color: var(--navy-light); letter-spacing: 1.2px; margin-top: 2px;
+    }
+    .title-record {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1.45rem; font-weight: 700; color: var(--navy); letter-spacing: 4px;
+    }
+    .ornament { color: var(--navy-light); font-size: 11px; letter-spacing: 3px; opacity: 0.6; text-align: right; }
+
+    .info-table {
+      width: 100%; border-collapse: collapse;
+      border: 1.5px solid var(--border); flex-shrink: 0;
+    }
+    .info-table td {
+      border: 1px solid var(--border);
+      padding: 6px 10px; font-size: 12px; color: var(--ink);
+      font-family: 'Noto Sans TC', sans-serif; font-weight: 300;
+    }
+    .info-table .label { color: var(--navy); font-weight: 400; white-space: nowrap; font-size: 11.5px; }
+    .info-table .value {
+      font-family: 'Caveat', cursive; font-size: 15px; color: var(--ink);
+      font-weight: 600; letter-spacing: 0.4px;
+    }
+
+    .notes-area {
+      border: 1.5px solid var(--border); border-top: none;
+      flex: 1; min-height: 0;
+      padding: 14px 18px 88px;
+      position: relative;
+      background:
+        repeating-linear-gradient(
+          to bottom, transparent, transparent 27px,
+          rgba(58,82,152,0.07) 27px, rgba(58,82,152,0.07) 28px
+        );
+      background-size: 100% 28px;
+      overflow: hidden;
+    }
+    .section-title {
+      font-family: 'Noto Sans TC', sans-serif;
+      font-size: 10px; color: var(--navy-light); letter-spacing: 2px;
+      text-transform: uppercase; margin-top: 12px; margin-bottom: 4px;
+      border-bottom: 1px dashed rgba(58,82,152,0.25); padding-bottom: 2px;
+      width: 62%;
+    }
+    .section-title:first-child { margin-top: 0; }
+    .handwrite {
+      font-family: 'Caveat', cursive;
+      font-size: 16px; color: #1c2a4a; line-height: 1.55; width: 62%;
+    }
+    .handwrite strong { font-weight: 700; color: var(--navy); }
+    .handwrite ol { padding-left: 18px; }
+    .handwrite li { margin-bottom: 3px; }
+
+    .stamp {
+      position: absolute; bottom: 18px; right: 22px;
+      width: 96px; height: 96px;
+      border: 3px solid var(--stamp-red); border-radius: 50%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      transform: rotate(-12deg); opacity: 0.84; z-index: 6;
+    }
+    .stamp::before {
+      content: ''; position: absolute; inset: 5px;
+      border: 1.4px dashed var(--stamp-red); border-radius: 50%;
+    }
+    .stamp-text-top {
+      font-family: 'Noto Sans TC', sans-serif; font-size: 7.5px;
+      color: var(--stamp-red); letter-spacing: 1px; font-weight: 600;
+      text-align: center; line-height: 1.35;
+    }
+    .stamp-zh {
+      font-family: 'Noto Serif TC', serif; font-size: 11px;
+      color: var(--stamp-red); font-weight: 700; text-align: center; line-height: 1.4;
+    }
+    .stamp-date { font-family: 'Caveat', cursive; font-size: 10px; color: var(--stamp-red); }
+
+    .signature-block {
+      position: absolute; bottom: 22px; right: 130px;
+      display: flex; flex-direction: column; align-items: center; z-index: 6;
+    }
+    .sig-svg { width: 88px; height: 38px; }
+    .sig-label {
+      font-family: 'Noto Sans TC', sans-serif; font-size: 9px;
+      color: var(--navy-light); letter-spacing: 1px;
+    }
+
+    /* 拍立得：像便利貼貼在病歷右側／下緣 */
+    .ck-photo {
+      position: absolute;
+      background: #fff;
+      padding: 5px 5px 22px;
+      box-shadow: 8px 10px 22px rgba(0,0,0,0.32);
+      cursor: pointer; z-index: 8;
+      transition: transform 0.35s cubic-bezier(0.2,0.8,0.2,1), box-shadow 0.35s ease;
+    }
+    .ck-photo:hover {
+      transform: var(--rot) scale(1.08) translateY(-8px) !important;
+      box-shadow: 16px 18px 30px rgba(0,0,0,0.45) !important;
+      z-index: 50 !important;
+    }
+    .ck-photo img { display: block; object-fit: cover; filter: contrast(1.05) saturate(0.92); }
+    .ck-photo-label {
+      position: absolute; bottom: 2px; left: 0; right: 0;
+      text-align: center; font-family: 'Caveat', cursive;
+      font-size: 0.68rem; color: #2a2a2a;
+    }
+
+    .night-sticky {
+      position: absolute; left: 18px; bottom: 14px; z-index: 9;
+      width: 240px;
+      background: #111;
+      color: #fff;
+      padding: 10px 12px;
+      transform: rotate(-2deg);
+      box-shadow: 6px 8px 18px rgba(0,0,0,0.35);
+    }
+    .night-sticky .t {
+      font-size: 0.52rem; letter-spacing: 0.16em;
+      color: rgba(212,175,55,0.8); margin-bottom: 4px; font-family: monospace;
+    }
+    .night-sticky .q {
+      font-family: 'Caveat', cursive; font-size: 0.95rem;
+      color: rgba(255,255,255,0.9); line-height: 1.35;
+    }
+
+    /* Lightbox */
+    #ck-lightbox {
+      position: fixed; inset: 0; background: rgba(0,0,0,0);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100; pointer-events: none; transition: background 0.3s ease;
+    }
+    #ck-lightbox.active { background: rgba(4,2,1,0.92); pointer-events: auto; }
+    .ck-lb-inner {
+      max-width: 720px; width: 92%; opacity: 0; transform: scale(0.9);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      text-align: center; position: relative;
+    }
+    #ck-lightbox.active .ck-lb-inner { opacity: 1; transform: scale(1); }
+    .ck-lb-inner img {
+      width: 100%; max-height: 70vh; object-fit: contain;
+      border: 5px solid #fff; box-shadow: 0 0 50px rgba(0,0,0,0.9);
+    }
+    .ck-lb-caption { margin-top: 14px; font-family: 'Caveat', cursive; font-size: 1rem; color: rgba(255,255,255,0.75); }
+    .ck-lb-close { position: absolute; top: -36px; right: 0; color: rgba(255,255,255,0.4); font-size: 2rem; cursor: pointer; }
+    .ck-lb-close:hover { color: #fff; }
+  </style>
+  <link rel="stylesheet" href="global.css?v=1600">
+</head>
+<body>
+<div class="p09-spread">
+
+  <div class="p09-left" onclick="openLb('surprise/p09-hero.jpg','從彩繪塔頂俯瞰 CK 小鎮，紅瓦迷宮在晨光中蔓延')">
+    <img class="hero" src="surprise/p09-hero.jpg" alt="CK小鎮俯瞰">
+    <div class="p09-left-overlay"></div>
+    <div class="p09-steps">
+      <div class="n">17,000</div>
+      <div class="u">步 ／ 約 12 公里</div>
+    </div>
+    <div class="p09-left-caption">
+      <div class="eyebrow">TRAVEL MEDICAL RECORD ／ P09</div>
+      <h1>Č E S K Ý &nbsp; K R U M L O V</h1>
+      <p>從彩繪塔頂俯瞰──整座小鎮像一首被遺忘的圓舞曲</p>
+    </div>
+  </div>
+
+  <div class="p09-right">
+    <div class="chart">
+
+      <header class="chart-header">
+        <div class="header-left">
+          <svg class="heart-logo" viewBox="0 0 62 62" fill="none">
+            <defs>
+              <clipPath id="heartClip">
+                <path d="M31 55 C31 55 6 38 6 22 C6 13.7 12.7 7 21 7 C25.5 7 29.5 9.1 31 12.5 C32.5 9.1 36.5 7 41 7 C49.3 7 56 13.7 56 22 C56 38 31 55 31 55Z"/>
+              </clipPath>
+            </defs>
+            <rect x="6" y="7" width="50" height="48" fill="#D7141A" clip-path="url(#heartClip)"/>
+            <rect x="6" y="7" width="50" height="24" fill="#FFFFFF" clip-path="url(#heartClip)"/>
+            <polygon points="6,7 6,55 28,31" fill="#11457E" clip-path="url(#heartClip)"/>
+            <path d="M31 55 C31 55 6 38 6 22 C6 13.7 12.7 7 21 7 C25.5 7 29.5 9.1 31 12.5 C32.5 9.1 36.5 7 41 7 C49.3 7 56 13.7 56 22 C56 38 31 55 31 55Z"
+              stroke="#1a2a5e" stroke-width="1.5" fill="none"/>
+          </svg>
+          <div>
+            <div class="clinic-zh">布拉格之春門診中心</div>
+            <div class="clinic-en">Prague Spring Clinic Center</div>
+          </div>
+        </div>
+        <div>
+          <div class="title-record">病歷表</div>
+          <div class="ornament">◇ ─ ◇ ─ ◇</div>
+        </div>
+      </header>
+
+      <table class="info-table">
+        <tr>
+          <td><span class="label">姓名：</span><span class="value">浪人旅者</span></td>
+          <td><span class="label">性別：</span><span class="value">男</span></td>
+          <td><span class="label">年齡：</span><span class="value">35</span></td>
+          <td><span class="label">病歷號：</span><span class="value">PRG-1200-P09</span></td>
+        </tr>
+        <tr>
+          <td colspan="2"><span class="label">就診日期：</span><span class="value">2026 / 08 / 18</span></td>
+          <td><span class="label">就診科別：</span><span class="value">浪漫波希米亞科</span></td>
+          <td><span class="label">主治醫師：</span><span class="value">粘曉青・鄭惠文</span></td>
+        </tr>
+        <tr>
+          <td><span class="label">身高：</span><span class="value">175</span> <span class="label">cm</span></td>
+          <td><span class="label">體重：</span><span class="value">70</span> <span class="label">kg</span></td>
+          <td><span class="label">BMI：</span><span class="value">22.9</span></td>
+          <td><span class="label">血壓：</span><span class="value">120 / 80</span> <span class="label">mmHg</span></td>
+        </tr>
+      </table>
+
+      <div class="notes-area">
+        <div class="section-title">Chief Complaint ── 主訴</div>
+        <div class="handwrite">
+          患者因連續長途步行達 <strong>12 公里／天</strong>（累計步數突破 <strong>17,000 步／天</strong>），導致雙下肢嚴重肌肉酸痛，並伴隨<strong>中度視覺審美疲勞</strong>。
+        </div>
+
+        <div class="section-title">Diagnosis ── 診斷</div>
+        <div class="handwrite">
+          <ol>
+            <li><strong>急性波希米亞童話感染</strong>（Acute Bohemian Fairytale Infection）</li>
+            <li>併發<strong>中世紀懷舊情緒</strong>、<strong>夜間微醺症候群</strong></li>
+          </ol>
+        </div>
+
+        <div class="section-title">Plan &amp; Prescription ── 醫囑與處方</div>
+        <div class="handwrite">
+          <ol>
+            <li><strong>強制心靈洗滌：</strong>每日傍晚 17:00 後，前往 Český Krumlov 之 Latrán 區石板小巷漫步，嚴禁喧嘩。</li>
+            <li><strong>液體藥物治療：</strong>每晚搭配捷克黑啤酒或皮爾森歐克一品脫。</li>
+            <li><strong>視覺排版限制：</strong>嚴禁雜誌格狀布局。務必使用非均勻電影感大圖、保留大量留白。</li>
+          </ol>
+        </div>
+
+        <div class="signature-block">
+          <svg class="sig-svg" viewBox="0 0 110 50">
+            <path d="M8 38 C15 20, 22 12, 28 28 C32 38, 34 15, 42 10 C48 6, 50 22, 55 30 C59 36, 62 18, 70 14 C76 11, 78 32, 85 28 C90 25, 92 38, 100 35"
+              stroke="#1a2a5e" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+            <path d="M12 42 L98 42" stroke="#1a2a5e" stroke-width="0.8" opacity="0.4"/>
+          </svg>
+          <span class="sig-label">主治醫師 · 大神</span>
+        </div>
+        <div class="stamp">
+          <div class="stamp-text-top">Prague Spring<br>Clinic Center</div>
+          <div class="stamp-zh">布拉格之春<br>門診中心<br>核可</div>
+          <div class="stamp-date">2026.08.18</div>
+        </div>
+      </div>
+
+      <!-- 拍立得貼在病歷右側／下緣 -->
+      <div class="ck-photo"
+           style="right:3%;top:34%;--rot:rotate(6deg);transform:rotate(6deg);"
+           onclick="openLb('surprise/p09-castle.jpg','CK城堡・波希米亞最大城堡群')">
+        <img src="surprise/p09-castle.jpg" style="width:148px;height:108px;" alt="CK城堡">
+        <div class="ck-photo-label">CK Castle</div>
+      </div>
+      <div class="ck-photo"
+           style="right:18%;top:31%;--rot:rotate(-5deg);transform:rotate(-5deg);"
+           onclick="openLb('surprise/p09-tower.jpg','彩繪塔')">
+        <img src="surprise/p09-tower.jpg" style="width:118px;height:90px;" alt="彩繪塔">
+        <div class="ck-photo-label">Castle Tower</div>
+      </div>
+      <div class="ck-photo"
+           style="right:4%;top:52%;--rot:rotate(-7deg);transform:rotate(-7deg);"
+           onclick="openLb('surprise/p09-doctors.jpg','粘曉青・鄭惠文醫師')">
+        <img src="surprise/p09-doctors.jpg" style="width:132px;height:100px;" alt="醫師合照">
+        <div class="ck-photo-label">Dr. Nian &amp; Jheng</div>
+      </div>
+      <div class="ck-photo"
+           style="right:22%;top:54%;--rot:rotate(8deg);transform:rotate(8deg);"
+           onclick="openLb('surprise/p09-bridge.jpg','斗篷橋')">
+        <img src="surprise/p09-bridge.jpg" style="width:110px;height:82px;" alt="斗篷橋">
+        <div class="ck-photo-label">Cloak Bridge</div>
+      </div>
+      <div class="ck-photo"
+           style="right:8%;top:70%;--rot:rotate(4deg);transform:rotate(4deg);"
+           onclick="openLb('surprise/p09-alley.jpg','Latrán 石板小巷')">
+        <img src="surprise/p09-alley.jpg" style="width:112px;height:84px;" alt="小巷">
+        <div class="ck-photo-label">Latrán Alley</div>
+      </div>
+      <div class="ck-photo"
+           style="right:26%;top:71%;--rot:rotate(-6deg);transform:rotate(-6deg);"
+           onclick="openLb('surprise/p09-river.jpg','伏爾塔瓦河畔')">
+        <img src="surprise/p09-river.jpg" style="width:120px;height:86px;" alt="河畔">
+        <div class="ck-photo-label">Vltava River</div>
+      </div>
+      <div class="ck-photo"
+           style="right:40%;top:68%;--rot:rotate(3deg);transform:rotate(3deg);"
+           onclick="openLb('surprise/p09-rooftop.jpg','紅瓦屋頂')">
+        <img src="surprise/p09-rooftop.jpg" style="width:100px;height:76px;" alt="紅瓦">
+        <div class="ck-photo-label">Rooftops</div>
+      </div>
+      <div class="ck-photo"
+           style="right:38%;top:48%;--rot:rotate(-9deg);transform:rotate(-9deg);"
+           onclick="openLb('surprise/p09-detail.jpg','Sgraffito 刮畫')">
+        <img src="surprise/p09-detail.jpg" style="width:92px;height:70px;" alt="細節">
+        <div class="ck-photo-label">Sgraffito</div>
+      </div>
+
+      <div class="night-sticky">
+        <div class="t">17:00 — 遊客散去後</div>
+        <div class="q">當最後一班觀光巴士離去，CK 小鎮才真正甦醒。那是屬於留下來的人的獎賞。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="ck-lightbox">
+  <div class="ck-lb-inner">
+    <span class="ck-lb-close" onclick="closeLb()">×</span>
+    <img id="ck-lb-img" src="" alt="">
+    <div class="ck-lb-caption" id="ck-lb-cap"></div>
+  </div>
+</div>
+<script>
+  function openLb(src, cap) {
+    document.getElementById('ck-lb-img').src = src;
+    document.getElementById('ck-lb-cap').textContent = cap;
+    document.getElementById('ck-lightbox').classList.add('active');
+  }
+  function closeLb() {
+    document.getElementById('ck-lightbox').classList.remove('active');
+  }
+  document.getElementById('ck-lightbox').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeLb();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
+</script>
+</body>
+</html>

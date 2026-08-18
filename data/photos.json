@@ -1,0 +1,911 @@
+{
+  "stats": {
+    "total": 50,
+    "by_day": {
+      "day4": 50
+    },
+    "generated": "2026-08-10T20:53:14.437411"
+  },
+  "photos": [
+    {
+      "id": "day4_0000",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786246392603-127342078.JPG",
+      "path": "photos/day4/1786246392603-127342078.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786246392603-127342078.JPG",
+      "datetime": "2026-08-09 11:33:12",
+      "hour": 11,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0001",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786246392632-751068472.JPG",
+      "path": "photos/day4/1786246392632-751068472.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786246392632-751068472.JPG",
+      "datetime": "2026-08-09 11:33:12",
+      "hour": 11,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0002",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786246392668-353070254.JPG",
+      "path": "photos/day4/1786246392668-353070254.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786246392668-353070254.JPG",
+      "datetime": "2026-08-09 11:33:12",
+      "hour": 11,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0003",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786246392830-698286192.JPG",
+      "path": "photos/day4/1786246392830-698286192.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786246392830-698286192.JPG",
+      "datetime": "2026-08-09 11:33:12",
+      "hour": 11,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0004",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786246392871-658481131.JPG",
+      "path": "photos/day4/1786246392871-658481131.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786246392871-658481131.JPG",
+      "datetime": "2026-08-09 11:33:12",
+      "hour": 11,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0005",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786246392880-383132077.JPG",
+      "path": "photos/day4/1786246392880-383132077.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786246392880-383132077.JPG",
+      "datetime": "2026-08-09 11:33:12",
+      "hour": 11,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0006",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786246392890-314412790.JPG",
+      "path": "photos/day4/1786246392890-314412790.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786246392890-314412790.JPG",
+      "datetime": "2026-08-09 11:33:12",
+      "hour": 11,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0007",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786246392899-299328581.JPG",
+      "path": "photos/day4/1786246392899-299328581.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786246392899-299328581.JPG",
+      "datetime": "2026-08-09 11:33:12",
+      "hour": 11,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0008",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786246392945-186334105.JPG",
+      "path": "photos/day4/1786246392945-186334105.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786246392945-186334105.JPG",
+      "datetime": "2026-08-09 11:33:12",
+      "hour": 11,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0009",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786246392952-762117087.JPG",
+      "path": "photos/day4/1786246392952-762117087.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786246392952-762117087.JPG",
+      "datetime": "2026-08-09 11:33:12",
+      "hour": 11,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0010",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786246392984-784564956.JPG",
+      "path": "photos/day4/1786246392984-784564956.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786246392984-784564956.JPG",
+      "datetime": "2026-08-09 11:33:12",
+      "hour": 11,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0011",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786246393047-141934723.JPG",
+      "path": "photos/day4/1786246393047-141934723.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786246393047-141934723.JPG",
+      "datetime": "2026-08-09 11:33:13",
+      "hour": 11,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0012",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786246393061-399487944.JPG",
+      "path": "photos/day4/1786246393061-399487944.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786246393061-399487944.JPG",
+      "datetime": "2026-08-09 11:33:13",
+      "hour": 11,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0013",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253285944-235388892.jpg",
+      "path": "photos/day4/1786253285944-235388892.jpg",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253285944-235388892.jpg",
+      "datetime": "2026-08-09 13:28:05",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0014",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253286054-563432324.jpg",
+      "path": "photos/day4/1786253286054-563432324.jpg",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253286054-563432324.jpg",
+      "datetime": "2026-08-09 13:28:06",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0015",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253286081-42412647.jpg",
+      "path": "photos/day4/1786253286081-42412647.jpg",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253286081-42412647.jpg",
+      "datetime": "2026-08-09 13:28:06",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0016",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253286092-958141188.jpg",
+      "path": "photos/day4/1786253286092-958141188.jpg",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253286092-958141188.jpg",
+      "datetime": "2026-08-09 13:28:06",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0017",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253286163-877300594.JPG",
+      "path": "photos/day4/1786253286163-877300594.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253286163-877300594.JPG",
+      "datetime": "2026-08-09 13:28:06",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0018",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253286174-38788620.JPG",
+      "path": "photos/day4/1786253286174-38788620.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253286174-38788620.JPG",
+      "datetime": "2026-08-09 13:28:06",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0019",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253286214-664983620.JPG",
+      "path": "photos/day4/1786253286214-664983620.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253286214-664983620.JPG",
+      "datetime": "2026-08-09 13:28:06",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0020",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253286262-341403590.jpg",
+      "path": "photos/day4/1786253286262-341403590.jpg",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253286262-341403590.jpg",
+      "datetime": "2026-08-09 13:28:06",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0021",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253286281-649332489.jpg",
+      "path": "photos/day4/1786253286281-649332489.jpg",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253286281-649332489.jpg",
+      "datetime": "2026-08-09 13:28:06",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0022",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253286294-688768163.JPG",
+      "path": "photos/day4/1786253286294-688768163.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253286294-688768163.JPG",
+      "datetime": "2026-08-09 13:28:06",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0023",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253647554-500087496.JPG",
+      "path": "photos/day4/1786253647554-500087496.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253647554-500087496.JPG",
+      "datetime": "2026-08-09 13:34:07",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0024",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253647607-435994339.JPG",
+      "path": "photos/day4/1786253647607-435994339.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253647607-435994339.JPG",
+      "datetime": "2026-08-09 13:34:07",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0025",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253647614-159761442.JPG",
+      "path": "photos/day4/1786253647614-159761442.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253647614-159761442.JPG",
+      "datetime": "2026-08-09 13:34:07",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0026",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253647623-741927501.JPG",
+      "path": "photos/day4/1786253647623-741927501.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253647623-741927501.JPG",
+      "datetime": "2026-08-09 13:34:07",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0027",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253647642-600377110.JPG",
+      "path": "photos/day4/1786253647642-600377110.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253647642-600377110.JPG",
+      "datetime": "2026-08-09 13:34:07",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0028",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253647680-495044598.JPG",
+      "path": "photos/day4/1786253647680-495044598.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253647680-495044598.JPG",
+      "datetime": "2026-08-09 13:34:07",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0029",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253647689-152056784.JPG",
+      "path": "photos/day4/1786253647689-152056784.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253647689-152056784.JPG",
+      "datetime": "2026-08-09 13:34:07",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0030",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253647716-95918580.JPG",
+      "path": "photos/day4/1786253647716-95918580.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253647716-95918580.JPG",
+      "datetime": "2026-08-09 13:34:07",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0031",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253647724-162353451.JPG",
+      "path": "photos/day4/1786253647724-162353451.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253647724-162353451.JPG",
+      "datetime": "2026-08-09 13:34:07",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0032",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253647771-660385213.JPG",
+      "path": "photos/day4/1786253647771-660385213.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253647771-660385213.JPG",
+      "datetime": "2026-08-09 13:34:07",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0033",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253647787-739443951.JPG",
+      "path": "photos/day4/1786253647787-739443951.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253647787-739443951.JPG",
+      "datetime": "2026-08-09 13:34:07",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0034",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253647793-807488168.JPG",
+      "path": "photos/day4/1786253647793-807488168.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253647793-807488168.JPG",
+      "datetime": "2026-08-09 13:34:07",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0035",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253647800-64137457.JPG",
+      "path": "photos/day4/1786253647800-64137457.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253647800-64137457.JPG",
+      "datetime": "2026-08-09 13:34:07",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0036",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253647830-421952215.JPG",
+      "path": "photos/day4/1786253647830-421952215.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253647830-421952215.JPG",
+      "datetime": "2026-08-09 13:34:07",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0037",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253647862-186976437.JPG",
+      "path": "photos/day4/1786253647862-186976437.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253647862-186976437.JPG",
+      "datetime": "2026-08-09 13:34:07",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0038",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253647973-83597252.JPG",
+      "path": "photos/day4/1786253647973-83597252.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253647973-83597252.JPG",
+      "datetime": "2026-08-09 13:34:07",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0039",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253648012-66159734.JPG",
+      "path": "photos/day4/1786253648012-66159734.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253648012-66159734.JPG",
+      "datetime": "2026-08-09 13:34:08",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0040",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786253648060-786056303.JPG",
+      "path": "photos/day4/1786253648060-786056303.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786253648060-786056303.JPG",
+      "datetime": "2026-08-09 13:34:08",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0041",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786254031213-800566889.JPG",
+      "path": "photos/day4/1786254031213-800566889.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786254031213-800566889.JPG",
+      "datetime": "2026-08-09 13:40:31",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0042",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786254031253-306363038.JPG",
+      "path": "photos/day4/1786254031253-306363038.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786254031253-306363038.JPG",
+      "datetime": "2026-08-09 13:40:31",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0043",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786254031270-833005613.JPG",
+      "path": "photos/day4/1786254031270-833005613.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786254031270-833005613.JPG",
+      "datetime": "2026-08-09 13:40:31",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0044",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786254031319-524151088.JPG",
+      "path": "photos/day4/1786254031319-524151088.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786254031319-524151088.JPG",
+      "datetime": "2026-08-09 13:40:31",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0045",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786254031334-433065501.JPG",
+      "path": "photos/day4/1786254031334-433065501.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786254031334-433065501.JPG",
+      "datetime": "2026-08-09 13:40:31",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0046",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786254031366-243676823.JPG",
+      "path": "photos/day4/1786254031366-243676823.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786254031366-243676823.JPG",
+      "datetime": "2026-08-09 13:40:31",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0047",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786254031439-97028164.JPG",
+      "path": "photos/day4/1786254031439-97028164.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786254031439-97028164.JPG",
+      "datetime": "2026-08-09 13:40:31",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0048",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786254031446-329839315.JPG",
+      "path": "photos/day4/1786254031446-329839315.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786254031446-329839315.JPG",
+      "datetime": "2026-08-09 13:40:31",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    },
+    {
+      "id": "day4_0049",
+      "day": "day4",
+      "label": "Day 4",
+      "theme": "Karlovy Vary & Prague Night",
+      "city": "Karlovy Vary",
+      "file": "1786254031458-830459531.JPG",
+      "path": "photos/day4/1786254031458-830459531.JPG",
+      "abs": "/Users/mac/Documents/Projects/Prague visitor pass/Library/day4/1786254031458-830459531.JPG",
+      "datetime": "2026-08-09 13:40:31",
+      "hour": 13,
+      "lat": null,
+      "lng": null,
+      "categories": [
+        "Karlovy Vary",
+        "Food"
+      ]
+    }
+  ]
+}
