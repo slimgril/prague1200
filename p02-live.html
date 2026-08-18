@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<title>P02 Live — 120小時的破關鑰匙</title>
+<title>P02｜老城足跡地圖</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100%;height:100%;background:#111;overflow:hidden;font-family:-apple-system,'Helvetica Neue',sans-serif}
@@ -21,15 +21,7 @@ html,body{width:100%;height:100%;background:#111;overflow:hidden;font-family:-ap
 /* ══════════════════════════════
    LEFT PANEL — 40% tech black
 ══════════════════════════════ */
-.p02-left{
-  flex:0 0 40%;
-  background:#0D0D0D;
-  position:relative;
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-  color:#fff;
-}
+.p02-left{ display:none; }
 
 /* A: Title — anchored top 15% */
 .p02-title-block{
@@ -200,6 +192,7 @@ html,body{width:100%;height:100%;background:#111;overflow:hidden;font-family:-ap
 ══════════════════════════════ */
 .p02-right{
   flex:1;
+  width:100%;
   background:#1A1A1A;
   position:relative;
   display:flex;flex-direction:column;
@@ -272,50 +265,11 @@ html,body{width:100%;height:100%;background:#111;overflow:hidden;font-family:-ap
 
 <div class="p02-page">
 
-  <!-- ══ LEFT 40% ══ -->
-  <div class="p02-left">
-
-    <!-- A: Title -->
-    <div class="p02-title-block">
-      <div class="p02-main-title">120小時的<br>破關鑰匙</div>
-      <div class="p02-pvp-label">PRAGUE VISITOR PASS</div>
-    </div>
-
-    <!-- B: Card + GO button overlapping bottom-right -->
-    <div class="p02-card-wrap" style="position:relative">
-      <div class="p02-card" id="pvp-card">
-        <div class="p02-card-inner">
-          <div class="p02-card-top">
-            <div class="p02-card-passtext">120h<br><span>e-Pass</span></div>
-            <div class="p02-card-logo">PVP</div>
-          </div>
-          <div class="p02-card-mid">PRAGUE VISITOR PASS</div>
-          <div class="p02-card-bot">
-            <div class="p02-card-valid">VALID 120 HOURS<br>70+ EXPERIENCES</div>
-            <svg class="p02-qr" viewBox="0 0 21 21" fill="white">
-              <rect x="0" y="0" width="7" height="7"/>
-              <rect x="1" y="1" width="5" height="5" fill="#FF5A00"/>
-              <rect x="2" y="2" width="3" height="3" fill="white"/>
-              <rect x="14" y="0" width="7" height="7"/>
-              <rect x="15" y="1" width="5" height="5" fill="#FF5A00"/>
-              <rect x="16" y="2" width="3" height="3" fill="white"/>
-              <rect x="0" y="14" width="7" height="7"/>
-              <rect x="1" y="15" width="5" height="5" fill="#FF5A00"/>
-              <rect x="2" y="16" width="3" height="3" fill="white"/>
-              <rect x="9" y="0" width="1" height="1"/><rect x="11" y="0" width="1" height="1"/>
-              <rect x="10" y="2" width="1" height="1"/><rect x="8" y="3" width="1" height="1"/>
-              <rect x="12" y="3" width="1" height="1"/><rect x="9" y="5" width="1" height="1"/>
-              <rect x="11" y="6" width="1" height="1"/><rect x="10" y="9" width="1" height="1"/>
-              <rect x="8" y="8" width="1" height="1"/><rect x="12" y="8" width="1" height="1"/>
-              <rect x="9" y="11" width="1" height="1"/><rect x="11" y="10" width="1" height="1"/>
-              <rect x="10" y="13" width="1" height="1"/><rect x="9" y="14" width="1" height="1"/>
-              <rect x="11" y="15" width="1" height="1"/><rect x="8" y="16" width="1" height="1"/>
-            </svg>
-          </div>
-        </div>
-      </div>
+  <!-- ══ 城市地圖全幅：拍立得留在 P02 ── -->
+  <div class="p02-right">
+    <div id="pvp-card" hidden><div class="p02-card-inner"></div></div>
       <!-- GUN — overlaps card bottom-right, fires to start -->
-      <div class="p02-gun" id="start-btn" role="button" aria-label="鳴槍起跑">
+      <div class="p02-gun" id="start-btn" role="button" aria-label="鳴槍起跑" style="position:absolute;left:24px;bottom:24px;right:auto;z-index:20">
         <svg class="p02-gun-svg" viewBox="0 0 90 58" fill="none" xmlns="http://www.w3.org/2000/svg">
           <!-- Barrel -->
           <rect x="28" y="16" width="58" height="11" rx="3" fill="#D4AF37"/>
@@ -354,22 +308,7 @@ html,body{width:100%;height:100%;background:#111;overflow:hidden;font-family:-ap
         <span class="p02-spark" style="bottom:0px;right:5px;--d:2.0s;--delay:.2s">✦</span>
         <span class="p02-spark" style="bottom:-6px;left:20px;--d:1.9s;--delay:.6s">★</span>
       </div>
-      <!-- Hint text (hidden) -->
-      <div class="p02-hint" id="pvp-hint"></div>
-    </div>
 
-    <!-- C: Stats -->
-    <div class="p02-stats">
-      <div class="p02-stat">⏱ <span>TIME:</span> 120 Hours (Total)</div>
-      <div class="p02-stat key">👟 <span>DISTANCE:</span> 10.5 km / DAY</div>
-      <div class="p02-stat new-entry">📊 <span>TOTAL:</span> 52.5 km Challenge</div>
-      <div class="p02-stat">🏰 <span>TARGETS:</span> 70+ Experiences</div>
-    </div>
-
-  </div><!-- /.p02-left -->
-
-  <!-- ══ RIGHT 60% ══ -->
-  <div class="p02-right">
     <div class="p02-ambient-btn" id="ambient-btn" title="Toggle ambient sound">♪ ambient</div>
     <div class="p02-ambient-btn" id="test-sound-btn" style="right:90px" title="Test sound">🔊 test</div>
 

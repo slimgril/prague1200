@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>P01｜起跑線 Starting Line</title>
+  <link rel="stylesheet" href="global.css">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{width:100%;height:100%;overflow:hidden;background:#111;font-family:-apple-system,'Helvetica Neue','PingFang TC',sans-serif}
+
+    .p01-page{
+      width:100vw;height:100vh;
+      display:flex;overflow:hidden;
+    }
+
+    /* ── 左頁：極黑 PVP ── */
+    .p01-left{
+      flex:0 0 40%;
+      background:#0D0D0D;
+      position:relative;color:#fff;
+    }
+    .p01-title-block{position:absolute;top:15%;left:10%}
+    .p01-main-title{
+      font-size:clamp(22px,3.5vw,34px);font-weight:700;
+      line-height:1.15;letter-spacing:-0.5px;
+    }
+    .p01-pvp-label{
+      font-size:9px;font-weight:700;letter-spacing:4px;
+      color:#D4AF37;text-transform:uppercase;margin-top:8px;
+    }
+    .p01-card-wrap{
+      position:absolute;top:34%;left:50%;transform:translateX(-50%);
+      width:min(280px,76%);
+    }
+    .p01-card-inner{
+      background:#FF5A00;border-radius:12px;
+      padding:18px 18px 14px;
+      box-shadow:0 8px 32px rgba(255,90,0,.35),0 2px 8px rgba(0,0,0,.4);
+    }
+    .p01-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+    .p01-card-passtext{font-size:22px;font-weight:900;color:#fff;line-height:1}
+    .p01-card-passtext span{font-size:11px;font-weight:400;opacity:.8;display:block;letter-spacing:1px}
+    .p01-card-logo{
+      font-size:11px;font-weight:900;letter-spacing:2px;color:rgba(255,255,255,.7);
+      border:1.5px solid rgba(255,255,255,.5);padding:2px 6px;border-radius:3px;
+    }
+    .p01-card-mid{font-size:7px;letter-spacing:3px;color:rgba(255,255,255,.6);text-transform:uppercase;margin-bottom:14px}
+    .p01-card-bot{display:flex;align-items:flex-end;justify-content:space-between}
+    .p01-card-valid{font-size:7px;color:rgba(255,255,255,.55);letter-spacing:1px;line-height:1.6}
+    .p01-qr{width:42px;height:42px;flex-shrink:0}
+
+    .p01-stats{
+      position:absolute;top:72%;left:10%;
+      display:flex;flex-direction:column;gap:8px;
+    }
+    .p01-stat{
+      font-size:clamp(11px,1.8vw,13px);font-weight:600;
+      color:#FF5A00;letter-spacing:1px;
+    }
+    .p01-stat span{color:rgba(255,255,255,.4);font-weight:400}
+    .p01-stat.key{font-size:clamp(12px,2vw,14.5px);font-weight:800}
+    .p01-stat.gold{color:#FFD700}
+
+    /* ── 右頁：米白起跑線 ── */
+    .p01-right{
+      flex:1;
+      background-color:#F4F1EA;
+      background-image:linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px);
+      background-size:100% 24px;
+      position:relative;
+      padding:7% 7% 6%;
+      display:flex;flex-direction:column;
+    }
+    .p01-badge{
+      font-size:11px;letter-spacing:3px;color:#8A6D3B;
+      text-transform:uppercase;font-weight:700;margin-bottom:10px;
+    }
+    .p01-right-title{
+      font-size:clamp(28px,3.6vw,42px);font-weight:700;color:#1a1a1a;
+      letter-spacing:.04em;margin-bottom:6px;
+    }
+    .p01-right-en{
+      font-size:13px;letter-spacing:3px;color:#C9A84C;text-transform:uppercase;
+      margin-bottom:18px;
+    }
+    .p01-sky{
+      flex:1;min-height:0;
+      border-radius:8px;overflow:hidden;
+      box-shadow:0 12px 32px rgba(0,0,0,.18);
+      position:relative;
+    }
+    .p01-sky img{
+      width:100%;height:100%;object-fit:cover;object-position:center 40%;
+      display:block;
+    }
+    .p01-sky-cap{
+      position:absolute;left:16px;bottom:14px;
+      color:#fff;font-size:12px;letter-spacing:2px;
+      text-shadow:0 2px 10px rgba(0,0,0,.6);
+    }
+    .p01-route{
+      display:flex;flex-wrap:wrap;gap:10px 18px;
+      margin-top:18px;
+    }
+    .p01-route span{
+      font-size:12px;color:#332211;letter-spacing:.04em;
+      border-bottom:1px solid rgba(201,168,76,.45);padding-bottom:2px;
+    }
+    .p01-quote{
+      margin-top:16px;font-style:italic;color:#8A6D3B;
+      font-size:14px;line-height:1.7;
+    }
+  </style>
+</head>
+<body>
+<div class="p01-page">
+
+  <div class="p01-left">
+    <div class="p01-title-block">
+      <div class="p01-main-title">120小時的<br>破關鑰匙</div>
+      <div class="p01-pvp-label">PRAGUE VISITOR PASS</div>
+    </div>
+
+    <div class="p01-card-wrap">
+      <div class="p01-card-inner">
+        <div class="p01-card-top">
+          <div class="p01-card-passtext">120h<br><span>e-Pass</span></div>
+          <div class="p01-card-logo">PVP</div>
+        </div>
+        <div class="p01-card-mid">PRAGUE VISITOR PASS</div>
+        <div class="p01-card-bot">
+          <div class="p01-card-valid">VALID 120 HOURS<br>70+ EXPERIENCES</div>
+          <svg class="p01-qr" viewBox="0 0 21 21" fill="white" aria-hidden="true">
+            <rect x="0" y="0" width="7" height="7"/>
+            <rect x="1" y="1" width="5" height="5" fill="#FF5A00"/>
+            <rect x="2" y="2" width="3" height="3" fill="white"/>
+            <rect x="14" y="0" width="7" height="7"/>
+            <rect x="15" y="1" width="5" height="5" fill="#FF5A00"/>
+            <rect x="16" y="2" width="3" height="3" fill="white"/>
+            <rect x="0" y="14" width="7" height="7"/>
+            <rect x="1" y="15" width="5" height="5" fill="#FF5A00"/>
+            <rect x="2" y="16" width="3" height="3" fill="white"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="p01-stats">
+      <div class="p01-stat">⏱ <span>TIME:</span> 120 Hours (Total)</div>
+      <div class="p01-stat key">👟 <span>DISTANCE:</span> 10.5 km / DAY</div>
+      <div class="p01-stat gold">📊 <span>TOTAL:</span> 52.5 km Challenge</div>
+      <div class="p01-stat">🏰 <span>TARGETS:</span> 70+ Experiences</div>
+    </div>
+  </div>
+
+  <div class="p01-right">
+    <div class="p01-badge">P.01 ／ Starting Line</div>
+    <h1 class="p01-right-title">起跑線</h1>
+    <p class="p01-right-en">120 Hours · Prague</p>
+    <div class="p01-sky">
+      <img src="surprise/p05-hero.png" alt="布拉格起跑線大空景">
+      <div class="p01-sky-cap">PRAGUE · OPENING HORIZON</div>
+    </div>
+    <div class="p01-route">
+      <span>01 老城廣場</span>
+      <span>02 查理大橋</span>
+      <span>03 布拉格城堡</span>
+      <span>04 火藥塔</span>
+    </div>
+    <p class="p01-quote">放下聽診器，拿起這張券。120 小時，布拉格，起跑。</p>
+  </div>
+
+</div>
+</body>
+</html>

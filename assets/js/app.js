@@ -24,15 +24,14 @@ async function init() {
     console.warn('album-manifest.json not found:', e);
   }
 
-  /* 2b. Cover / P01 沿用翻頁半頁；P02–P10 用定稿 live HTML 全跨頁 */
+  /* 2b. Cover；P01–P10 用定稿 live HTML 全跨頁 */
   const liveChapters = [
-    'p02-live.html','p03-live.html','p04-live.html','p05-live.html',
+    'p01-live.html','p02-live.html','p03-live.html','p04-live.html','p05-live.html',
     'p06-live.html','p07-live.html','p08-live.html','p09-live.html',
     'p10-live.html',
   ];
   const surprisePages = [
     buildCover(),
-    buildP01(),
     ...liveChapters.flatMap(src => [buildBlankPage(), buildLiveSpread(src)]),
     ...buildAlbumPages(albumDays),
   ];
