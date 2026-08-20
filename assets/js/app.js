@@ -24,15 +24,20 @@ async function init() {
     console.warn('album-manifest.json not found:', e);
   }
 
-  /* 2b. 翻頁順序（封面獨立；後續每一章都用「空白左頁 + 整頁跨頁 iframe」配對）
+  /* 2b. 翻頁順序（封面 p00 獨立佔第一格，跟原本 buildCover() 的位置規則一樣；
+     後續每一章都用「空白左頁 + 整頁跨頁 iframe」配對）
      這樣 p01-live 會在第一個跨頁同時覆蓋左右（iframe 透過 CSS 鋪滿左右），
-     不再把 P01 拆成 40/60 左右 iframe。 */
+     不再把 P01 拆成 40/60 左右 iframe。
+     注意：p00 不可以跟其他章節一樣放進 flatMap 配對陣列裡，
+     因為 SoftFlipBook 的第一個跨頁（spread 0）左頁固定是空白佔位，
+     只有 pages[0] 會顯示在右頁位置 —— 這個位置原本是給 buildCover() 用的。
+     若把 p00 併入配對陣列，會讓後面每一章的配對整個錯位一格。 */
   const liveChapters = [
-    'p00-live.html',
     'p01-live.html','p02-live.html','p03-live.html','p04-live.html','p05-live.html',
     'p06-live.html','p07-live.html','p08-live.html','p09-live.html','p10-live.html',
   ];
   const surprisePages = [
+    buildLiveSpread('p00-live.html'),
     ...liveChapters.flatMap(src => [buildBlankPage(), buildLiveSpread(src)]),
     ...buildAlbumPages(albumDays),
   ];
