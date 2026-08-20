@@ -24,14 +24,15 @@ async function init() {
     console.warn('album-manifest.json not found:', e);
   }
 
-  /* 2b. Cover；P01–P10 用定稿 live HTML 全跨頁 */
+  /* 2b. 翻頁順序（封面獨立；後續每一章都用「空白左頁 + 整頁跨頁 iframe」配對）
+     這樣 p01-live 會在第一個跨頁同時覆蓋左右（iframe 透過 CSS 鋪滿左右），
+     不再把 P01 拆成 40/60 左右 iframe。 */
   const liveChapters = [
+    'p00-live.html',
     'p01-live.html','p02-live.html','p03-live.html','p04-live.html','p05-live.html',
-    'p06-live.html','p07-live.html','p08-live.html','p09-live.html',
-    'p10-live.html',
+    'p06-live.html','p07-live.html','p08-live.html','p09-live.html','p10-live.html',
   ];
   const surprisePages = [
-    buildCover(),
     ...liveChapters.flatMap(src => [buildBlankPage(), buildLiveSpread(src)]),
     ...buildAlbumPages(albumDays),
   ];
@@ -107,7 +108,7 @@ async function init() {
 
   document.getElementById('btn-flip')?.addEventListener('click',    () => setMode('flip'));
   document.getElementById('btn-scroll')?.addEventListener('click',  () => setMode('scroll'));
-  document.getElementById('btn-archive')?.addEventListener('click', () => setMode('archive'));
+  document.getElementById('btn-archive')?.addEventListener('click', () => window.open('album.html', '_blank'));
 
   /* 8. Sound toggle */
   document.getElementById('btn-sound')?.addEventListener('click', () => {

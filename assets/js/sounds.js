@@ -184,12 +184,52 @@ const SoundEngine = (() => {
     });
   }
 
+  /* ── 背景配樂 淡入／淡出（一般 <audio> 元素，非 Web Audio 合成音效）── */
+  let _track = null;
+  let _fadeTimer = null;
+  function _clearFade() { if (_fadeTimer) { clearInterval(_fadeTimer); _fadeTimer = null; } }
+  function fadeInTrack(src, { volume = 0.7, fadeMs = 2500, loop = true } = {}) {
+    if (!enabled) return;
+    _clearFade();
+    if (_track) { _track.pause(); }
+    _track = new Audio(src);
+    _track.loop = loop;
+    _track.volume = 0;
+    _track.play().catch(() => {});
+    const steps = 30, stepTime = fadeMs / steps;
+    let i = 0;
+    _fadeTimer = setInterval(() => {
+      i++;
+      if (_track) _track.volume = Math.min(volume, (volume * i) / steps);
+      if (i >= steps) _clearFade();
+    }, stepTime);
+  }
+  function fadeOutTrack({ fadeMs = 2000 } = {}) {
+    if (!_track) return;
+    _clearFade();
+    const trackRef = _track;
+    const startVol = trackRef.volume || 0.001;
+    const steps = 30, stepTime = fadeMs / steps;
+    let i = 0;
+    _fadeTimer = setInterval(() => {
+      i++;
+      trackRef.volume = Math.max(0, startVol * (1 - i / steps));
+      if (i >= steps) {
+        _clearFade();
+        trackRef.pause();
+        trackRef.currentTime = 0;
+        if (_track === trackRef) _track = null;
+      }
+    }, stepTime);
+  }
+
   return {
     enable()  { enabled = true;  resume(); },
     disable() { enabled = false; },
     toggle()  { enabled ? this.disable() : this.enable(); return enabled; },
     isEnabled() { return enabled; },
     pageTurn, tramBell, beerGlug, stampThud, tick, magic, achievement,
+    fadeInTrack, fadeOutTrack,
   };
 })();
 

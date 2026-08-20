@@ -314,5 +314,21 @@
     </div>
   </div>
 
+  <script>
+    /* 本頁配樂：進頁淡入，離頁（無論往前往後翻）淡出，即使已翻過去也會慢慢收掉。
+       透過 parent.SoundEngine 呼叫外層翻頁主程式共用的淡入／淡出引擎。 */
+    (function () {
+      function fadeIn() {
+        try { parent.SoundEngine?.fadeInTrack?.('surprise/p10-theme.mp3', { volume: 0.7, fadeMs: 2500, loop: true }); } catch (e) {}
+      }
+      function fadeOut() {
+        try { parent.SoundEngine?.fadeOutTrack?.({ fadeMs: 2000 }); } catch (e) {}
+      }
+      if (document.readyState === 'complete') fadeIn();
+      else window.addEventListener('load', fadeIn);
+      window.addEventListener('pagehide', fadeOut);
+      window.addEventListener('beforeunload', fadeOut);
+    })();
+  </script>
 </body>
 </html>

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>布拉格之春門診中心 — 病歷表</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600;700&family=Caveat:wght@400;600;700&family=Noto+Sans+TC:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #1a2a5e;
+      --navy-light: #2d4080;
+      --red: #c0392b;
+      --border: #3a5298;
+      --bg: #f8f9fc;
+      --ink: #1c2a4a;
+      --stamp-red: rgba(192, 57, 43, 0.82);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #dde3ee;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 40px 20px;
+      font-family: 'Noto Serif TC', serif;
+    }
+
+    .page {
+      width: 794px;
+      min-height: 1123px;
+      background: #fff;
+      border-radius: 18px;
+      border: 2.5px solid var(--border);
+      padding: 36px 40px 40px;
+      position: relative;
+      box-shadow: 0 8px 40px rgba(26,42,94,0.18);
+    }
+
+    /* ── HEADER ── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* Czech heart flag SVG */
+    .heart-logo {
+      width: 62px;
+      height: 62px;
+      flex-shrink: 0;
+    }
+
+    .clinic-name {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .clinic-zh {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: 2px;
+      line-height: 1.2;
+    }
+
+    .clinic-en {
+      font-size: 12px;
+      color: var(--navy-light);
+      font-family: 'Noto Sans TC', sans-serif;
+      font-weight: 300;
+      letter-spacing: 1.5px;
+      margin-top: 2px;
+    }
+
+    .header-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+    }
+
+    .title-record {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: 4px;
+    }
+
+    .ornament {
+      color: var(--navy-light);
+      font-size: 14px;
+      letter-spacing: 4px;
+      opacity: 0.6;
+    }
+
+    /* ── INFO TABLE ── */
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1.5px solid var(--border);
+      margin-bottom: 0;
+    }
+
+    .info-table td {
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      font-size: 13.5px;
+      color: var(--ink);
+      font-family: 'Noto Sans TC', sans-serif;
+      font-weight: 300;
+      vertical-align: middle;
+    }
+
+    .info-table .label {
+      color: var(--navy);
+      font-weight: 400;
+      white-space: nowrap;
+      font-size: 13px;
+    }
+
+    .info-table .value {
+      font-family: 'Caveat', cursive;
+      font-size: 16px;
+      color: var(--ink);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── CLINICAL NOTES AREA ── */
+    .notes-area {
+      border: 1.5px solid var(--border);
+      border-top: none;
+      min-height: 680px;
+      padding: 24px 28px 120px;
+      position: relative;
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          transparent,
+          transparent 31px,
+          rgba(58,82,152,0.07) 31px,
+          rgba(58,82,152,0.07) 32px
+        );
+      background-size: 100% 32px;
+      background-position: 0 8px;
+    }
+
+    .section-title {
+      font-family: 'Noto Sans TC', sans-serif;
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--navy-light);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 22px;
+      margin-bottom: 6px;
+      border-bottom: 1px dashed rgba(58,82,152,0.25);
+      padding-bottom: 3px;
+    }
+
+    .section-title:first-child {
+      margin-top: 0;
+    }
+
+    .handwrite {
+      font-family: 'Caveat', cursive;
+      font-size: 18px;
+      color: #1c2a4a;
+      line-height: 1.75;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+    }
+
+    .handwrite.chief {
+      font-size: 17px;
+    }
+
+    .handwrite.diagnosis ol,
+    .handwrite.plan ol {
+      padding-left: 22px;
+    }
+
+    .handwrite.diagnosis li,
+    .handwrite.plan li {
+      margin-bottom: 4px;
+    }
+
+    .handwrite strong {
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    /* ── STAMP ── */
+    .stamp {
+      position: absolute;
+      bottom: 44px;
+      right: 44px;
+      width: 130px;
+      height: 130px;
+      border: 3.5px solid var(--stamp-red);
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transform: rotate(-12deg);
+      opacity: 0.82;
+      box-shadow: inset 0 0 0 2px rgba(192,57,43,0.15);
+    }
+
+    .stamp::before {
+      content: '';
+      position: absolute;
+      inset: 5px;
+      border: 1.5px dashed var(--stamp-red);
+      border-radius: 50%;
+    }
+
+    .stamp-text-top {
+      font-family: 'Noto Sans TC', sans-serif;
+      font-size: 9.5px;
+      color: var(--stamp-red);
+      letter-spacing: 1.5px;
+      font-weight: 600;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    .stamp-zh {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 13px;
+      color: var(--stamp-red);
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.5;
+      letter-spacing: 1px;
+    }
+
+    .stamp-date {
+      font-family: 'Caveat', cursive;
+      font-size: 11px;
+      color: var(--stamp-red);
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+
+    /* ── SIGNATURE ── */
+    .signature-block {
+      position: absolute;
+      bottom: 50px;
+      right: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .sig-svg {
+      width: 110px;
+      height: 50px;
+    }
+
+    .sig-label {
+      font-family: 'Noto Sans TC', sans-serif;
+      font-size: 10px;
+      color: var(--navy-light);
+      letter-spacing: 1.5px;
+    }
+
+    /* Record ID watermark */
+    .record-id {
+      position: absolute;
+      top: 36px;
+      right: 40px;
+      font-family: 'Noto Sans TC', sans-serif;
+      font-size: 9px;
+      color: rgba(26,42,94,0.2);
+      letter-spacing: 2px;
+      writing-mode: vertical-rl;
+    }
+
+    @media print {
+      body { background: white; padding: 0; }
+      .page { box-shadow: none; border-radius: 0; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── HEADER ── -->
+  <header class="header">
+    <div class="header-left">
+      <!-- Czech Heart Flag SVG -->
+      <svg class="heart-logo" viewBox="0 0 62 62" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <clipPath id="heartClip">
+            <path d="M31 55 C31 55 6 38 6 22 C6 13.7 12.7 7 21 7 C25.5 7 29.5 9.1 31 12.5 C32.5 9.1 36.5 7 41 7 C49.3 7 56 13.7 56 22 C56 38 31 55 31 55Z"/>
+          </clipPath>
+        </defs>
+        <!-- Heart shape with Czech flag colors -->
+        <rect x="6" y="7" width="50" height="48" fill="#D7141A" clip-path="url(#heartClip)"/>
+        <rect x="6" y="7" width="50" height="24" fill="#FFFFFF" clip-path="url(#heartClip)"/>
+        <!-- Blue triangle -->
+        <polygon points="6,7 6,55 28,31" fill="#11457E" clip-path="url(#heartClip)"/>
+        <!-- Heart outline -->
+        <path d="M31 55 C31 55 6 38 6 22 C6 13.7 12.7 7 21 7 C25.5 7 29.5 9.1 31 12.5 C32.5 9.1 36.5 7 41 7 C49.3 7 56 13.7 56 22 C56 38 31 55 31 55Z"
+          stroke="#1a2a5e" stroke-width="1.5" fill="none"/>
+      </svg>
+
+      <div class="clinic-name">
+        <span class="clinic-zh">布拉格之春門診中心</span>
+        <span class="clinic-en">Prague Spring Clinic Center</span>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <span class="title-record">病歷表</span>
+      <span class="ornament">◇ ─ ◇ ─ ◇</span>
+    </div>
+  </header>
+
+  <!-- ── INFO TABLE ── -->
+  <table class="info-table">
+    <tbody>
+      <tr>
+        <td style="width:18%"><span class="label">姓名：</span><span class="value">浪人旅者</span></td>
+        <td style="width:16%"><span class="label">性別：</span><span class="value">男</span></td>
+        <td style="width:16%"><span class="label">年齡：</span><span class="value">35</span></td>
+        <td style="width:50%"><span class="label">病歷號：</span><span class="value">PRG-1200-P09</span></td>
+      </tr>
+      <tr>
+        <td colspan="2"><span class="label">就診日期：</span><span class="value">2026 / 08 / 18</span></td>
+        <td colspan="1"><span class="label">就診科別：</span><span class="value">浪漫波希米亞科</span></td>
+        <td><span class="label">主治醫師：</span><span class="value">大神</span></td>
+      </tr>
+      <tr>
+        <td><span class="label">身高：</span><span class="value">175</span><span class="label"> cm</span></td>
+        <td><span class="label">體重：</span><span class="value">70</span><span class="label"> kg</span></td>
+        <td><span class="label">BMI：</span><span class="value">22.9</span></td>
+        <td><span class="label">血壓：</span><span class="value">120 / 80</span><span class="label"> mmHg</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ── CLINICAL NOTES ── -->
+  <div class="notes-area">
+
+    <div class="section-title">Chief Complaint ── 主訴</div>
+    <div class="handwrite chief">
+      患者因連續長途步行達 <strong>12 公里</strong>（累計步數突破 <strong>16,000 步</strong>），<br>
+      導致雙下肢嚴重肌肉酸痛，並伴隨<strong>中度視覺審美疲勞</strong>。
+    </div>
+
+    <div class="section-title">Diagnosis ── 診斷</div>
+    <div class="handwrite diagnosis">
+      <ol>
+        <li><strong>急性波希米亞童話感染</strong>（Acute Bohemian Fairytale Infection）</li>
+        <li>併發<strong>中世紀懷舊情緒</strong>、<strong>夜間微醺症候群</strong></li>
+      </ol>
+    </div>
+
+    <div class="section-title">Plan &amp; Prescription ── 醫囑與處方</div>
+    <div class="handwrite plan">
+      <ol>
+        <li>
+          <strong>強制心靈洗滌：</strong>每日傍晚 <strong>17:00</strong> 後，強制前往<br>
+          克魯姆洛夫（Český Krumlov）小鎮之 Latrán 區石板小巷漫步，嚴禁喧嘩。
+        </li>
+        <li>
+          <strong>液體藥物治療：</strong>建議每晚搭配當地<strong>深色捷克黑啤酒</strong><br>
+          （Czech Dark Lager）或<strong>皮爾森歐克</strong>（Pilsner Urquell）一品脫，<br>
+          以達微醺放鬆之療效。
+        </li>
+        <li>
+          <strong>視覺排版限制：</strong>本章節嚴禁雜誌格狀布局。<br>
+          務必使用非均勻排列之電影感大圖、保留大量留白，以維持<strong>心靈純淨度</strong>。
+        </li>
+      </ol>
+    </div>
+
+    <!-- ── SIGNATURE BLOCK ── -->
+    <div class="signature-block">
+      <svg class="sig-svg" viewBox="0 0 110 50" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 38 C15 20, 22 12, 28 28 C32 38, 34 15, 42 10 C48 6, 50 22, 55 30 C59 36, 62 18, 70 14 C76 11, 78 32, 85 28 C90 25, 92 38, 100 35"
+          stroke="#1a2a5e" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M12 42 L98 42" stroke="#1a2a5e" stroke-width="0.8" opacity="0.4"/>
+      </svg>
+      <span class="sig-label">主治醫師 · 大神</span>
+    </div>
+
+    <!-- ── APPROVAL STAMP ── -->
+    <div class="stamp">
+      <div class="stamp-text-top">Prague Spring<br>Clinic Center</div>
+      <div class="stamp-zh">布拉格之春<br>門診中心<br>核可</div>
+      <div class="stamp-date">2026.08.18</div>
+    </div>
+
+  </div><!-- /notes-area -->
+
+</div><!-- /page -->
+</body>
+</html>

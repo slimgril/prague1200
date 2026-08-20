@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRAGUE 1200 - Glowing Neon Master Cover</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Noto+Sans+TC:wght@700;900&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="global.css">
+    <style>
+        /* 全域設定：鋪滿 100% */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { width: 100%; min-height: 100vh; background-color: #0b0b0b; font-family: 'Noto Serif TC', serif; }
+        .cover-container { width: 100%; min-height: 100vh; position: relative; display: flex; }
+
+        /* 👈 左半頁：極致黑底留白（避開裝訂線安全防線） */
+        .cover-left-blank { width: 50%; min-height: 100vh; background-color: #0b0b0b; }
+
+        /* 👉 右半頁：暗黑病歷表主場 — 若視窗太矮，改用 overflow-y:auto 讓 logo 可捲動看到，不會被裁掉看不見 */
+        .cover-right-content { width: 50%; min-height: 100vh; background-color: #0b0b0b; display: flex; justify-content: center; align-items: center; padding: 30px; overflow-y: auto; }
+
+        /* 🌸 病歷表底色改為淺洋紅色卡片，並加上玫瑰金邊框 */
+        .medical-report-card {
+            width: 500px;
+            max-width: 92%;
+            background-color: #FBE1EE;
+            border: 1px solid #E3A9C6;
+            border-radius: 72px;
+            padding: 35px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 病歷表頭：淺洋紅底、深色字 */
+        .report-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #D98AB3; padding-bottom: 15px; margin-bottom: 20px; }
+        .clinic-brand { display: flex; align-items: center; gap: 10px; }
+        .clinic-brand .flag-icon { flex-shrink: 0; display: block; filter: drop-shadow(0 1px 2px rgba(122,34,73,0.35)); }
+        .clinic-brand .clinic-text { display: flex; flex-direction: column; line-height: 1.25; }
+        .clinic-brand .clinic-zh { font-size: 17px; font-weight: 700; color: #7A2249; letter-spacing: 0.5px; }
+        .clinic-brand .clinic-en { font-size: 9px; font-weight: 500; color: #A3577E; letter-spacing: 1.2px; margin-top: 1px; }
+        .report-title-label { font-size: 24px; font-weight: 900; letter-spacing: 4px; color: #4A0F2C; }
+
+        /* 欄位資訊 */
+        .patient-info-bar { font-size: 12px; color: #8A4568; display: flex; justify-content: space-between; margin-bottom: 25px; border-bottom: 1px dashed #D98AB3; padding-bottom: 10px; }
+        .patient-info-bar strong { color: #4A0F2C; }
+        /* 🚨 核心發光區（霓虹舞台）：維持深底，讓發光文字更突出，靠右居中，四周空出安全間距 */
+        .cover-hero-headline {
+            background-color: #24081A;
+            border-left: 6px solid #ff3333;
+            padding: 28px 20px;
+            margin-bottom: 25px;
+            text-align: center;
+            border-radius: 36px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
+        }
+        /* 🌟 放大版：輪流閃閃發光 + 呼吸縮放動畫 (Glow & Breathe) */
+        .glow-text-1 {
+            font-family: 'Cinzel', serif;
+            font-size: 56px;
+            font-weight: 900;
+            letter-spacing: 5px;
+            color: #ffffff;
+            line-height: 1.1;
+            display: inline-block;
+            /* 綁定霓虹白光 + 呼吸縮放動畫，時間 3 秒，無限循環 */
+            animation: whiteNeonGlow 3s ease-in-out infinite;
+        }
+        .glow-text-2 {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 30px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #ff3333;
+            margin-top: 14px;
+            display: inline-block;
+            /* 綁定馬拉松紅光 + 呼吸縮放動畫，時間 3 秒，刻意延遲 1.5 秒達到「輪流發光」效果 */
+            animation: redNeonGlow 3s ease-in-out infinite;
+            animation-delay: 1.5s;
+        }
+        /* 🎬 輪流閃爍發光 + 呼吸感核心動畫語法 (CSS Keyframes) */
+        @keyframes whiteNeonGlow {
+            0%, 100% {
+                text-shadow: 0 0 6px #fff, 0 0 14px #fff, 0 0 26px #ffffff, 0 0 40px #ffd9ec;
+                opacity: 1;
+                transform: scale(1.06);
+            }
+            50% {
+                text-shadow: 0 0 2px #fff;
+                opacity: 0.6; /* 營造呼吸、輪流暗下來的閃爍感 */
+                transform: scale(1);
+            }
+        }
+        @keyframes redNeonGlow {
+            0%, 100% {
+                text-shadow: 0 0 10px #ff3333, 0 0 24px #ff3333, 0 0 38px #ff0000;
+                color: #ff5555;
+                opacity: 1;
+                transform: scale(1.06);
+            }
+            50% {
+                text-shadow: none;
+                color: #882222;
+                opacity: 0.4; /* 輪流微弱閃爍 */
+                transform: scale(1);
+            }
+        }
+        /* 臨床報告內容（淺洋紅底、深色文字） */
+        .clinical-section { margin-bottom: 20px; }
+        .section-tag { font-size: 13px; font-weight: 700; color: #A3452F; margin-bottom: 6px; letter-spacing: 1px; }
+        .section-desc { font-size: 12px; color: #5C2A44; line-height: 1.8; text-align: justify; }
+        .stats-highlight { font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700; color: #4A0F2C; margin-top: 5px; line-height: 1.6; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+    <div class="cover-container">
+        <!-- 左半頁：極致深邃黑 -->
+        <div class="cover-left-blank"></div>
+        <!-- 右半頁：發光暗黑病歷主場 -->
+        <div class="cover-right-content">
+            <div class="medical-report-card">
+
+                <!-- 表頭：診所 Logo（愛心造型捷克國旗 + 診所中英名）務必保留，最重要的識別部分 -->
+                <div class="report-header">
+                    <div class="clinic-brand">
+                        <svg class="flag-icon" width="32" height="29" viewBox="0 0 100 90" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <clipPath id="heartClip">
+                                    <path d="M50,85 C15,60 0,40 0,22 C0,5 15,-5 30,5 C40,12 47,22 50,30 C53,22 60,12 70,5 C85,-5 100,5 100,22 C100,40 85,60 50,85 Z"/>
+                                </clipPath>
+                            </defs>
+                            <g clip-path="url(#heartClip)">
+                                <rect x="0" y="0" width="100" height="45" fill="#FFFFFF"/>
+                                <rect x="0" y="45" width="100" height="45" fill="#D7263D"/>
+                                <path d="M0,0 L50,45 L0,90 Z" fill="#11457E"/>
+                            </g>
+                        </svg>
+                        <div class="clinic-text">
+                            <div class="clinic-zh">布拉格之春門診中心</div>
+                            <div class="clinic-en">PRAGUE SPRING CLINIC CENTER</div>
+                        </div>
+                    </div>
+                    <div class="report-title-label">病歷表</div>
+                </div>
+                <!-- 資訊欄 -->
+                <div class="patient-info-bar">
+                    <div>姓名：<strong>大神</strong></div>
+                    <div>科別：<strong>硬派馬拉松挑戰科</strong></div>
+                    <div>病歷號：<strong>PRG-1200-FINAL</strong></div>
+                </div>
+                <!-- 🌟 暗黑霓虹發光主標題區（純黑底卡片，字體輪流閃爍發光）— 犧牲下方病症文字，優先確保 logo + 主標題完整顯示不被裁切 -->
+                <div class="cover-hero-headline" style="margin-bottom: 0;">
+                    <div class="glow-text-1">PRAGUE 1200</div>
+                    <div class="glow-text-2">布拉格 1200 · 馬拉松挑戰之旅</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

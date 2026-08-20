@@ -52,10 +52,38 @@
   border: 0;
   background: #0A0A0A;
 }
-#page-right-bg .pg-live {
+#page-right-bg .pg-live:not(.pg-live-half) {
   position: absolute;
   left: calc(-1 * var(--page-w));
   width: calc(var(--page-w) * 2);
   height: 100%;
   z-index: 6;
+}
+/* 僅全跨頁（P02+）允許向左溢出；P01 半頁必須裁切在各自頁內 */
+#page-right-bg:has(.pg-live:not(.pg-live-half)) {
+  overflow: visible;
+}
+.pg-endpaper--spacer {
+  background: transparent !important;
+}
+
+/* P01 半頁：對齊 live HTML 內 40% 黑底 / 60% 米白 */
+.pg-live-half {
+  background: #0A0A0A;
+  overflow: hidden;
+}
+.pg-live-half iframe {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border: 0;
+  background: #0A0A0A;
+}
+.pg-live-half[data-half="left"] iframe {
+  width: 250%;
+  left: 0;
+}
+.pg-live-half[data-half="right"] iframe {
+  width: 166.667%;
+  left: -66.667%;
 }

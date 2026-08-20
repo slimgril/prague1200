@@ -412,6 +412,19 @@ window.buildP08 = buildP08;
 window.buildP09 = buildP09;
 window.buildP10 = buildP10;
 
+/* Live HTML 半頁（P01 左 40% / 右 60% 對齊翻頁引擎 50/50） */
+function buildLiveHalfSpread(href, side) {
+  const pg = document.createElement('div');
+  pg.className = 'page pg-live pg-live-half';
+  pg.dataset.half = side;
+  const iframe = document.createElement('iframe');
+  iframe.src = href;
+  iframe.title = `${href} (${side})`;
+  iframe.setAttribute('allow', 'autoplay');
+  pg.appendChild(iframe);
+  return pg;
+}
+
 /* Live HTML 全跨頁（P02–P10 定稿頁） */
 function buildLiveSpread(href) {
   const pg = document.createElement('div');
@@ -425,9 +438,10 @@ function buildLiveSpread(href) {
 }
 function buildBlankPage() {
   const pg = document.createElement('div');
-  pg.className = 'page pg-endpaper';
+  pg.className = 'page pg-endpaper pg-endpaper--spacer';
   pg.dataset.side = 'left';
   return pg;
 }
+window.buildLiveHalfSpread = buildLiveHalfSpread;
 window.buildLiveSpread = buildLiveSpread;
 window.buildBlankPage = buildBlankPage;
