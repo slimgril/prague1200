@@ -179,11 +179,31 @@ class SoftFlipBook {
   _activateFrame(idx) {
     const frame = this._frameSlot(idx);
     this._frames.forEach(f => {
-      if (f !== frame) f.classList.remove('slot-active');
+      if (f !== frame && f.classList.contains('slot-active')) {
+        f.classList.remove('slot-active');
+        this._notifySpread(f, '__onSpreadDeactivated');
+      }
     });
+    const wasAlreadyActive = frame.classList.contains('slot-active');
     frame.classList.add('slot-active');
     this._unmuteMedia(frame);
+    if (!wasAlreadyActive) this._notifySpread(frame, '__onSpreadActivated');
     return frame;
+  }
+
+  /* 通用的「本跨頁上場／下場」通知：讓個別頁面（例如需要跟外層 SoundEngine
+     配合淡入淡出配樂、或有計時器動畫的頁面）可以掛上 window.__onSpreadActivated／
+     window.__onSpreadDeactivated，取代原本用 iframe 的 load 事件來判斷——
+     load 事件在預載階段（頁面還在背景、根本還沒翻到）就會提早觸發，導致配樂
+     在使用者看到這頁之前就試著播放，常常因為瀏覽器自動播放限制而播放失敗，
+     翻頁翻到時卻又不會再觸發，變成完全沒有聲音。
+     （這段機制曾經在「換成硬紙板翻頁引擎」那次調整中被整批覆蓋掉，導致
+     P06／P07／P08／P10 的配樂與計時器全部失效——這裡是補回來。） */
+  _notifySpread(frame, hookName) {
+    try {
+      const win = frame.contentWindow;
+      if (win && typeof win[hookName] === 'function') win[hookName]();
+    } catch (e) {}
   }
 
   async _openBook() {

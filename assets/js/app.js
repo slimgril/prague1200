@@ -35,7 +35,7 @@ async function init() {
      P10）。修法：每個跨頁網址也統一加上 ?v=CHAPTER_ASSET_VERSION，之後只
      要有任何一個 pXX-live.html 內容變動，就把這個版本號 +1，瀏覽器就會直接
      抓新的，不會再被舊的快取檔卡住。 */
-  const CHAPTER_ASSET_VERSION = 2;
+  const CHAPTER_ASSET_VERSION = 3;
   const spreads = Array.from({ length: 12 }, (_, i) => {
     const id = 'p' + String(i).padStart(2, '0');
     return { title: id, url: `${id}-live.html?v=${CHAPTER_ASSET_VERSION}`, preview: `previews/${id}.webp` };
@@ -123,6 +123,26 @@ async function init() {
     const btn = document.getElementById('btn-sound');
     if (btn) btn.textContent = on ? '🔊' : '🔇';
   });
+
+  /* 9. 第一次互動就自動打開音效：SoundEngine 預設是關的（🔇），配樂全靠
+     那顆小小的按鈕才能聽到，讀者常常沒注意到那顆鈕，一直以為「配樂壞了」
+     （P06／P08／P10 都回報過同樣狀況）。瀏覽器的自動播放限制只要求「使用者
+     跟這個網站互動過一次」，翻頁、點照片本身就已經算數，不需要特地點那顆
+     鈕才行——這裡改成只要讀者第一次點擊／觸控／按鍵盤，就自動打開音效，
+     除非那第一下就是點在音效鈕本身（那顆鈕自己的開關邏輯優先，不要搶著
+     處理，否則會變成「點兩下才會有聲音」）。 */
+  function autoEnableSoundOnFirstInteraction(e) {
+    if (e.target?.closest?.('#btn-sound')) return; // 交給上面按鈕自己的開關邏輯
+    document.removeEventListener('pointerdown', autoEnableSoundOnFirstInteraction, true);
+    document.removeEventListener('keydown',     autoEnableSoundOnFirstInteraction, true);
+    if (!SoundEngine.isEnabled()) {
+      SoundEngine.enable();
+      const btn = document.getElementById('btn-sound');
+      if (btn) { btn.textContent = '🔊'; btn.title = 'Sound On'; }
+    }
+  }
+  document.addEventListener('pointerdown', autoEnableSoundOnFirstInteraction, true);
+  document.addEventListener('keydown',     autoEnableSoundOnFirstInteraction, true);
 }
 
 document.addEventListener('DOMContentLoaded', init);

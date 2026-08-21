@@ -556,6 +556,25 @@
     function triggerFinale() {
       document.body.classList.add('reveal-finale');
     }
+
+    /* 離開本頁：把配樂完全停掉、狀態歸零，下次翻回來才能重新從第一顆燈
+       觸發配樂——原本 musicStarted 這個旗標一旦設成 true 就永久卡住，
+       如果讀者翻走時還沒走到第六站，配樂會在背景悄悄繼續播，而且下次
+       翻回來再點第一顆燈也不會重新播放，就是「再觸發也沒有聲音」的
+       原因。用 __onSpreadDeactivated（flipbook.js 在真正翻走本頁時才
+       觸發）來歸零，比較保險。 */
+    window.__onSpreadDeactivated = function () {
+      if (finaleTimer) { clearTimeout(finaleTimer); finaleTimer = null; }
+      Object.keys(cardTimers).forEach(k => { clearTimeout(cardTimers[k]); delete cardTimers[k]; });
+      if (bgm) {
+        bgm.pause();
+        bgm.currentTime = 0;
+        bgm.volume = 0;
+      }
+      musicStarted = false;
+      document.body.classList.remove('reveal-finale');
+      document.querySelectorAll('.trail-station.card-visible').forEach(s => s.classList.remove('card-visible'));
+    };
   </script>
 
 </body>
