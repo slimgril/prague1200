@@ -120,7 +120,12 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--dark); f
   transform:rotateY(0deg);
   will-change:transform;
   pointer-events:none;
+  /* 不在翻頁中時完全隱藏：避免翻完之後，這片「上一次翻頁用的舊圖」
+     停在 rotateY(0deg) 疊在目前跨頁的右半頁上方（z-index 20 > live-stage
+     的 1），造成「前一頁一直蓋住下一頁右半邊」的錯覺與無法互動 */
+  opacity:0;
 }
+#book.is-turning .turning-leaf { opacity:1; }
 .turning-leaf.animate { transition:transform var(--turn-duration) cubic-bezier(.48,.04,.22,1); }
 .turning-leaf.turned  { transform:rotateY(-180deg); }
 .leaf-face {
