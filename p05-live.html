@@ -107,22 +107,18 @@
 
         /* 詩句金句 */
         .p05-poem-zone {
-            position: absolute; bottom: 5%; left: 8%;
+            position: absolute; bottom: calc(5% + 40px); left: 8%;
             width: 380px; text-align: left; line-height: 2.3;
             color: #332211; font-weight: 700; font-size: 15px;
-            z-index: 40; pointer-events: none; opacity: 0;
-            transition: opacity 2s ease, transform 2s ease;
-            transform: translateY(10px);
+            z-index: 40; pointer-events: none;
         }
-        .poem-line { display: inline-block; opacity: 0; transform: translateY(6px); transition: opacity 1.5s ease, transform 1.5s ease; }
-        #poemZone[style*="opacity: 1"] .poem-line { opacity: 1; transform: translateY(0); }
-        #poemZone[style*="opacity: 1"] .poem-line:nth-child(1) { transition-delay: 0.3s; }
-        #poemZone[style*="opacity: 1"] .poem-line:nth-child(3) { transition-delay: 1.5s; }
+        .poem-line { display: block; opacity: 0; transform: translateY(6px); transition: opacity 1s ease, transform 1s ease; }
+        .poem-line.show { opacity: 1; transform: translateY(0); }
     </style>
 </head>
 <body>
 
-<div class="p05-container" onclick="initAudio()">
+<div class="p05-container">
 
     <!-- 左欄：電車樂園 -->
     <div class="p05-left-panel" id="leftPanel">
@@ -145,8 +141,8 @@
 
         <!-- 金句詩區 -->
         <div class="p05-poem-zone" id="poemZone">
-            <span class="poem-line">叮叮聲掠過查理大橋，帶走一整天的疲憊──</span><br>
-            <span class="poem-line">那是台大醫院、哈佛醫學院畢業名醫粘曉青與鄭惠文，放下重擔後的城市漫步足跡。</span>
+            <span class="poem-line" id="p05PoemLine1">叮叮聲掠過查理大橋，帶走一整天的疲憊──</span>
+            <span class="poem-line" id="p05PoemLine2">那是台大醫院、哈佛醫學院畢業名醫粘曉青與鄭惠文，放下重擔後的城市漫步足跡。</span>
         </div>
 
         <!-- 地圖容器：火藥塔落日 -->
@@ -154,23 +150,23 @@
             <div class="map-hotspots-layer">
 
                 <!-- ① 火藥塔中世紀大拱門 -->
-                <div class="map-node" style="left:35%;top:72%;" onclick="triggerLightbox('surprise/p05_spot1.png',event)">⚙️
-                    <div class="node-tooltip"><img src="surprise/p05_spot1.png" alt="火藥塔"></div>
+                <div class="map-node" style="left:35%;top:72%;" onclick="triggerLightbox('surprise/p05-spot-01.png',event)">⚙️
+                    <div class="node-tooltip"><img src="surprise/p05-spot-01.png" alt="火藥塔"></div>
                 </div>
 
                 <!-- ② 哥德式尖頂 -->
-                <div class="map-node" style="left:45%;top:22%;" onclick="triggerLightbox('surprise/p05_spot2.png',event)">⚙️
-                    <div class="node-tooltip"><img src="surprise/p05_spot2.png" alt="哥德尖頂"></div>
+                <div class="map-node" style="left:45%;top:22%;" onclick="triggerLightbox('surprise/p05-spot-02.png',event)">⚙️
+                    <div class="node-tooltip"><img src="surprise/p05-spot-02.png" alt="哥德尖頂"></div>
                 </div>
 
                 <!-- ③ 捷克國家銀行 -->
-                <div class="map-node" style="left:75%;top:75%;" onclick="triggerLightbox('surprise/p05_spot3.png',event)">⚙️
-                    <div class="node-tooltip"><img src="surprise/p05_spot3.png" alt="捷克國家銀行"></div>
+                <div class="map-node" style="left:75%;top:75%;" onclick="triggerLightbox('surprise/p05-spot-03.png',event)">⚙️
+                    <div class="node-tooltip"><img src="surprise/p05-spot-03.png" alt="捷克國家銀行"></div>
                 </div>
 
                 <!-- ④ 42號電車漫步手記 -->
-                <div class="map-node" style="left:20%;top:40%;" onclick="triggerLightbox('surprise/p05_spot4.png',event)">⚙️
-                    <div class="node-tooltip"><img src="surprise/p05_spot4.png" alt="42號電車"></div>
+                <div class="map-node" style="left:20%;top:40%;" onclick="triggerLightbox('surprise/p05-spot-04.png',event)">⚙️
+                    <div class="node-tooltip"><img src="surprise/p05-spot-04.png" alt="42號電車"></div>
                 </div>
 
             </div>
@@ -195,102 +191,41 @@
         document.getElementById('gunBarrel').style.setProperty('--mouse-y', `${y}%`);
     });
 
-    /* Web Audio API 雙音軌 */
-    let audioCtx = null, bgmOsc = null, bgmGain = null, bellInterval = null;
-
-    function initAudio() {
-        if (audioCtx) return;
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        bgmOsc = audioCtx.createOscillator();
-        bgmGain = audioCtx.createGain();
-        bgmOsc.type = 'triangle';
-        bgmOsc.frequency.setValueAtTime(55, audioCtx.currentTime);
-        bgmGain.gain.setValueAtTime(0.06, audioCtx.currentTime);
-        bgmOsc.connect(bgmGain);
-        bgmGain.connect(audioCtx.destination);
-        bgmOsc.start();
-        bellInterval = setInterval(playTramBell, 6000);
-    }
-
-    function playTramBell() {
-        if (!audioCtx) return;
-        const now = audioCtx.currentTime;
-        const freqs = [554.4, 659.3];
-        freqs.forEach((f, i) => {
-            const osc = audioCtx.createOscillator();
-            const g = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(f, now + i * 0.15);       // ✅ 修正
-            g.gain.setValueAtTime(0.04, now + i * 0.15);           // ✅ 修正
-            g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.15 + 0.3);
-            osc.connect(g); g.connect(audioCtx.destination);
-            osc.start(); osc.stop(now + i * 0.15 + 0.4);
+    /* 逐行淡入：每一行停留 2 秒 */
+    let p05PoemRevealed = false;
+    let p05PoemTimers = [];
+    const p05PoemLineIds = ['p05PoemLine1', 'p05PoemLine2'];
+    function revealP05Poem() {
+        if (p05PoemRevealed) return;
+        p05PoemRevealed = true;
+        p05PoemLineIds.forEach((id, i) => {
+            p05PoemTimers.push(setTimeout(() => { document.getElementById(id)?.classList.add('show'); }, i * 2000));
         });
     }
-
-    function playMusicBox() {
-        if (!audioCtx) return;
-        const now = audioCtx.currentTime;
-        const freqs = [523.3, 659.3, 784.0, 1046.5];
-        freqs.forEach((f, i) => {
-            const osc = audioCtx.createOscillator();
-            const g = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(f, now + i * 0.08);       // ✅ 修正
-            g.gain.setValueAtTime(0.05, now + i * 0.08);           // ✅ 修正
-            g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.4);
-            osc.connect(g); g.connect(audioCtx.destination);
-            osc.start(); osc.stop(now + i * 0.08 + 0.5);
-        });
-    }
-
-    function playSaxophone() {
-        if (!audioCtx) return;
-        const now = audioCtx.currentTime;
-        const notes = [311.1, 349.2, 392.0, 466.2];
-        notes.forEach((f, i) => {
-            const osc = audioCtx.createOscillator();               // ✅ 修正 applicationCtx
-            const g = audioCtx.createGain();
-            const filter = audioCtx.createBiquadFilter();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(f, now + i * 0.12);       // ✅ 修正
-            filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(500, now);
-            g.gain.setValueAtTime(0.1, now + i * 0.12);            // ✅ 修正
-            g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.9);
-            osc.connect(filter); filter.connect(g); g.connect(audioCtx.destination);
-            osc.start(); osc.stop(now + i * 0.12 + 1.0);
-        });
+    function hideP05Poem() {
+        p05PoemRevealed = false;
+        p05PoemTimers.forEach(t => clearTimeout(t));
+        p05PoemTimers = [];
+        p05PoemLineIds.forEach(id => document.getElementById(id)?.classList.remove('show'));
     }
 
     /* 滑桿互動 */
     const slider = document.getElementById('timeSlider');
-    const poemZone = document.getElementById('poemZone');
     const polaroid = document.getElementById('polaroidPic');
-    let hasPlayedLeft = false, hasPlayedRight = false;
 
     slider.addEventListener('input', (e) => {
         const val = parseInt(e.target.value);
         if (val <= 30) {
             polaroid.style.transform = 'rotate(-5deg) scale(1.15)';
-            poemZone.style.opacity = '0';
-            poemZone.style.transform = 'translateY(10px)';
+            hideP05Poem();
             document.getElementById('heroImg').style.filter = 'brightness(1)';
-            if (bgmGain) bgmGain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-            if (!hasPlayedLeft) { playMusicBox(); hasPlayedLeft = true; hasPlayedRight = false; }
         } else if (val >= 70) {
             document.getElementById('heroImg').style.filter = 'sepia(0.4) brightness(0.7)';
-            poemZone.style.opacity = '1';
-            poemZone.style.transform = 'translateY(0)';
-            if (bgmGain) bgmGain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-            if (!hasPlayedRight) { playSaxophone(); hasPlayedRight = true; hasPlayedLeft = false; }
+            revealP05Poem();
         } else {
             polaroid.style.transform = 'rotate(-5deg) scale(1)';
-            poemZone.style.opacity = '0';
-            poemZone.style.transform = 'translateY(10px)';
+            hideP05Poem();
             document.getElementById('heroImg').style.filter = 'brightness(1)';
-            if (bgmGain) bgmGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-            hasPlayedLeft = false; hasPlayedRight = false;
         }
     });
 
@@ -299,8 +234,6 @@
         if (e) e.stopPropagation();
         if (window.parent && window.parent.handleLightbox) {
             window.parent.handleLightbox(imgName);
-        } else {
-            alert('解鎖火藥塔漫步相簿觀看: ' + imgName);
         }
     }
 </script>

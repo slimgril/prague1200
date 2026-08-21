@@ -17,19 +17,21 @@
         .cover-left-blank { width: 50%; min-height: 100vh; background-color: #0b0b0b; }
 
         /* 👉 右半頁：暗黑病歷表主場 — 若視窗太矮，改用 overflow-y:auto 讓 logo 可捲動看到，不會被裁掉看不見 */
-        .cover-right-content { width: 50%; min-height: 100vh; background-color: #0b0b0b; display: flex; justify-content: center; align-items: center; padding: 30px; overflow-y: auto; }
+        .cover-right-content { width: 50%; min-height: 100vh; background-color: #0b0b0b; display: flex; justify-content: center; align-items: center; padding: 18px; overflow-y: auto; }
 
-        /* 🌸 病歷表底色改為淺洋紅色卡片，並加上玫瑰金邊框 */
+        /* 🌸 病歷表底色改為淺洋紅色卡片，並加上玫瑰金邊框；拉長高度佔滿右半頁上下 */
         .medical-report-card {
             width: 500px;
             max-width: 92%;
+            min-height: 86vh;
             background-color: #FBE1EE;
             border: 1px solid #E3A9C6;
             border-radius: 72px;
-            padding: 35px;
+            padding: 45px 35px;
             box-shadow: 0 30px 60px rgba(0,0,0,0.8);
             display: flex;
             flex-direction: column;
+            justify-content: space-between;
         }
 
         /* 病歷表頭：淺洋紅底、深色字 */
@@ -47,7 +49,7 @@
         /* 🚨 核心發光區（霓虹舞台）：維持深底，讓發光文字更突出，靠右居中，四周空出安全間距 */
         .cover-hero-headline {
             background-color: #24081A;
-            border-left: 6px solid #ff3333;
+            border-left: 6px solid #ff6fb0;
             padding: 28px 20px;
             margin-bottom: 25px;
             text-align: center;
@@ -58,7 +60,7 @@
         .glow-text-1 {
             font-family: 'Cinzel', serif;
             font-size: 56px;
-            font-weight: 900;
+            font-weight: 400;
             letter-spacing: 5px;
             color: #ffffff;
             line-height: 1.1;
@@ -69,12 +71,13 @@
         .glow-text-2 {
             font-family: 'Noto Sans TC', sans-serif;
             font-size: 30px;
-            font-weight: 900;
+            font-weight: 400;
             letter-spacing: 2px;
-            color: #ff3333;
+            color: #ff6fb0;
             margin-top: 14px;
+            /* 與左邊那條邊線同一個洋紅色，避免發光時泛白 */
             display: inline-block;
-            /* 綁定馬拉松紅光 + 呼吸縮放動畫，時間 3 秒，刻意延遲 1.5 秒達到「輪流發光」效果 */
+            /* 綁定淺洋紅霓虹光 + 呼吸縮放動畫，時間 3 秒，刻意延遲 1.5 秒達到「輪流發光」效果 */
             animation: redNeonGlow 3s ease-in-out infinite;
             animation-delay: 1.5s;
         }
@@ -93,14 +96,14 @@
         }
         @keyframes redNeonGlow {
             0%, 100% {
-                text-shadow: 0 0 10px #ff3333, 0 0 24px #ff3333, 0 0 38px #ff0000;
-                color: #ff5555;
+                text-shadow: 0 0 10px #ff6fb0, 0 0 22px #ff6fb0, 0 0 32px #e0509a;
+                color: #ff6fb0;
                 opacity: 1;
                 transform: scale(1.06);
             }
             50% {
                 text-shadow: none;
-                color: #882222;
+                color: #a34578;
                 opacity: 0.4; /* 輪流微弱閃爍 */
                 transform: scale(1);
             }

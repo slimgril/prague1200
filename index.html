@@ -9,7 +9,7 @@
   <meta name="description" content="Prague 1200 · Digital Memory Book · 120 Hours Challenge">
   <title>PRAGUE 1200 · Digital Memory Book</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='28'>📖</text></svg>">
-  <link rel="stylesheet" href="assets/css/style.css?v=1600">
+  <link rel="stylesheet" href="assets/css/style.css?v=1700">
   <link rel="stylesheet" href="global.css?v=1604">
 </head>
 <body>
@@ -32,16 +32,40 @@
       <button class="nav-btn disabled" id="nav-prev">‹</button>
       <button class="nav-btn" id="nav-next">›</button>
 
-      <div id="book">
-        <!-- Static left / right backgrounds -->
-        <div id="page-left-bg"></div>
-        <div id="page-right-bg"></div>
+      <div id="book" tabindex="0" aria-label="Prague 1200 跨頁電子書">
+        <!-- 三個 iframe 由 flipbook.js 動態建立，輪流服務「上一跨頁 / 目前
+             跨頁 / 下一跨頁」（跨頁預載管理器），確保翻到下一跨頁時內容
+             早就準備好，不會有下載中的空白或逐張補圖 -->
+        <section class="live-stage"></section>
 
-        <!-- Multi-slice flip panel -->
-        <div id="flip-wrap"></div>
+        <!-- 翻頁動畫專用的靜態預覽圖層（只在翻頁過程中短暫可見） -->
+        <section class="preview-stage" id="previewStage" aria-hidden="true">
+          <img id="destinationPreview" class="preview-image" alt="">
+        </section>
 
-        <!-- Gradient shadow overlay (peaks at 90°) -->
-        <div id="flip-shadow"></div>
+        <!-- 翻到中央時加深的陰影 -->
+        <div class="turn-shadow"></div>
+
+        <!-- 正在翻動的右半頁（硬紙板，繞書脊 rotateY 翻起） -->
+        <div class="turning-leaf" id="turningLeaf" aria-hidden="true">
+          <div class="leaf-face leaf-front" id="leafFront"></div>
+          <div class="leaf-face leaf-back" id="leafBack"></div>
+        </div>
+
+        <!-- 中央書脊 -->
+        <div class="book-spine" aria-hidden="true"></div>
+
+        <!-- 翻頁熱區（仿電子書左右邊緣點擊／滑動翻頁）：
+             每一跨頁內容都是 iframe，iframe 內部的點擊事件不會冒泡到外層
+             文件，這兩個熱區疊在 iframe 之上，確保左右邊緣永遠點/滑得到 -->
+        <div class="tap-zone tap-zone-prev" id="tapZonePrev" title="上一跨頁" aria-hidden="true"></div>
+        <div class="tap-zone tap-zone-next" id="tapZoneNext" title="下一跨頁" aria-hidden="true"></div>
+
+        <!-- 翻頁載入提示：互動頁面重新載入時顯示，避免讀者等待時不知道發生什麼事 -->
+        <div id="page-loading" class="page-loading-overlay">
+          <div class="page-loading-spinner"></div>
+          <div class="page-loading-text">載入中</div>
+        </div>
       </div>
     </div>
   </div>
@@ -59,11 +83,11 @@
 
 <!-- Scripts (order matters) -->
 <script src="assets/js/sounds.js?v=1600"></script>
-<script src="assets/js/flipbook.js?v=1600"></script>
+<script src="assets/js/flipbook.js?v=1700"></script>
 <script src="assets/js/pages_p1_p5.js?v=1600"></script>
 <script src="assets/js/pages_p6_p10.js?v=1603"></script>
-<script src="assets/js/pages_album.js?v=1600"></script>
+<script src="assets/js/pages_album.js?v=1700"></script>
 <script src="assets/js/archive.js?v=1600"></script>
-<script src="assets/js/app.js?v=1603"></script>
+<script src="assets/js/app.js?v=1700"></script>
 </body>
 </html>

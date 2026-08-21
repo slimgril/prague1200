@@ -187,6 +187,35 @@ html,body{width:100%;height:100%;background:#111;overflow:hidden;font-family:-ap
   0%,100%{opacity:.7} 50%{opacity:1}
 }
 
+/* 目標達成：等小人物跑到終點才彈出來，呼吸5秒後停止（維持顯示） */
+.p02-goal{
+  position:absolute;top:7%;left:50%;transform:translate(-50%,0) scale(1);
+  text-align:center;z-index:21;pointer-events:none;
+  background:rgba(10,10,10,.65);border:1px solid rgba(212,175,55,.4);
+  border-radius:14px;padding:16px 26px;
+  opacity:0;
+}
+.p02-goal-label{
+  font-size:12px;font-weight:700;letter-spacing:4px;
+  color:#D4AF37;text-transform:uppercase;margin-bottom:8px;
+}
+.p02-goal-line{
+  font-size:13px;font-weight:600;color:#FF5A00;letter-spacing:1px;
+  margin:3px 0;
+}
+.p02-goal-line span{ color:rgba(255,255,255,.45); font-weight:400; }
+.p02-goal-line.key{ font-size:14.5px;font-weight:800; }
+.p02-goal-line.gold{ color:#FFD700; }
+.p02-goal.revealed{
+  opacity:1;
+  animation:goalBreathe 5s ease-in-out 1 both;
+}
+@keyframes goalBreathe{
+  0%,100%  { transform:translate(-50%,0) scale(1); }
+  15%,45%,75% { transform:translate(-50%,0) scale(1.06); }
+  30%,60%,90% { transform:translate(-50%,0) scale(1); }
+}
+
 /* ══════════════════════════════
    RIGHT PANEL — 60% dark grid
 ══════════════════════════════ */
@@ -250,6 +279,16 @@ html,body{width:100%;height:100%;background:#111;overflow:hidden;font-family:-ap
   pointer-events:auto;
 }
 
+/* 左下角 PVP 徽章：槍移到右下角後，左下角補上識別標記，不留空 */
+.p02-pvp-badge{
+  position:absolute;left:24px;bottom:24px;
+  font-size:11px;font-weight:900;letter-spacing:2px;
+  color:rgba(255,255,255,.75);
+  border:1.5px solid rgba(212,175,55,.55);
+  padding:4px 10px;border-radius:4px;
+  z-index:15;pointer-events:none;
+}
+
 /* ambient status */
 .p02-ambient-btn{
   position:absolute;top:8px;right:12px;
@@ -268,8 +307,10 @@ html,body{width:100%;height:100%;background:#111;overflow:hidden;font-family:-ap
   <!-- ══ 城市地圖全幅：拍立得留在 P02 ── -->
   <div class="p02-right">
     <div id="pvp-card" hidden><div class="p02-card-inner"></div></div>
+      <!-- 左下角 PVP 徽章：對稱右下角的槍 -->
+      <div class="p02-pvp-badge">PVP</div>
       <!-- GUN — overlaps card bottom-right, fires to start -->
-      <div class="p02-gun" id="start-btn" role="button" aria-label="鳴槍起跑" style="position:absolute;left:24px;bottom:24px;right:auto;z-index:20">
+      <div class="p02-gun" id="start-btn" role="button" aria-label="鳴槍起跑" style="position:absolute;right:24px;bottom:24px;left:auto;z-index:20">
         <svg class="p02-gun-svg" viewBox="0 0 90 58" fill="none" xmlns="http://www.w3.org/2000/svg">
           <!-- Barrel -->
           <rect x="28" y="16" width="58" height="11" rx="3" fill="#D4AF37"/>
@@ -318,6 +359,15 @@ html,body{width:100%;height:100%;background:#111;overflow:hidden;font-family:-ap
       <div class="p02-counter-label">❤ KM · RUNNING</div>
     </div>
 
+    <!-- 目標達成：跑者抵達終點才彈出來 -->
+    <div class="p02-goal" id="goal-reveal">
+      <div class="p02-goal-label">🎯 目標</div>
+      <div class="p02-goal-line">⏱ <span>TIME:</span> 120 Hours (Total)</div>
+      <div class="p02-goal-line key">👟 <span>DISTANCE:</span> 10.5 km / DAY</div>
+      <div class="p02-goal-line gold">📊 <span>TOTAL:</span> 52.5 km Challenge</div>
+      <div class="p02-goal-line">🏰 <span>TARGETS:</span> 70+ Experiences</div>
+    </div>
+
     <!-- D: SVG Prague map with inline polaroid foreignObjects -->
     <div class="p02-map-wrap">
       <svg viewBox="0 0 620 520" class="p02-prague-map">
@@ -330,8 +380,8 @@ html,body{width:100%;height:100%;background:#111;overflow:hidden;font-family:-ap
           </filter>
         </defs>
 
-        <!-- Vltava River S-curve (id for runner path) -->
-        <path id="river-path" d="M 300 520 Q 250 420 350 310 T 250 110 T 300 0"
+        <!-- Vltava River S-curve (id for runner path)：由右下角跑向左上角，約旋轉90度 -->
+        <path id="river-path" d="M 580 500 Q 480 380 520 300 T 260 140 T 40 20"
               stroke="#2a2a2a" stroke-width="10" fill="none"/>
 
         <!-- Runner: orange particle following river, hidden initially -->
@@ -342,7 +392,7 @@ html,body{width:100%;height:100%;background:#111;overflow:hidden;font-family:-ap
           <circle r="13" fill="none" stroke="#FF5A00" stroke-width="2" opacity="0.5"/>
           <circle r="20" fill="none" stroke="#FFD700" stroke-width="1" opacity="0.3"/>
           <animateMotion id="run-anim" dur="4.5s" fill="freeze" begin="indefinite"
-                         keyPoints="1;0" keyTimes="0;1" calcMode="linear">
+                         keyPoints="0;1" keyTimes="0;1" calcMode="linear">
             <mpath href="#river-path"/>
           </animateMotion>
         </g>
@@ -760,6 +810,10 @@ html,body{width:100%;height:100%;background:#111;overflow:hidden;font-family:-ap
     // Hide quote
     if(quote) quote.classList.remove('revealed');
 
+    // Hide 目標 goal panel
+    const goal = document.getElementById('goal-reveal');
+    if(goal) goal.classList.remove('revealed');
+
     // Re-enable
     firing = false;
   }
@@ -857,6 +911,11 @@ html,body{width:100%;height:100%;background:#111;overflow:hidden;font-family:-ap
       const quote = document.querySelector('.p02-quote');
       if(quote) quote.classList.add('revealed');
     }, 4900);
+    // 🎯 目標數字：小人物跑到終點才彈出來，等跑步計數器淡出後再顯示，呼吸5秒後停止
+    setTimeout(function(){
+      const goal = document.getElementById('goal-reveal');
+      if(goal) goal.classList.add('revealed');
+    }, 5450);
 
     // 🔄 Auto-reset after display (quote shown for ~3.5s) → gun sparkles again
     setTimeout(resetAll, 9000);

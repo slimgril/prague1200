@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <link rel="stylesheet" href="global.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>P10｜Prague 1200 終章・結案報告</title>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 100vw; height: 100vh;
+      overflow: hidden;
+      background: #000;
+      font-family: "PingFang TC","Heiti TC","Microsoft JhengHei",sans-serif;
+      display: flex;
+    }
+
+    /* =============================================
+       左頁：極黑・數據完賽板
+       ============================================= */
+    .left-page {
+      width: 50%; height: 100%;
+      background: #050505;
+      position: relative;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+
+    /* 剪影照片 */
+    .silhouette-photo {
+      position: absolute; inset: 0;
+      background: url('surprise/p10-silhouette.jpg') center/cover no-repeat;
+      opacity: 0.28; filter: brightness(0.4) contrast(1.2);
+    }
+
+    /* 左頁內容 */
+    .left-content {
+      position: relative; z-index: 2;
+      text-align: center; padding: 40px;
+    }
+
+    /* 章節標記 */
+    .chapter-badge {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 0.35em;
+      color: rgba(255,140,0,0.6); margin-bottom: 40px;
+    }
+
+    /* LED 電子計時器數據 */
+    .data-board {
+      margin: 0 auto 40px;
+    }
+    .data-row {
+      display: flex; align-items: baseline;
+      justify-content: center; gap: 12px;
+      margin-bottom: 20px;
+    }
+    .data-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem; letter-spacing: 0.2em;
+      color: rgba(255,255,255,0.35);
+      text-align: right; min-width: 120px;
+    }
+    .data-value {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 2.2rem; font-weight: 400;
+      color: #ff8c00;
+      text-shadow: 0 0 20px rgba(255,140,0,0.6),
+                   0 0 40px rgba(255,140,0,0.3);
+      letter-spacing: 0.05em;
+      animation: ledFlicker 8s infinite;
+    }
+    .data-unit {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem; color: rgba(255,140,0,0.5);
+    }
+
+    @keyframes ledFlicker {
+      0%, 95%, 100% { opacity: 1; }
+      96% { opacity: 0.85; }
+      97% { opacity: 1; }
+      98% { opacity: 0.9; }
+    }
+
+    /* 完賽狀態 */
+    .status-line {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem; letter-spacing: 0.25em;
+      margin-top: 32px; padding: 10px 24px;
+      border: 1px solid rgba(255,140,0,0.4);
+      color: #ff8c00;
+      display: inline-block;
+      animation: statusBlink 2s infinite;
+    }
+    @keyframes statusBlink {
+      0%, 100% { border-color: rgba(255,140,0,0.4); }
+      50% { border-color: rgba(255,140,0,0.9); box-shadow: 0 0 12px rgba(255,140,0,0.3); }
+    }
+
+    /* 左下角醫師署名 */
+    .left-signature {
+      position: absolute; bottom: 32px; left: 0; right: 0;
+      text-align: center; z-index: 2;
+      font-family: 'Caveat', cursive;
+      font-size: 0.9rem; color: rgba(255,255,255,0.3);
+      letter-spacing: 0.1em;
+    }
+
+    /* =============================================
+       中央分隔線
+       ============================================= */
+    .divider {
+      width: 1px; height: 100%;
+      background: linear-gradient(to bottom,
+        transparent,
+        rgba(255,140,0,0.15) 20%,
+        rgba(255,140,0,0.3) 50%,
+        rgba(255,140,0,0.15) 80%,
+        transparent);
+      flex-shrink: 0;
+    }
+
+    /* =============================================
+       右頁：極白・結案報告
+       ============================================= */
+    .right-page {
+      width: 50%; height: 100%;
+      background: #faf8f4;
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+
+    /* 右下角空景照 */
+    .closing-photo {
+      position: absolute; bottom: 0; right: 0;
+      width: 55%; height: 45%;
+      overflow: hidden;
+    }
+    .closing-photo img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      filter: brightness(0.75) saturate(0.7);
+      mask-image: linear-gradient(to top-left, rgba(0,0,0,0.8) 40%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to top-left, rgba(0,0,0,0.8) 40%, transparent 100%);
+    }
+
+    /* 結案報告文字 */
+    .discharge-report {
+      position: relative; z-index: 2;
+      padding: 48px 52px;
+      max-width: 420px;
+    }
+
+    .report-header {
+      font-size: 0.6rem; letter-spacing: 0.3em;
+      color: rgba(255,0,127,0.6);
+      font-family: monospace; margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .report-section { margin-bottom: 28px; }
+    .report-key {
+      font-size: 0.6rem; letter-spacing: 0.2em;
+      color: rgba(0,0,0,0.35); font-family: monospace;
+      margin-bottom: 8px; text-transform: uppercase;
+    }
+    .report-text {
+      font-size: 0.88rem; color: #2a2520;
+      line-height: 1.85; letter-spacing: 0.02em;
+    }
+
+    /* 醫囑引言 */
+    .doctors-order {
+      background: rgba(255,0,127,0.04);
+      border-left: 3px solid rgba(255,0,127,0.4);
+      padding: 12px 16px; border-radius: 0 4px 4px 0;
+      font-family: 'Caveat', cursive;
+      font-size: 1.05rem; color: #3a2530;
+      line-height: 1.7;
+    }
+
+    /* 個人感悟 */
+    .personal-insight {
+      font-size: 0.88rem; color: #3a3530;
+      line-height: 2; font-style: italic;
+    }
+    .insight-highlight {
+      color: #c0392b; font-weight: 500; font-style: normal;
+    }
+
+    /* 結案印章 */
+    .case-closed {
+      margin-top: 32px; padding-top: 24px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+      display: flex; align-items: center; gap: 16px;
+    }
+    .stamp {
+      width: 56px; height: 56px; border-radius: 50%;
+      border: 2px solid rgba(139,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      transform: rotate(-12deg);
+      box-shadow: inset 0 0 8px rgba(139,0,0,0.1);
+      animation: stampAppear 1s ease both;
+      animation-delay: 0.5s;
+    }
+    @keyframes stampAppear {
+      from { opacity: 0; transform: rotate(-12deg) scale(1.5); }
+      to   { opacity: 1; transform: rotate(-12deg) scale(1); }
+    }
+    .case-text {
+      font-family: monospace; font-size: 0.7rem;
+      letter-spacing: 0.15em; color: rgba(0,0,0,0.4);
+      line-height: 1.6;
+    }
+    .case-text strong {
+      display: block; font-size: 0.85rem;
+      color: rgba(139,0,0,0.7); letter-spacing: 0.1em;
+      margin-bottom: 2px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 左頁：極黑・數據完賽板 -->
+  <div class="left-page">
+    <div class="silhouette-photo"></div>
+
+    <div class="left-content">
+      <div class="chapter-badge">▌ PRAGUE 1200 ／ FINAL CHAPTER ／ P10</div>
+
+      <div class="data-board">
+        <div class="data-row">
+          <span class="data-label">DAILY DISTANCE</span>
+          <span class="data-value">12.0</span>
+          <span class="data-unit">km / day</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">DAILY STEPS</span>
+          <span class="data-value">17,000</span>
+          <span class="data-unit">steps / day</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label">DURATION</span>
+          <span class="data-value">120</span>
+          <span class="data-unit">hrs explored</span>
+        </div>
+      </div>
+
+      <div class="status-line">▶ PROJECT STATUS : COMPLETED</div>
+    </div>
+
+    <div class="left-signature">
+      粘曉青・鄭惠文｜布拉格之春 2024
+    </div>
+  </div>
+
+  <!-- 中央分隔線 -->
+  <div class="divider"></div>
+
+  <!-- 右頁：極白・結案報告 -->
+  <div class="right-page">
+
+    <div class="closing-photo">
+      <img src="surprise/p10-closing.jpg" alt="查理大橋黃昏">
+    </div>
+
+    <div class="discharge-report">
+
+      <div class="report-header">
+        DISCHARGE SUMMARY ／ 結案報告
+      </div>
+
+      <div class="report-section">
+        <div class="report-key">患者狀況</div>
+        <div class="report-text">
+          每日 12 公里、17,000 步的波希米亞極限洗禮，雙腳雖已達極限，
+          但心靈已完成徹底的淨化與蛻變。
+        </div>
+      </div>
+
+      <div class="report-section">
+        <div class="report-key">主治醫師醫囑</div>
+        <div class="doctors-order">
+          「這不是終點，<br>
+          而是下一場浪漫冒險的<br>
+          臨床準備。」
+        </div>
+      </div>
+
+      <div class="report-section">
+        <div class="report-key">個人感悟</div>
+        <div class="personal-insight">
+          <span class="insight-highlight">走得動是福氣，想走就走是底氣。</span><br>
+          唯有親自用腳步丈量過，<br>
+          這座城市的美，<br>
+          才真正屬於我的靈魂。
+        </div>
+      </div>
+
+      <div class="case-closed">
+        <div class="stamp">🏁</div>
+        <div class="case-text">
+          <strong>PRAGUE 1200 ／ CASE CLOSED</strong>
+          Prague Spring 2024<br>
+          粘曉青・鄭惠文 醫師 謹識
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

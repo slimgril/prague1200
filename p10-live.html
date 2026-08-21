@@ -4,7 +4,7 @@
   <link rel="stylesheet" href="global.css">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>P10｜Prague 1200 終章・結案報告</title>
+  <title>P10｜Prague 1200 終章・馬拉松終點</title>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -17,7 +17,7 @@
     }
 
     /* =============================================
-       左頁：極黑・數據完賽板
+       左頁：極黑・馬拉松雙計時器
        ============================================= */
     .left-page {
       width: 50%; height: 100%;
@@ -39,64 +39,138 @@
     .left-content {
       position: relative; z-index: 2;
       text-align: center; padding: 40px;
+      width: 100%;
     }
 
     /* 章節標記 */
     .chapter-badge {
       font-family: 'Share Tech Mono', monospace;
       font-size: 0.65rem; letter-spacing: 0.35em;
-      color: rgba(255,140,0,0.6); margin-bottom: 40px;
+      color: rgba(255,140,0,0.6); margin-bottom: 18px;
     }
 
-    /* LED 電子計時器數據 */
-    .data-board {
-      margin: 0 auto 40px;
+    /* 終點線橫幅 */
+    .finish-banner {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.72rem; letter-spacing: 0.3em;
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 30px;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
     }
-    .data-row {
+    .finish-banner .flag { font-size: 1rem; }
+    .finish-banner .track-line {
+      flex: 1; max-width: 60px; height: 1px;
+      background: linear-gradient(to right, transparent, rgba(255,140,0,0.5));
+    }
+    .finish-banner .track-line.right {
+      background: linear-gradient(to left, transparent, rgba(255,140,0,0.5));
+    }
+
+    /* 目前第幾天：放在左頁最上方，字體放大約3倍，並持續呼吸感動畫 */
+    .day-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 2.5rem; letter-spacing: 0.15em;
+      color: #ff8c00;
+      text-shadow: 0 0 20px rgba(255,140,0,0.55), 0 0 40px rgba(255,140,0,0.25);
+      margin-bottom: 26px;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .day-label.show {
+      opacity: 1; transform: translateY(0);
+      animation: dayBreathe 2.6s ease-in-out 0.5s infinite;
+    }
+    @keyframes dayBreathe {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.7; transform: scale(1.07); }
+    }
+
+    /* 雙計時器 */
+    .dual-counter {
+      display: flex; flex-direction: column; gap: 26px;
+      margin: 0 auto 26px;
+    }
+    .counter-row {
       display: flex; align-items: baseline;
       justify-content: center; gap: 12px;
-      margin-bottom: 20px;
     }
-    .data-label {
+    .counter-label {
       font-family: 'Share Tech Mono', monospace;
       font-size: 0.6rem; letter-spacing: 0.2em;
       color: rgba(255,255,255,0.35);
-      text-align: right; min-width: 120px;
+      text-align: right; min-width: 100px;
     }
-    .data-value {
+    .counter-value {
       font-family: 'Share Tech Mono', monospace;
-      font-size: 2.2rem; font-weight: 400;
+      font-size: 2.6rem; font-weight: 400;
       color: #ff8c00;
       text-shadow: 0 0 20px rgba(255,140,0,0.6),
                    0 0 40px rgba(255,140,0,0.3);
-      letter-spacing: 0.05em;
-      animation: ledFlicker 8s infinite;
+      letter-spacing: 0.03em;
+      min-width: 190px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
     }
-    .data-unit {
+    .counter-unit {
       font-family: 'Share Tech Mono', monospace;
-      font-size: 0.75rem; color: rgba(255,140,0,0.5);
+      font-size: 0.72rem; color: rgba(255,140,0,0.5);
+      min-width: 60px; text-align: left;
     }
 
-    @keyframes ledFlicker {
-      0%, 95%, 100% { opacity: 1; }
-      96% { opacity: 0.85; }
-      97% { opacity: 1; }
-      98% { opacity: 0.9; }
+    /* 進度軌道 */
+    .progress-track {
+      width: 260px; height: 4px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      margin: 4px auto 28px;
+      overflow: hidden;
+      position: relative;
+    }
+    .progress-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(to right, #ff8c00, #ffb347);
+      box-shadow: 0 0 10px rgba(255,140,0,0.6);
+      transition: width 0.05s linear;
     }
 
     /* 完賽狀態 */
     .status-line {
       font-family: 'Share Tech Mono', monospace;
       font-size: 0.75rem; letter-spacing: 0.25em;
-      margin-top: 32px; padding: 10px 24px;
+      padding: 10px 24px;
       border: 1px solid rgba(255,140,0,0.4);
       color: #ff8c00;
       display: inline-block;
-      animation: statusBlink 2s infinite;
+    }
+    .status-line.running { animation: statusBlink 2s infinite; }
+    .status-line.finished {
+      border-color: #ff8c00;
+      color: #fff;
+      background: rgba(255,140,0,0.15);
+      box-shadow: 0 0 18px rgba(255,140,0,0.5);
     }
     @keyframes statusBlink {
       0%, 100% { border-color: rgba(255,140,0,0.4); }
       50% { border-color: rgba(255,140,0,0.9); box-shadow: 0 0 12px rgba(255,140,0,0.3); }
+    }
+
+    /* 彩花 */
+    .confetti-layer {
+      position: absolute; inset: 0; z-index: 3;
+      pointer-events: none; overflow: hidden;
+    }
+    .confetti-piece {
+      position: absolute; top: -20px;
+      width: 8px; height: 14px;
+      opacity: 0.95;
+      animation-name: confettiFall;
+      animation-timing-function: cubic-bezier(0.4, 0.1, 0.6, 0.9);
+      animation-fill-mode: forwards;
+    }
+    @keyframes confettiFall {
+      0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(120vh) rotate(540deg); opacity: 0; }
     }
 
     /* 左下角醫師署名 */
@@ -123,135 +197,125 @@
     }
 
     /* =============================================
-       右頁：極白・結案報告
+       右頁：回顧輪播 ＋ 終章金句
        ============================================= */
     .right-page {
       width: 50%; height: 100%;
       background: #faf8f4;
       position: relative;
-      display: flex; align-items: center; justify-content: center;
+      display: flex; flex-direction: column;
       overflow: hidden;
     }
 
-    /* 右下角空景照 */
-    .closing-photo {
-      position: absolute; bottom: 0; right: 0;
-      width: 55%; height: 45%;
+    /* 上半：照片輪播 */
+    .photo-carousel {
+      position: relative;
+      width: 100%; height: 58%;
       overflow: hidden;
+      background: #111;
     }
-    .closing-photo img {
+    .photo-carousel img {
+      position: absolute; inset: 0;
       width: 100%; height: 100%;
       object-fit: cover;
-      filter: brightness(0.75) saturate(0.7);
-      mask-image: linear-gradient(to top-left, rgba(0,0,0,0.8) 40%, transparent 100%);
-      -webkit-mask-image: linear-gradient(to top-left, rgba(0,0,0,0.8) 40%, transparent 100%);
+      opacity: 0;
+      transition: opacity 1.4s ease;
+    }
+    .photo-carousel img.active { opacity: 1; }
+    .photo-carousel::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0) 65%, rgba(250,248,244,1) 100%);
+      pointer-events: none;
     }
 
-    /* 結案報告文字 */
-    .discharge-report {
-      position: relative; z-index: 2;
-      padding: 48px 52px;
-      max-width: 420px;
+    /* 下半：終章金句 */
+    .finale-quote {
+      flex: 1;
+      position: relative;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 30px 130px 30px 40px;
+      text-align: center;
+      gap: 18px;
+    }
+    .quote-line {
+      font-family: 'Noto Serif TC', 'PingFang TC', serif;
+      font-size: 1.3rem; line-height: 1.8;
+      color: #3a2530;
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 1s ease, transform 1s ease;
+    }
+    .quote-line.show { opacity: 1; transform: translateY(0); }
+    .quote-line.line2 {
+      color: #c0392b;
+      font-weight: 600;
     }
 
-    .report-header {
-      font-size: 0.6rem; letter-spacing: 0.3em;
-      color: rgba(255,0,127,0.6);
-      font-family: monospace; margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid rgba(0,0,0,0.08);
+    /* 五天門票／參觀券合影：斜放小照片，填補右下角空白 */
+    .ticket-photo {
+      position: absolute;
+      bottom: 22px; right: 22px;
+      width: 108px;
+      background: #fff;
+      padding: 6px 6px 16px;
+      box-shadow: 0 12px 26px rgba(0,0,0,0.28);
+      transform: rotate(-9deg) translateY(14px);
+      opacity: 0;
+      transition: opacity 1.1s ease, transform 1.1s ease;
     }
-
-    .report-section { margin-bottom: 28px; }
-    .report-key {
-      font-size: 0.6rem; letter-spacing: 0.2em;
-      color: rgba(0,0,0,0.35); font-family: monospace;
-      margin-bottom: 8px; text-transform: uppercase;
+    .ticket-photo.show { opacity: 1; transform: rotate(-9deg) translateY(0); }
+    .ticket-photo img {
+      width: 100%; display: block;
+      filter: saturate(0.92);
     }
-    .report-text {
-      font-size: 0.88rem; color: #2a2520;
-      line-height: 1.85; letter-spacing: 0.02em;
-    }
-
-    /* 醫囑引言 */
-    .doctors-order {
-      background: rgba(255,0,127,0.04);
-      border-left: 3px solid rgba(255,0,127,0.4);
-      padding: 12px 16px; border-radius: 0 4px 4px 0;
+    .ticket-photo .cap {
       font-family: 'Caveat', cursive;
-      font-size: 1.05rem; color: #3a2530;
-      line-height: 1.7;
-    }
-
-    /* 個人感悟 */
-    .personal-insight {
-      font-size: 0.88rem; color: #3a3530;
-      line-height: 2; font-style: italic;
-    }
-    .insight-highlight {
-      color: #c0392b; font-weight: 500; font-style: normal;
-    }
-
-    /* 結案印章 */
-    .case-closed {
-      margin-top: 32px; padding-top: 24px;
-      border-top: 1px solid rgba(0,0,0,0.08);
-      display: flex; align-items: center; gap: 16px;
-    }
-    .stamp {
-      width: 56px; height: 56px; border-radius: 50%;
-      border: 2px solid rgba(139,0,0,0.5);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.4rem;
-      transform: rotate(-12deg);
-      box-shadow: inset 0 0 8px rgba(139,0,0,0.1);
-      animation: stampAppear 1s ease both;
-      animation-delay: 0.5s;
-    }
-    @keyframes stampAppear {
-      from { opacity: 0; transform: rotate(-12deg) scale(1.5); }
-      to   { opacity: 1; transform: rotate(-12deg) scale(1); }
-    }
-    .case-text {
-      font-family: monospace; font-size: 0.7rem;
-      letter-spacing: 0.15em; color: rgba(0,0,0,0.4);
-      line-height: 1.6;
-    }
-    .case-text strong {
-      display: block; font-size: 0.85rem;
-      color: rgba(139,0,0,0.7); letter-spacing: 0.1em;
-      margin-bottom: 2px;
+      font-size: 0.72rem; color: #6b5a4a;
+      text-align: center; margin-top: 4px;
+      letter-spacing: 0.02em;
     }
   </style>
 </head>
 <body>
 
-  <!-- 左頁：極黑・數據完賽板 -->
+  <!-- 左頁：極黑・馬拉松雙計時器 -->
   <div class="left-page">
     <div class="silhouette-photo"></div>
+    <div class="confetti-layer" id="confettiLayer"></div>
 
     <div class="left-content">
+      <div class="day-label" id="dayLabel">第 1 天</div>
+
       <div class="chapter-badge">▌ PRAGUE 1200 ／ FINAL CHAPTER ／ P10</div>
 
-      <div class="data-board">
-        <div class="data-row">
-          <span class="data-label">DAILY DISTANCE</span>
-          <span class="data-value">12.0</span>
-          <span class="data-unit">km / day</span>
+      <div class="finish-banner">
+        <span class="track-line"></span>
+        <span class="flag">🏁</span>
+        <span>MARATHON FINISH LINE</span>
+        <span class="flag">🏁</span>
+        <span class="track-line right"></span>
+      </div>
+
+      <div class="dual-counter">
+        <div class="counter-row">
+          <span class="counter-label">DISTANCE</span>
+          <span class="counter-value" id="kmValue">0.0</span>
+          <span class="counter-unit">km</span>
         </div>
-        <div class="data-row">
-          <span class="data-label">DAILY STEPS</span>
-          <span class="data-value">17,000</span>
-          <span class="data-unit">steps / day</span>
-        </div>
-        <div class="data-row">
-          <span class="data-label">DURATION</span>
-          <span class="data-value">120</span>
-          <span class="data-unit">hrs explored</span>
+        <div class="counter-row">
+          <span class="counter-label">STEPS</span>
+          <span class="counter-value" id="stepsValue">0</span>
+          <span class="counter-unit">steps</span>
         </div>
       </div>
 
-      <div class="status-line">▶ PROJECT STATUS : COMPLETED</div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+
+      <div class="status-line running" id="statusLine">▶ PROJECT STATUS : IN PROGRESS</div>
     </div>
 
     <div class="left-signature">
@@ -262,57 +326,150 @@
   <!-- 中央分隔線 -->
   <div class="divider"></div>
 
-  <!-- 右頁：極白・結案報告 -->
+  <!-- 右頁：回顧輪播 ＋ 終章金句 -->
   <div class="right-page">
 
-    <div class="closing-photo">
-      <img src="surprise/p10-closing.jpg" alt="查理大橋黃昏">
+    <div class="photo-carousel" id="photoCarousel">
+      <img src="surprise/電車樂園.png" alt="電車樂園" class="active">
+      <img src="surprise/天文鐘.JPG" alt="天文鐘">
+      <img src="surprise/p08-exterior.jpg" alt="聖維特教堂">
+      <img src="surprise/卡羅維瓦利.png" alt="普普飯店">
+      <img src="surprise/p09-bridge.jpg" alt="CK城堡">
+      <img src="surprise/222222.png" alt="查理大橋">
+      <img src="surprise/11111.png" alt="布拉格之春">
+      <img src="surprise/image_Ex9PZd.png" alt="皇家之路石階">
+      <img src="surprise/image_fUPCtw.png" alt="老城橋塔">
+      <img src="surprise/image_fR_FA9.png" alt="小城區石板路">
+      <img src="surprise/image_9KIY5C.png" alt="查理大橋聖人雕像">
+      <img src="surprise/image_7jQQNK.png" alt="城堡山特寫">
+      <img src="surprise/image_oxeP6p.png" alt="火藥塔夕照">
     </div>
 
-    <div class="discharge-report">
-
-      <div class="report-header">
-        DISCHARGE SUMMARY ／ 結案報告
+    <div class="finale-quote">
+      <div class="quote-line line1" id="quoteLine1">布拉格之春馬拉松之旅的終章，</div>
+      <div class="quote-line line2" id="quoteLine2">卻是人生下階段的再起。</div>
+      <div class="ticket-photo" id="ticketPhoto">
+        <img src="surprise/IMG_6820.JPG" alt="五天參觀券與門票">
+        <div class="cap">5 days ・ every ticket kept</div>
       </div>
-
-      <div class="report-section">
-        <div class="report-key">患者狀況</div>
-        <div class="report-text">
-          每日 12 公里、17,000 步的波希米亞極限洗禮，雙腳雖已達極限，
-          但心靈已完成徹底的淨化與蛻變。
-        </div>
-      </div>
-
-      <div class="report-section">
-        <div class="report-key">主治醫師醫囑</div>
-        <div class="doctors-order">
-          「這不是終點，<br>
-          而是下一場浪漫冒險的<br>
-          臨床準備。」
-        </div>
-      </div>
-
-      <div class="report-section">
-        <div class="report-key">個人感悟</div>
-        <div class="personal-insight">
-          <span class="insight-highlight">走得動是福氣，想走就走是底氣。</span><br>
-          唯有親自用腳步丈量過，<br>
-          這座城市的美，<br>
-          才真正屬於我的靈魂。
-        </div>
-      </div>
-
-      <div class="case-closed">
-        <div class="stamp">🏁</div>
-        <div class="case-text">
-          <strong>PRAGUE 1200 ／ CASE CLOSED</strong>
-          Prague Spring 2024<br>
-          粘曉青・鄭惠文 醫師 謹識
-        </div>
-      </div>
-
     </div>
+
   </div>
+
+  <script>
+    /* ============================================================
+       馬拉松雙計時器：公里數 ＋ 步數，同步從 0 開始，
+       以 100 公尺為單位慢慢跳，跳到每天里程碑停 2.5 秒再繼續，
+       跳到第 5 天 52.5 公里／82,500 步時停住，彈彩花＋跳金句。
+       ============================================================ */
+    (function () {
+      var TICK_MS = 35;
+      var PAUSE_MS = 2500;
+      var TICKS_PER_DAY = 105;      // 10.5km / 0.1km
+      var TOTAL_TICKS = TICKS_PER_DAY * 5; // 525 → 52.5km
+      var STEPS_PER_KM = 82500 / 52.5;     // 1571.428571...
+
+      var ticks = 0;
+      var timer = null;
+
+      var $day = document.getElementById('dayLabel');
+      var $km = document.getElementById('kmValue');
+      var $steps = document.getElementById('stepsValue');
+      var $fill = document.getElementById('progressFill');
+      var $status = document.getElementById('statusLine');
+
+      function updateDisplay() {
+        var km = ticks / 10;
+        var steps = Math.round(km * STEPS_PER_KM);
+        $km.textContent = km.toFixed(1);
+        $steps.textContent = steps.toLocaleString('en-US');
+        $fill.style.width = (ticks / TOTAL_TICKS * 100) + '%';
+      }
+
+      function showDay(n) {
+        $day.classList.remove('show');
+        setTimeout(function () {
+          $day.textContent = '第 ' + n + ' 天';
+          $day.classList.add('show');
+        }, 120);
+      }
+
+      function tick() {
+        ticks++;
+        updateDisplay();
+
+        if (ticks % TICKS_PER_DAY === 0) {
+          clearInterval(timer);
+          if (ticks >= TOTAL_TICKS) {
+            onFinish();
+          } else {
+            setTimeout(function () {
+              showDay(ticks / TICKS_PER_DAY + 1);
+              timer = setInterval(tick, TICK_MS);
+            }, PAUSE_MS);
+          }
+        }
+      }
+
+      function spawnConfetti() {
+        var layer = document.getElementById('confettiLayer');
+        var colors = ['#ff8c00', '#ffb347', '#ffffff', '#ff5555', '#ffd166'];
+        for (var i = 0; i < 40; i++) {
+          (function () {
+            var piece = document.createElement('div');
+            piece.className = 'confetti-piece';
+            piece.style.left = (Math.random() * 100) + '%';
+            piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+            piece.style.animationDuration = (2.2 + Math.random() * 1.6) + 's';
+            piece.style.animationDelay = (Math.random() * 0.6) + 's';
+            layer.appendChild(piece);
+            setTimeout(function () { piece.remove(); }, 5000);
+          })();
+        }
+      }
+
+      function onFinish() {
+        $status.textContent = '🏁 PROJECT STATUS : COMPLETED';
+        $status.classList.remove('running');
+        $status.classList.add('finished');
+        spawnConfetti();
+
+        setTimeout(function () {
+          document.getElementById('quoteLine1').classList.add('show');
+          document.getElementById('ticketPhoto').classList.add('show');
+        }, 400);
+        setTimeout(function () {
+          document.getElementById('quoteLine2').classList.add('show');
+        }, 2400);
+      }
+
+      function start() {
+        showDay(1);
+        timer = setInterval(tick, TICK_MS);
+      }
+
+      if (document.readyState === 'complete') {
+        setTimeout(start, 800);
+      } else {
+        window.addEventListener('load', function () { setTimeout(start, 800); });
+      }
+    })();
+
+    /* ============================================================
+       右頁照片輪播：7 張持續循環播放，跟左邊計時器脫鉤，
+       不管播到第幾張，計時器一到終點就直接觸發彩花＋金句。
+       ============================================================ */
+    (function () {
+      var imgs = document.querySelectorAll('#photoCarousel img');
+      if (!imgs.length) return;
+      var idx = 0;
+      setInterval(function () {
+        imgs[idx].classList.remove('active');
+        idx = (idx + 1) % imgs.length;
+        imgs[idx].classList.add('active');
+      }, 3800);
+    })();
+  </script>
 
   <script>
     /* 本頁配樂：進頁淡入，離頁（無論往前往後翻）淡出，即使已翻過去也會慢慢收掉。

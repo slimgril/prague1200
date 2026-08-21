@@ -1,391 +1,394 @@
 /**
- * Prague1200 — Soft Paper Flip Engine v2
+ * Prague1200 — Hardcover Page-Turn Engine + 跨頁預載管理器
  *
- * 翻頁原理：
- *   - 把右頁切成 N 個垂直切片（Slices），每片獨立 rotateY
- *   - 最外側切片 delay=0（先動），最內側 delay=最大（後動）
- *   - 結果：右緣先揚起，脊側最後跟上 → 視覺上形成「柔紙弧度」
- *   - 同時疊加漸層陰影 overlay 在 90° 峰值最深，模擬光影折曲
- *   - backface 套用 backdrop-filter blur 模擬透光感
+ * 翻頁動畫本身（硬紙板、只有右半頁繞書脊旋轉、背面露出下一跨頁左半頁）
+ * 已經驗證可行，這裡完全沒有改動翻頁機制——這次只解決「翻頁後圖片還在
+ * 下載，畫面空白/跳動/逐張補上」的問題，做法是「跨頁預載管理器」：
  *
- * cubic-bezier(0.25, 1, 0.5, 1)  ← Ease-Out Quint，紙張落下慣性
- * Duration: 900ms (within 0.8-1.2s spec)
+ *   - 每個跨頁的互動網址養在自己專屬的 iframe 裡，三個 iframe 輪流服務
+ *     「上一跨頁 / 目前跨頁 / 下一跨頁」（用 index % 3 分配，因為每次
+ *     只會移動到相鄰跨頁，相鄰三個 index 取 mod 3 一定落在三個不同格子，
+ *     不需要額外的搬移/回收帳本）。
+ *   - 目前跨頁一顯示完成，就立刻在背景把「下一跨頁」的 iframe 準備好：
+ *     等 iframe load、抓出裡面所有 <img> 呼叫 decode()、再等兩次
+ *     requestAnimationFrame，確認真的畫出來了才算 ready。
+ *   - 翻頁動畫「正式開始」前一定會 await 下一跨頁 ready；如果使用者手速
+ *     快過預載，才會短暫顯示「載入中」，翻頁動畫本身永遠只在內容已經
+ *     準備好之後才開始轉——不會出現轉完頁、下一跨頁還在補圖的狀況。
+ *   - 翻頁完成後不是「重新設定同一顆 iframe 的 src」（那樣等於整個重新
+ *     載入，白準備了），而是直接把已經準備好的 iframe 切到可見／可互動，
+ *     舊的那顆退到背景繼續留著（變成新的「上一跨頁」）。
+ *   - 非目前跨頁的 iframe 一律靜音其中的 audio/video，避免預載時提前
+ *     發出聲音；切到目前跨頁時才解除靜音（不主動幫忙按播放，維持原本
+ *     「使用者點擊才播放」的設計）。
+ *
+ * 另外沿用先前驗證過的修正：iframe 內部事件不會冒泡到外層文件，所以
+ * 左右邊緣另外疊了 tap-zone，並用 setPointerCapture 讓「熱區起手、滑進
+ * 中間互動內容」的滑動手勢仍收得到終點。
  */
 
 const FLIP_CONFIG = {
-  slices:      7,
-  duration:    1100,      // ms — slower, more paper feel
-  maxDelay:    200,       // outer leads 0ms, spine delays 200ms → visible wave
-  easing:      'cubic-bezier(0.23, 1, 0.32, 1)',  // Ease-Out Quint, soft landing
-  perspective: 1800,      // tighter perspective = more dramatic bend
+  duration: 850,        // ms — 翻頁時間
+  prepareTimeout: 6000, // ms — 單一跨頁預載安全逾時，避免壞掉的資源卡住翻頁
 };
 
-/* ── Helper: clone a page el ── */
-function clonePageEl(el) {
-  if (!el) return _blankPage();
-  const c = el.cloneNode(true);
-  // Re-run any init if the page exposes it
-  if (el.__onClone) el.__onClone(c);
-  return c;
-}
-function _blankPage(side = 'right') {
-  const d = document.createElement('div');
-  d.className = 'page pg-endpaper';
-  d.dataset.side = side;
-  return d;
-}
-
-/* ════════════════════════════════════════════
-   SoftFlipBook
-   ════════════════════════════════════════════ */
 class SoftFlipBook {
   constructor(opts = {}) {
-    this.pages       = opts.pages || [];   // Array of DOM elements (front faces)
-    this.spreadIndex = 0;
-    this.isAnimating = false;
+    this.spreads      = opts.spreads || [];
+    this.currentIndex = 0;
+    this.busy         = false;
     this.onSpreadChange = opts.onSpreadChange || null;
     this._playSoundFn   = opts.playFlipSound || (() => {});
 
-    // DOM refs
-    this.$book     = document.getElementById('book');
-    this.$bgLeft   = document.getElementById('page-left-bg');
-    this.$bgRight  = document.getElementById('page-right-bg');
-    this.$flipWrap = document.getElementById('flip-wrap');
-    this.$shadow   = document.getElementById('flip-shadow');
+    this.$book         = document.getElementById('book');
+    this.$liveStage     = document.querySelector('.live-stage');
+    this.$previewStage  = document.getElementById('previewStage');
+    this.$destPreview   = document.getElementById('destinationPreview');
+    this.$turningLeaf   = document.getElementById('turningLeaf');
+    this.$leafFront     = document.getElementById('leafFront');
+    this.$leafBack      = document.getElementById('leafBack');
+    this.$tapPrev       = document.getElementById('tapZonePrev');
+    this.$tapNext       = document.getElementById('tapZoneNext');
+    this.$loadingOverlay = document.getElementById('page-loading');
 
-    this._sliceEls = [];
+    this._pointerStartX = 0;
+    this._pointerStartY = 0;
 
-    this._initSlices();
-    this._render();
+    // 三個 iframe 輪流服務「上一跨頁 / 目前跨頁 / 下一跨頁」
+    this._frames = [0, 1, 2].map(() => this._makeFrame());
+
     this._bindEvents();
+    this._openBook();
   }
 
-  /* ── Spread geometry ──────────────────────────── */
-  get totalSpreads() {
-    // Spread 0: blank left + page[0] right (cover)
-    // Spread s: page[2s-1] left + page[2s] right
-    return Math.ceil((this.pages.length + 1) / 2) + 1;
+  get totalSpreads() { return this.spreads.length; }
+  get spreadIndex()  { return this.currentIndex; }
+
+  _makeFrame() {
+    const f = document.createElement('iframe');
+    f.className = 'live-frame';
+    f.setAttribute('allow', 'autoplay; fullscreen');
+    f.dataset.idx = '-1';
+    f.dataset.state = 'idle';
+    this._muteMedia(f); // 尚未指派內容，先當作非目前跨頁處理
+    this.$liveStage?.appendChild(f);
+    return f;
   }
-  _leftIdx(s)  { return s * 2 - 1; }
-  _rightIdx(s) { return s * 2;     }
 
-  _getPage(idx) {
-    if (idx < 0 || idx >= this.pages.length) return null;
-    return this.pages[idx];
+  _frameSlot(idx) {
+    return this._frames[((idx % 3) + 3) % 3];
   }
 
-  /* ── Init the N flip slices ───────────────────── */
-  _initSlices() {
-    this.$flipWrap.innerHTML = '';
-    this._sliceEls = [];
-    const N = FLIP_CONFIG.slices;
-    const pct = 100 / N;
+  _muteMedia(frame) {
+    try {
+      const doc = frame.contentDocument;
+      if (!doc) return;
+      doc.querySelectorAll('audio,video').forEach(el => {
+        if (el.dataset._wasMuted === undefined) el.dataset._wasMuted = el.muted ? '1' : '0';
+        el.muted = true;
+        el.pause?.();
+      });
+    } catch (e) { /* 同源理應不會丟錯，保險起見忽略 */ }
+  }
 
-    for (let i = 0; i < N; i++) {
-      const slice = document.createElement('div');
-      slice.className = 'flip-slice';
-      slice.style.cssText = `
-        position: absolute;
-        top: 0;
-        left: ${i * pct}%;
-        width: ${pct + 0.2}%;
-        height: 100%;
-        overflow: hidden;
-        transform-origin: left center;
-        transform-style: preserve-3d;
-        backface-visibility: visible;
-        will-change: transform;
-      `;
+  _unmuteMedia(frame) {
+    try {
+      const doc = frame.contentDocument;
+      if (!doc) return;
+      doc.querySelectorAll('audio,video').forEach(el => {
+        if (el.dataset._wasMuted !== undefined) el.muted = el.dataset._wasMuted === '1';
+      });
+    } catch (e) { /* ignore */ }
+  }
 
-      // Front face (clips into front page content)
-      const front = document.createElement('div');
-      front.className = 'slice-face slice-front';
-      front.style.cssText = `
-        position: absolute; inset: 0;
-        overflow: hidden;
-        backface-visibility: hidden;
-        -webkit-backface-visibility: hidden;
-      `;
-      const frontInner = document.createElement('div');
-      frontInner.className = 'slice-inner';
-      // Position full-page content so this slice's window reveals column i
-      frontInner.style.cssText = `
-        position: absolute;
-        top: 0; left: ${-(i * pct)}%;
-        width: ${N * 100}%;
-        height: 100%;
-        pointer-events: none;
-      `;
-      front.appendChild(frontInner);
+  /* ── 確保某個跨頁的 iframe 已載入、首屏圖片已 decode、且至少畫過兩次畫面 ── */
+  _ensurePrepared(idx) {
+    if (idx < 0 || idx >= this.totalSpreads) return Promise.resolve();
+    const frame = this._frameSlot(idx);
+    if (Number(frame.dataset.idx) === idx && frame._readyPromise) {
+      return frame._readyPromise;
+    }
 
-      // Shadow overlay — creates fold-shadow that deepens mid-flip
-      const frontShadow = document.createElement('div');
-      frontShadow.className = 'slice-shadow';
-      frontShadow.style.cssText = `
-        position:absolute; inset:0; pointer-events:none; z-index:2;
-        background:linear-gradient(to right, rgba(0,0,0,0.18), transparent);
-        opacity:0; transition:opacity 0.1s;
-      `;
-      front.appendChild(frontShadow);
+    frame.dataset.idx   = String(idx);
+    frame.dataset.state = 'loading';
+    const spread = this.spreads[idx];
 
-      // Back face (clips into back page content, viewed from behind)
-      const back = document.createElement('div');
-      back.className = 'slice-face slice-back';
-      back.style.cssText = `
-        position: absolute; inset: 0;
-        overflow: hidden;
-        transform: rotateY(180deg);
-        backface-visibility: hidden;
-        -webkit-backface-visibility: hidden;
-      `;
-      const backInner = document.createElement('div');
-      backInner.className = 'slice-inner';
-      // When viewed from behind: slice i of back = column (N-1-i) from right
-      // i.e. back column index = N-1-i, offset = (N-1-i) * pct from left
-      const backCol = (N - 1 - i);
-      backInner.style.cssText = `
-        position: absolute;
-        top: 0; left: ${-(backCol * pct)}%;
-        width: ${N * 100}%;
-        height: 100%;
-        pointer-events: none;
-        transform: scaleX(-1);     /* correct mirror from rotateY(180deg) */
-      `;
-      back.appendChild(backInner);
+    const promise = new Promise(resolve => {
+      let settled = false;
+      let polling = null;
+      const finish = (state) => {
+        if (settled) return;
+        settled = true;
+        if (polling) clearInterval(polling);
+        frame.dataset.state = state;
+        resolve();
+      };
+      const startScan = () => {
+        this._muteMedia(frame); // 預載階段先靜音，避免提前發聲
+        this._waitForCriticalPaint(frame).then(() => finish('ready'));
+      };
+      // 不能只等 iframe 的 load 事件——網頁裡的字型／外部資源萬一很慢或連不上，
+      // load 事件會被拖住，但畫面其實早就能看了。改成輪詢 contentDocument.
+      // readyState，一旦 HTML 解析完成（interactive）就直接開始掃描首屏圖片。
+      const tryScan = () => {
+        let doc;
+        try { doc = frame.contentDocument; } catch (e) { return false; }
+        if (!doc || doc.readyState === 'loading') return false;
+        startScan();
+        return true;
+      };
+      polling = setInterval(() => { if (tryScan()) clearInterval(polling); }, 50);
+      frame.addEventListener('load', () => tryScan(), { once: true });
+      frame.addEventListener('error', () => finish('error'), { once: true });
+      setTimeout(() => finish(frame.dataset.state === 'loading' ? 'error' : frame.dataset.state), FLIP_CONFIG.prepareTimeout);
+    });
 
-      slice.appendChild(front);
-      slice.appendChild(back);
-      this.$flipWrap.appendChild(slice);
-      this._sliceEls.push({ slice, front, frontInner, back, backInner, frontShadow });
+    frame._readyPromise = promise;
+    frame.src = spread.url;
+    this._preloadImage(spread.preview).catch(() => {}); // 順便預熱翻頁預覽圖
+    return promise;
+  }
+
+  /* ── 等首屏圖片下載完成、decode()、再等兩次 rAF 確認真的畫出來了 ──
+     不只是等 iframe 的 load 事件：load 不代表內部圖片都已解碼繪製完成。 */
+  async _waitForCriticalPaint(frame) {
+    let doc;
+    try { doc = frame.contentDocument; } catch (e) { return; }
+    if (!doc) return;
+
+    // 排除 src="" 的圖片（例如燈箱用的預留 <img>，點擊時才會被填入真正的
+    // src）——空 src 的 <img> 依規範永遠不會觸發 load 或 error，等下去只會
+    // 卡住整個「準備下一跨頁」流程；這類圖片本來就不屬於「首屏」內容。
+    const imgs = Array.from(doc.images || []).filter(img => {
+      const src = img.getAttribute('src');
+      return src && src.trim() !== '';
+    });
+    await Promise.all(imgs.map(img => {
+      const decodeOrResolve = () =>
+        (img.decode ? img.decode().catch(() => {}) : Promise.resolve());
+      if (img.complete && img.naturalWidth > 0) return decodeOrResolve();
+      return new Promise(resolve => {
+        img.addEventListener('load',  () => decodeOrResolve().then(resolve), { once: true });
+        img.addEventListener('error', resolve, { once: true });
+      });
+    }));
+
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  }
+
+  _activateFrame(idx) {
+    const frame = this._frameSlot(idx);
+    this._frames.forEach(f => {
+      if (f !== frame) f.classList.remove('slot-active');
+    });
+    frame.classList.add('slot-active');
+    this._unmuteMedia(frame);
+    return frame;
+  }
+
+  async _openBook() {
+    await this._ensurePrepared(0);
+    this._activateFrame(0);
+    this._updateNav();
+    // 一開始就顧到「目前 + 下一跨頁」的預載（第一跨頁沒有上一跨頁）
+    this._ensurePrepared(1);
+  }
+
+  _updateNav() {
+    document.getElementById('nav-prev')
+      ?.classList.toggle('disabled', this.busy || this.currentIndex <= 0);
+    document.getElementById('nav-next')
+      ?.classList.toggle('disabled', this.busy || this.currentIndex >= this.totalSpreads - 1);
+    if (this.onSpreadChange) this.onSpreadChange(this.currentIndex, this.totalSpreads);
+  }
+
+  _preloadImage(url) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload  = () => resolve(img);
+      img.onerror = reject;
+      img.src = url;
+    });
+  }
+
+  _setLeafImage(el, url, position) {
+    el.style.backgroundImage  = `url("${url}")`;
+    el.style.backgroundPosition = position;
+  }
+
+  _resetTurnUI() {
+    this.$previewStage.style.opacity = '0';
+    this.$book.classList.remove('is-turning');
+    this.$turningLeaf.classList.remove('animate', 'turned');
+    this.$loadingOverlay?.classList.remove('active');
+    this.busy = false;
+    this._updateNav();
+  }
+
+  /* ── 前往下一跨頁：右半頁翻起，背面露出下一跨頁左半頁 ── */
+  async flipForward() {
+    if (this.busy || this.currentIndex >= this.totalSpreads - 1) return;
+    this.busy = true;
+    this._updateNav();
+
+    const current = this.spreads[this.currentIndex];
+    const destIdx = this.currentIndex + 1;
+    const dest    = this.spreads[destIdx];
+
+    try {
+      // 下一跨頁首屏尚未準備完成時，不允許翻頁動畫正式開始
+      if (this._frameSlot(destIdx).dataset.state !== 'ready') {
+        this.$loadingOverlay?.classList.add('active');
+      }
+      await Promise.all([
+        this._preloadImage(current.preview),
+        this._preloadImage(dest.preview),
+        this._ensurePrepared(destIdx),
+      ]);
+      this.$loadingOverlay?.classList.remove('active');
+
+      this.$destPreview.src = dest.preview;
+      this._setLeafImage(this.$leafFront, current.preview, 'right center');
+      this._setLeafImage(this.$leafBack,  dest.preview,    'left center');
+
+      this._playSoundFn();
+      this.$previewStage.style.opacity = '1';
+      this.$book.classList.add('is-turning');
+      this.$turningLeaf.classList.remove('turned');
+      this.$turningLeaf.classList.add('animate');
+
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        this.$turningLeaf.classList.add('turned');
+      }));
+
+      this.$turningLeaf.addEventListener('transitionend', () => {
+        this.currentIndex = destIdx;
+        this.$turningLeaf.classList.remove('animate', 'turned');
+        this._activateFrame(destIdx);
+        this._ensurePrepared(destIdx + 1); // 三層保留往前推一格
+        setTimeout(() => {
+          this.$previewStage.style.opacity = '0';
+          this.$book.classList.remove('is-turning');
+          this.busy = false;
+          this._updateNav();
+          this.$book.focus({ preventScroll: true });
+        }, 120);
+      }, { once: true });
+    } catch (err) {
+      console.error('下一跨頁翻頁失敗：', err);
+      this._resetTurnUI();
     }
   }
 
-  /* ── Fill a slice with content ─────────────────── */
-  _fillSlice(sliceData, frontEl, backEl) {
-    const N = FLIP_CONFIG.slices;
-    // Front
-    sliceData.frontInner.innerHTML = '';
-    if (frontEl) sliceData.frontInner.appendChild(clonePageEl(frontEl));
-    // Back
-    sliceData.backInner.innerHTML = '';
-    if (backEl) sliceData.backInner.appendChild(clonePageEl(backEl));
-  }
-
-  /* ── Render current spread ─────────────────────── */
-  _render(s = this.spreadIndex) {
-    const li = this._leftIdx(s);
-    const ri = this._rightIdx(s);
-
-    // Background left / right
-    this.$bgLeft.innerHTML  = '';
-    this.$bgRight.innerHTML = '';
-    const lp = this._getPage(li);
-    const rp = this._getPage(ri);
-    if (lp) this.$bgLeft.appendChild(clonePageEl(lp));
-    else     this.$bgLeft.appendChild(_blankPage('left'));
-    if (rp) this.$bgRight.appendChild(clonePageEl(rp));
-    else     this.$bgRight.appendChild(_blankPage('right'));
-
-    // Reset flip wrap
-    this.$flipWrap.style.opacity = '0';
-    this.$flipWrap.style.transition = 'none';
-    this._clearSliceTransitions();
-
-    // Shadow off
-    this.$shadow.style.opacity = '0';
-
+  /* ── 返回上一跨頁：對稱動作 ── */
+  async flipBackward() {
+    if (this.busy || this.currentIndex <= 0) return;
+    this.busy = true;
     this._updateNav();
-    if (this.onSpreadChange) this.onSpreadChange(s, this.totalSpreads);
 
-    // Call onEnter for pages that need it
-    [this.$bgLeft, this.$bgRight].forEach(container => {
-      const page = container.firstElementChild;
-      if (page?.__onEnter) page.__onEnter();
-    });
+    const destIdx = this.currentIndex - 1;
+    const dest    = this.spreads[destIdx];
+    const current = this.spreads[this.currentIndex];
+
+    try {
+      if (this._frameSlot(destIdx).dataset.state !== 'ready') {
+        this.$loadingOverlay?.classList.add('active');
+      }
+      await Promise.all([
+        this._preloadImage(dest.preview),
+        this._preloadImage(current.preview),
+        this._ensurePrepared(destIdx),
+      ]);
+      this.$loadingOverlay?.classList.remove('active');
+
+      this.$destPreview.src = dest.preview;
+      this._setLeafImage(this.$leafFront, dest.preview,    'right center');
+      this._setLeafImage(this.$leafBack,  current.preview, 'left center');
+
+      this._playSoundFn();
+      this.$previewStage.style.opacity = '1';
+      this.$book.classList.add('is-turning');
+      this.$turningLeaf.classList.remove('animate');
+      this.$turningLeaf.classList.add('turned');
+
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        this.$turningLeaf.classList.add('animate');
+        this.$turningLeaf.classList.remove('turned');
+      }));
+
+      this.$turningLeaf.addEventListener('transitionend', () => {
+        this.currentIndex = destIdx;
+        this.$turningLeaf.classList.remove('animate', 'turned');
+        this._activateFrame(destIdx);
+        this._ensurePrepared(destIdx - 1); // 三層保留往後推一格
+        setTimeout(() => {
+          this.$previewStage.style.opacity = '0';
+          this.$book.classList.remove('is-turning');
+          this.busy = false;
+          this._updateNav();
+          this.$book.focus({ preventScroll: true });
+        }, 120);
+      }, { once: true });
+    } catch (err) {
+      console.error('上一跨頁翻頁失敗：', err);
+      this._resetTurnUI();
+    }
   }
 
-  _clearSliceTransitions() {
-    this._sliceEls.forEach(({ slice }) => {
-      slice.style.transition = 'none';
-      slice.style.transform  = 'perspective(2400px) rotateY(0deg)';
-    });
+  /* ── 直接跳頁（不經過翻頁動畫） ── */
+  async goTo(i) {
+    if (this.busy || i < 0 || i >= this.totalSpreads) return;
+    this.currentIndex = i;
+    await this._ensurePrepared(i);
+    this._activateFrame(i);
+    this._updateNav();
+    this._ensurePrepared(i + 1);
+    this._ensurePrepared(i - 1);
   }
 
-  /* ── Forward flip ──────────────────────────────── */
-  flipForward() {
-    if (this.isAnimating || this.spreadIndex >= this.totalSpreads - 1) return;
-    const s  = this.spreadIndex;
-    const ri = this._rightIdx(s);      // current right = flip front
-    const nl = ri + 1;                 // next left     = flip back
-
-    const frontEl = this._getPage(ri);
-    const backEl  = this._getPage(nl);
-
-    // Load all slices
-    this._sliceEls.forEach(d => this._fillSlice(d, frontEl, backEl));
-
-    // Reset transform
-    this._clearSliceTransitions();
-    this.$flipWrap.style.opacity = '1';
-
-    // Shadow setup
-    this.$shadow.style.transition = 'none';
-    this.$shadow.style.opacity    = '0';
-
-    this._playSoundFn();
-    this.isAnimating = true;
-
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      const N   = FLIP_CONFIG.slices;
-      const dur = FLIP_CONFIG.duration;
-      const ease = FLIP_CONFIG.easing;
-
-      // Animate each slice — outer (index N-1) leads, inner (index 0) follows
-      this._sliceEls.forEach(({ slice, frontShadow }, i) => {
-        // i=0 inner/spine, i=N-1 outer/edge
-        const t     = i / (N - 1);  // 0=inner, 1=outer
-        const delay = FLIP_CONFIG.maxDelay * (1 - t);  // outer=0ms, inner=maxDelay
-        slice.style.transition =
-          `transform ${dur}ms ${ease} ${delay}ms`;
-        slice.style.transform  =
-          `perspective(${FLIP_CONFIG.perspective}px) rotateY(-180deg)`;
-        // fold shadow peaks at ~half-way
-        if (frontShadow) {
-          const shadowDelay = delay;
-          setTimeout(() => { frontShadow.style.opacity = String(0.5 + 0.5 * t); },  shadowDelay);
-          setTimeout(() => { frontShadow.style.opacity = '0'; }, shadowDelay + dur * 0.55);
-        }
-      });
-
-      // Shadow peak at midpoint
-      const midTime = dur * 0.45 + FLIP_CONFIG.maxDelay;
-      this.$shadow.style.transition = `opacity ${dur * 0.4}ms ease-in`;
-      this.$shadow.style.opacity    = '1';
-      setTimeout(() => {
-        this.$shadow.style.transition = `opacity ${dur * 0.45}ms ease-out`;
-        this.$shadow.style.opacity    = '0';
-      }, midTime);
-
-      // Update left background at ~45% (before slices fully reveal it)
-      setTimeout(() => {
-        this.$bgLeft.innerHTML = '';
-        const nextLeft = this._getPage(nl);
-        if (nextLeft) this.$bgLeft.appendChild(clonePageEl(nextLeft));
-        else          this.$bgLeft.appendChild(_blankPage('left'));
-      }, dur * 0.45);
-
-      // Done
-      const totalTime = dur + FLIP_CONFIG.maxDelay + 60;
-      setTimeout(() => {
-        this.spreadIndex++;
-        this.isAnimating = false;
-        this._render();
-      }, totalTime);
-    }));
-  }
-
-  /* ── Backward flip ─────────────────────────────── */
-  flipBackward() {
-    if (this.isAnimating || this.spreadIndex <= 0) return;
-    const s  = this.spreadIndex;
-    const li = this._leftIdx(s);    // current left = reveals as right after flip
-    const pr = li - 1;              // prev right = what was there before
-
-    const frontEl = this._getPage(pr);  // flip front shows "prev right"
-    const backEl  = this._getPage(li);  // flip back shows "current left"
-
-    this._sliceEls.forEach(d => this._fillSlice(d, frontEl, backEl));
-
-    // Start at -180° (on left side), animate to 0°
-    this._clearSliceTransitions();
-    this._sliceEls.forEach(({ slice }) => {
-      slice.style.transform = `perspective(${FLIP_CONFIG.perspective}px) rotateY(-180deg)`;
-    });
-    this.$flipWrap.style.opacity = '1';
-    this.$shadow.style.opacity   = '0';
-
-    this._playSoundFn();
-    this.isAnimating = true;
-
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      const N    = FLIP_CONFIG.slices;
-      const dur  = FLIP_CONFIG.duration;
-      const ease = FLIP_CONFIG.easing;
-
-      // For backward: inner leads, outer follows (reverse the delay)
-      this._sliceEls.forEach(({ slice }, i) => {
-        const t     = i / (N - 1);
-        const delay = FLIP_CONFIG.maxDelay * t;  // inner=0, outer=maxDelay
-        slice.style.transition =
-          `transform ${dur}ms ${ease} ${delay}ms`;
-        slice.style.transform  =
-          `perspective(${FLIP_CONFIG.perspective}px) rotateY(0deg)`;
-      });
-
-      const midTime = dur * 0.45;
-      this.$shadow.style.transition = `opacity ${dur * 0.4}ms ease-in`;
-      this.$shadow.style.opacity    = '1';
-      setTimeout(() => {
-        this.$shadow.style.transition = `opacity ${dur * 0.45}ms ease-out`;
-        this.$shadow.style.opacity    = '0';
-      }, midTime);
-
-      // Update right background
-      setTimeout(() => {
-        this.$bgRight.innerHTML = '';
-        const prevRight = this._getPage(pr);
-        if (prevRight) this.$bgRight.appendChild(clonePageEl(prevRight));
-        else           this.$bgRight.appendChild(_blankPage('right'));
-      }, dur * 0.45);
-
-      const totalTime = dur + FLIP_CONFIG.maxDelay + 60;
-      setTimeout(() => {
-        this.spreadIndex--;
-        this.isAnimating = false;
-        this._render();
-      }, totalTime);
-    }));
-  }
-
-  /* ── Jump to spread ─────────────────────────────── */
-  goTo(s) {
-    if (s < 0 || s >= this.totalSpreads || this.isAnimating) return;
-    this.spreadIndex = s;
-    this._render();
-  }
-
-  /* ── Nav state ──────────────────────────────────── */
-  _updateNav() {
-    document.getElementById('nav-prev')
-      ?.classList.toggle('disabled', this.spreadIndex <= 0);
-    document.getElementById('nav-next')
-      ?.classList.toggle('disabled', this.spreadIndex >= this.totalSpreads - 1);
-  }
-
-  /* ── Input events ───────────────────────────────── */
   _bindEvents() {
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) {
+      document.documentElement.style.setProperty('--turn-duration', '1ms');
+    }
+
     document.addEventListener('keydown', e => {
       if (document.getElementById('lightbox')?.classList.contains('active')) return;
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') this.flipForward();
-      if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   this.flipBackward();
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); this.flipForward(); }
+      if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   { e.preventDefault(); this.flipBackward(); }
     });
 
-    // Click zones on the book itself
-    this.$book?.addEventListener('click', e => {
-      const rect = this.$book.getBoundingClientRect();
-      const x    = e.clientX - rect.left;
-      const frac = x / rect.width;
-      if (frac < 0.22) this.flipBackward();
-      else if (frac > 0.78) this.flipForward();
+    // 專用翻頁熱區（仿電子書）：每一跨頁內容都是 iframe，iframe 內部的點擊／
+    // 觸控事件不會冒泡到外層文件。這兩個熱區是一般 <div>，疊在 iframe 之上，
+    // 事件會正常冒泡，確保左右邊緣永遠點得到、翻得了頁。
+    this.$tapNext?.addEventListener('click', () => this.flipForward());
+    this.$tapPrev?.addEventListener('click', () => this.flipBackward());
+
+    // 邊緣熱區用 setPointerCapture：手指從邊緣熱區開始滑動、途中移到中央
+    // 互動內容（iframe）上方時，熱區仍持續收到 pointermove/pointerup，
+    // 不會因為滑到 iframe 上方而漏接滑動終點。
+    [this.$tapPrev, this.$tapNext].forEach(zone => {
+      zone?.addEventListener('pointerdown', e => zone.setPointerCapture(e.pointerId));
     });
 
-    // Touch swipe
-    let tx = 0;
-    this.$book?.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
-    this.$book?.addEventListener('touchend',   e => {
-      const dx = e.changedTouches[0].clientX - tx;
-      if (Math.abs(dx) > 44) { dx < 0 ? this.flipForward() : this.flipBackward(); }
-    }, { passive: true });
+    // 書本整體：滑動手勢 + 邊緣點擊（作為熱區以外區域的後備）
+    this.$book?.addEventListener('pointerdown', e => {
+      this._pointerStartX = e.clientX;
+      this._pointerStartY = e.clientY;
+    });
+    this.$book?.addEventListener('pointerup', e => {
+      if (this.busy) return;
+      const dx = e.clientX - this._pointerStartX;
+      const dy = e.clientY - this._pointerStartY;
+      if (Math.abs(dx) >= 55 && Math.abs(dx) > Math.abs(dy)) {
+        dx < 0 ? this.flipForward() : this.flipBackward();
+        return;
+      }
+      const bounds = this.$book.getBoundingClientRect();
+      const localX = e.clientX - bounds.left;
+      if (localX >= bounds.width * 0.82) this.flipForward();
+      else if (localX <= bounds.width * 0.18) this.flipBackward();
+    });
   }
 }
 

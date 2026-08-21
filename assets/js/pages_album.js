@@ -181,17 +181,33 @@ function _initAlbumLightbox() {
   const lbImg  = lb.querySelector('img');
   const lbInfo = document.getElementById('_alb-lb-info');
 
+  /* 相簿分層載入：縮圖列表只載縮圖，燈箱開啟後只預先載入「上一張／下一張」
+     的原圖，避免一次把上千張附錄照片的原始檔都抓下來 */
+  const _preloadCache = new Set();
+  function _preloadNeighbors() {
+    [_i - 1, _i + 1].forEach(n => {
+      const idx = (n + _srcs.length) % _srcs.length;
+      const src = _srcs[idx];
+      if (!src || _preloadCache.has(src)) return;
+      _preloadCache.add(src);
+      const img = new Image();
+      img.src = src;
+    });
+  }
+
   window._albOpen = (srcs, idx) => {
     _srcs = srcs; _i = idx;
     lbImg.src = srcs[idx];
     lbInfo.textContent = `${idx + 1}  /  ${srcs.length}`;
     lb.classList.add('open');
     document.body.style.overflow = 'hidden';
+    _preloadNeighbors();
   };
   const move = d => {
     _i = (_i + d + _srcs.length) % _srcs.length;
     lbImg.src = _srcs[_i];
     lbInfo.textContent = `${_i + 1}  /  ${_srcs.length}`;
+    _preloadNeighbors();
   };
   const close = () => {
     lb.classList.remove('open');

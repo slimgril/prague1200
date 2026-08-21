@@ -92,7 +92,7 @@
         .brass-slider {
             width: 100%;
             -webkit-appearance: none;
-            background: linear-gradient(to right, #332211, #D4AF37, #332211);
+            background: linear-gradient(to right, #2a1420, #E85DA0, #2a1420);
             height: 6px;
             border-radius: 3px;
             outline: none;
@@ -103,9 +103,9 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: radial-gradient(circle, #FFF, #D4AF37, #8A6D3B);
-            border: 2px solid #332211;
-            box-shadow: 0 0 8px rgba(212,175,55,0.8);
+            background: radial-gradient(circle, #FFF, #E85DA0, #7A2249);
+            border: 2px solid #2a1420;
+            box-shadow: 0 0 8px rgba(232,93,160,0.8);
         }
 
         /* 3. 🎯 地圖遮罩畫布容器（使用實體圖層橫移遮罩） */
@@ -233,24 +233,28 @@
             border: 1px solid #EEE;
         }
 
-        /* 5. 史詩級隱藏反思金句（純文字淡入，無背景框） */
+        /* 5. 史詩級隱藏反思金句：移到左上角空白處，每行間隔2秒依序彈出 */
         .p03-poem-zone {
             position: absolute !important;
-            top: 70% !important;
-            left: 50% !important;
-            transform: translate(-50%, -50%) translateY(10px) !important;
-            width: 420px !important;
-            text-align: center !important;
-            line-height: 2.3 !important;
-            color: #FFFFFF !important; /* 白色文字 */
-            font-weight: 700 !important;
-            font-size: 16px !important;
+            top: 10% !important;
+            left: 5% !important;
+            width: 280px !important;
+            text-align: left !important;
+            line-height: 2 !important;
             z-index: 40 !important;
             pointer-events: none !important;
-            opacity: 0;
-            transition: opacity 2s ease, transform 2s ease !important;
-            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9) !important; /* 強烈黑色陰影讓白色文字更清晰 */
         }
+        .p03-poem-line {
+            color: #FFFFFF;
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 4px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 1s ease, transform 1s ease;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
+        }
+        .p03-poem-line.show { opacity: 1; transform: translateY(0); }
 
         /* 6. Lightbox 雜誌風格彈窗（上圖下文，以圖為主） */
         .lightbox-overlay {
@@ -332,6 +336,14 @@
             <div class="film-hotspot" onclick="triggerLightbox('surprise/image_lHpG8t.png', '卡羅維瓦利', '溫泉小鎮全景', event)"></div>
         </div>
 
+        <!-- 隱藏反思金句：位於左上角空白處，每行間隔2秒依序彈出 -->
+        <div class="p03-poem-zone" id="poemZone">
+            <div class="p03-poem-line" id="poemLine1">老去不是失去，是時間留下的價位——</div>
+            <div class="p03-poem-line" id="poemLine2">卡羅維瓦利的溫泉水，自地底湧出，帶著 1370 年的時光。</div>
+            <div class="p03-poem-line" id="poemLine3">普普飯店的石磚，見過多少旅人，</div>
+            <div class="p03-poem-line" id="poemLine4">也見過我們這對醫師同事。</div>
+        </div>
+
         <!-- 右頁：60% 寬度手帳尋寶區 -->
         <div class="p03-right-panel" id="rightPanel">
 
@@ -343,14 +355,6 @@
                     <span>未來的我們（透著光）</span>
                 </div>
                 <input type="range" min="0" max="100" value="50" class="brass-slider" id="timeSlider">
-            </div>
-
-            <!-- 隱藏反思金句 -->
-            <div class="p03-poem-zone" id="poemZone">
-                老去不是失去，是時間留下的價位——<br>
-                卡羅維瓦利的溫泉水，自地底湧出，帶著 1370 年的時光。<br>
-                普普飯店的石磚，見過多少旅人，<br>
-                也見過我們這對醫師同事。
             </div>
 
             <!-- 🎯 獨立的地圖城堡：金色圓圈直接疊加在背景圖上 -->
@@ -438,6 +442,7 @@
         let audioCtx = null;
         let heartbeatInterval = null;
         let currentBPM = 80;
+        let heartbeatVolumeScale = 1; // 拉到70後用來慢慢淡出音量
 
         function initAudio() {
             if (audioCtx) return;
@@ -447,14 +452,16 @@
 
         function playHeartbeatSound() {
             if (!audioCtx) return;
+            if (heartbeatVolumeScale <= 0) return;
             const now = audioCtx.currentTime;
+            const v = heartbeatVolumeScale;
 
             // 第一下心跳 "lub"
             const osc1 = audioCtx.createOscillator();
             const gain1 = audioCtx.createGain();
             osc1.type = 'sine';
             osc1.frequency.setValueAtTime(60, now);
-            gain1.gain.setValueAtTime(0.3, now);
+            gain1.gain.setValueAtTime(0.3 * v, now);
             gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
             osc1.connect(gain1);
             gain1.connect(audioCtx.destination);
@@ -466,7 +473,7 @@
             const gain2 = audioCtx.createGain();
             osc2.type = 'sine';
             osc2.frequency.setValueAtTime(50, now + 0.15);
-            gain2.gain.setValueAtTime(0.25, now + 0.15);
+            gain2.gain.setValueAtTime(0.25 * v, now + 0.15);
             gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
             osc2.connect(gain2);
             gain2.connect(audioCtx.destination);
@@ -494,42 +501,106 @@
             }
         }
 
+        /* 拉到70後：心跳先衝到最高點，維持後大約5秒慢慢淡出到無聲（人也走了） */
+        let agingFadeTriggered = false;
+        let agingFadeRAF = null;
+        function triggerAgingFade() {
+            if (agingFadeTriggered) return;
+            agingFadeTriggered = true;
+            const FADE_MS = 5000;
+            const t0 = performance.now();
+            function step(now) {
+                const p = Math.min((now - t0) / FADE_MS, 1);
+                heartbeatVolumeScale = 1 - p;
+                if (p < 1) {
+                    agingFadeRAF = requestAnimationFrame(step);
+                } else {
+                    stopHeartbeat();
+                    agingFadeRAF = null;
+                }
+            }
+            agingFadeRAF = requestAnimationFrame(step);
+        }
+        function cancelAgingFade() {
+            if (!agingFadeTriggered) return;
+            agingFadeTriggered = false;
+            if (agingFadeRAF) cancelAnimationFrame(agingFadeRAF);
+            agingFadeRAF = null;
+            heartbeatVolumeScale = 1;
+        }
+
+        /* 心跳 BPM 曲線（刻意反向）：
+           0～50（年輕→現在）：120 → 72，正常變化
+           50～70（現在→拉到70）：72 → 160，反向設計——越老心跳越快、越有活力
+           70以後：維持最高點，交給 triggerAgingFade() 5秒後慢慢淡出 */
+        function computeBPM(val) {
+            if (val <= 50) {
+                return 120 - (val / 50) * 48;
+            } else if (val < 70) {
+                return 72 + ((val - 50) / 20) * 88;
+            }
+            return 160;
+        }
+
         /* 時光拉桿動態監聽 + 心跳節律控制 */
         const slider = document.getElementById('timeSlider');
         const poemZone = document.getElementById('poemZone');
         const polaroid = document.getElementById('polaroidPic');
 
+        /* 金句依序彈出：每行間隔2秒，往右拉到70前只觸發一次，往回拉重置 */
+        let poemRevealed = false;
+        let poemTimers = [];
+        const poemLineIds = ['poemLine1', 'poemLine2', 'poemLine3', 'poemLine4'];
+        function revealPoem() {
+            if (poemRevealed) return;
+            poemRevealed = true;
+            poemLineIds.forEach((id, i) => {
+                poemTimers.push(setTimeout(() => {
+                    document.getElementById(id)?.classList.add('show');
+                }, i * 2000));
+            });
+        }
+        function hidePoem() {
+            poemRevealed = false;
+            poemTimers.forEach(t => clearTimeout(t));
+            poemTimers = [];
+            poemLineIds.forEach(id => document.getElementById(id)?.classList.remove('show'));
+        }
+
         slider.addEventListener('input', (e) => {
             const val = parseInt(e.target.value);
             const polaroidEl = document.querySelector('.p03-polaroid');
 
-            // 🎯 拍立得亮度延遲淡出：0-70% 保持明亮，70-100% 才逐漸消失
+            // 🎯 拍立得提早淡出：30% 開始變淡，拉到 70% 時就幾乎消失（不用等到拉到底）
             let polaroidOpacity = 1;
-            if (val > 70) {
-                polaroidOpacity = Math.max(0, 1 - ((val - 70) / 30)); // 從 70% 開始淡出
+            if (val > 30) {
+                polaroidOpacity = Math.max(0, 1 - ((val - 30) / 40)); // 30～70 之間淡出完畢
             }
             polaroidEl.style.opacity = polaroidOpacity;
 
-            // 💓 心跳節律控制：根據時間軸位置調整 BPM
-            // 0% (年輕) = 120 BPM (快速心跳)
-            // 50% (中年) = 80 BPM (正常心跳)
-            // 100% (老去) = 0 BPM (心跳停止)
-            const bpm = Math.max(0, 120 - (val * 1.2)); // 線性遞減：120 → 0
-            startHeartbeat(bpm);
+            // 💓 心跳節律控制（反向設計）：
+            // 0～50：120 → 72 BPM，年輕到現在，正常趨緩
+            // 50～70：72 → 160 BPM，刻意反向——越往老年拉，心跳越快、越有活力
+            // ≥70：維持最高點，觸發 5 秒後慢慢淡出到無聲
+            const bpm = computeBPM(val);
+            if (val >= 70) {
+                startHeartbeat(bpm);
+                triggerAgingFade();
+            } else {
+                cancelAgingFade();
+                startHeartbeat(bpm);
+            }
 
             if (val <= 30) {
                 polaroid.style.transform = 'scale(1.15)';
-                poemZone.style.opacity = '0';
-                poemZone.style.transform = 'translateY(10px)';
+                hidePoem();
                 document.getElementById('leftPanel').style.filter = 'sepia(0) brightness(1)';
             } else if (val >= 70) {
                 document.getElementById('leftPanel').style.filter = 'sepia(0.6) brightness(0.7)';
-                poemZone.style.opacity = '1';
-                poemZone.style.transform = 'translateY(0)';
+                revealPoem();
             } else {
                 polaroid.style.transform = 'scale(1)';
-                poemZone.style.opacity = '0';
-                poemZone.style.transform = 'translateY(10px)';
+                hidePoem();
                 document.getElementById('leftPanel').style.filter = 'sepia(0) brightness(1)';
             }
         });

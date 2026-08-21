@@ -24,27 +24,20 @@ async function init() {
     console.warn('album-manifest.json not found:', e);
   }
 
-  /* 2b. 翻頁順序（封面 p00 獨立佔第一格，跟原本 buildCover() 的位置規則一樣；
-     後續每一章都用「空白左頁 + 整頁跨頁 iframe」配對）
-     這樣 p01-live 會在第一個跨頁同時覆蓋左右（iframe 透過 CSS 鋪滿左右），
-     不再把 P01 拆成 40/60 左右 iframe。
-     注意：p00 不可以跟其他章節一樣放進 flatMap 配對陣列裡，
-     因為 SoftFlipBook 的第一個跨頁（spread 0）左頁固定是空白佔位，
-     只有 pages[0] 會顯示在右頁位置 —— 這個位置原本是給 buildCover() 用的。
-     若把 p00 併入配對陣列，會讓後面每一章的配對整個錯位一格。 */
-  const liveChapters = [
-    'p01-live.html','p02-live.html','p03-live.html','p04-live.html','p05-live.html',
-    'p06-live.html','p07-live.html','p08-live.html','p09-live.html','p10-live.html',
-  ];
-  const surprisePages = [
-    buildLiveSpread('p00-live.html'),
-    ...liveChapters.flatMap(src => [buildBlankPage(), buildLiveSpread(src)]),
-    ...buildAlbumPages(albumDays),
-  ];
+  /* 2b. 翻頁順序：每一個 pXX-live.html 就是一個完整跨頁（左右兩頁一起，一顆
+     iframe 撐滿整個書本寬度），P00 封面到 P11 封底，共 12 個跨頁。
+     每個跨頁另外配一張同比例 WebP 靜態預覽圖（previews/pXX.webp），只在翻頁
+     動畫過程中短暫使用，翻頁本身絕不去複製/重新載入互動網址。 */
+  const spreads = Array.from({ length: 12 }, (_, i) => {
+    const id = 'p' + String(i).padStart(2, '0');
+    return { title: id, url: `${id}-live.html`, preview: `previews/${id}.webp` };
+  });
 
-  /* 3. Init the flipbook */
+  /* 3. Init the flipbook（跨頁預載管理器內建在 SoftFlipBook 裡：目前跨頁
+     一顯示完成就背景準備下一跨頁，翻頁動畫本身一定等內容 ready 才開始，
+     「載入中」提示也由 flipbook.js 在需要時自己顯示/收起，這裡不用管） */
   const book = new SoftFlipBook({
-    pages: surprisePages,
+    spreads,
     playFlipSound: () => SoundEngine.pageTurn(),
     onSpreadChange: (s, total) => {
       const ind = document.getElementById('page-indicator');
@@ -53,20 +46,21 @@ async function init() {
   });
   window._book = book;
 
-  /* 4. Build scroll (reading) mode */
+  /* 4. Build scroll (reading) mode：獨立產生自己的 iframe，
+     跟翻頁書的唯一互動 iframe 互不影響 */
   const scrollView = document.getElementById('scroll-view');
   if (scrollView) {
-    surprisePages.forEach(p => {
+    spreads.forEach(sp => {
       const wrap = document.createElement('div');
       wrap.className = 'scroll-pg';
-      wrap.appendChild(p.cloneNode(true));
-      // Trigger onEnter for scroll clones too
-      if (p.__onEnter) {
-        const clone = wrap.firstElementChild;
-        clone.__onEnter = p.__onEnter;
-        // Trigger after a tick so DOM is ready
-        requestAnimationFrame(() => clone.__onEnter?.());
-      }
+      wrap.appendChild(buildLiveSpread(sp.url));
+      scrollView.appendChild(wrap);
+    });
+    // 相簿附錄（沿用既有的縮圖格狀版面，接在章節之後）
+    buildAlbumPages(albumDays).forEach(p => {
+      const wrap = document.createElement('div');
+      wrap.className = 'scroll-pg';
+      wrap.appendChild(p);
       scrollView.appendChild(wrap);
     });
     // Add archive at bottom of scroll view

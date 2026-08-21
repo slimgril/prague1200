@@ -21,20 +21,33 @@
       background-size: 40px 40px;
     }
 
-    /* 背景底圖：平時半透明，終點揭幕時放大全亮 */
+    /* 背景底圖：一開始幾乎全黑模糊，隨著站點一站站往上走才逐漸顯現，終點揭幕時放大全亮 */
     .hero-fixed-bg {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background-image: url('surprise/image_111llO.png');
       background-size: cover; background-position: center;
-      opacity: 0.15; filter: blur(2px) brightness(0.6);
+      opacity: 0.04; filter: blur(10px) brightness(0.25);
       z-index: 1; pointer-events: none;
-      transition: opacity 1.2s ease, filter 1.2s ease, transform 1.2s ease;
+      transition: opacity 1.4s ease, filter 1.4s ease, transform 1.2s ease;
       transform: scale(1);
     }
     body.reveal-finale .hero-fixed-bg {
       opacity: 0.92;
       filter: blur(0px) brightness(0.9);
       transform: scale(1.06);
+    }
+
+    /* 第四站專屬：走到「皇宮之路」時，背景短暫換成這張圖，往前走過就淡出消失 */
+    .hero-fixed-bg-p4 {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-image: url('surprise/image_Ex9PZd.png');
+      background-size: cover; background-position: center;
+      opacity: 0; filter: blur(6px) brightness(0.5);
+      z-index: 1; pointer-events: none;
+      transition: opacity 1.4s ease, filter 1.4s ease;
+    }
+    body.station4-reveal .hero-fixed-bg-p4 {
+      opacity: 0.8; filter: blur(0px) brightness(0.85);
     }
 
     /* 蜿蜒路線改用 SVG，直線隱藏 */
@@ -160,7 +173,14 @@
       order: 999;
     }
     .trail-header h1 { font-size: 1.6rem; color: #fff; letter-spacing: 0.2em; margin-bottom: 10px; }
-    .trail-header p  { font-size: 1rem; color: #ff007f; letter-spacing: 0.1em; }
+    .trail-header p  {
+      font-size: 1rem; color: #d4af37; letter-spacing: 0.1em;
+      animation: headerHintGlow 2.2s ease-in-out infinite;
+    }
+    @keyframes headerHintGlow {
+      0%, 100% { opacity: 0.75; text-shadow: 0 0 6px rgba(212,175,55,0.4); }
+      50%       { opacity: 1;    text-shadow: 0 0 18px rgba(212,175,55,0.9), 0 0 30px rgba(212,175,55,0.5); }
+    }
 
     /* 終章（最上方，滾到頂端看到） */
     .trail-footer {
@@ -187,21 +207,40 @@
       transition: all 0.3s ease; z-index: 20; position: relative;
     }
     .finale-btn:hover { background: rgba(196,30,58,0.25); box-shadow: 0 0 16px rgba(196,30,58,0.4); }
+
+    /* 終章彩花：蓋章的同時噴出一圈彩花 */
+    .confetti-layer {
+      position: absolute; top: 20%; left: 50%; width: 0; height: 0;
+      pointer-events: none; z-index: 30;
+    }
+    .confetti-piece {
+      position: absolute; top: 0; left: 0;
+      width: 8px; height: 8px; border-radius: 2px;
+      opacity: 0;
+    }
+    body.reveal-finale .confetti-piece {
+      animation: confettiPop 1.7s cubic-bezier(0.2,0.8,0.2,1) forwards;
+    }
+    @keyframes confettiPop {
+      0%   { opacity: 1; transform: translate(0,0) rotate(0deg) scale(1); }
+      100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(0.4); }
+    }
   </style>
 </head>
 <body>
 
   <div class="hero-fixed-bg"></div>
+  <div class="hero-fixed-bg-p4"></div>
 
   <audio id="finale-bgm" preload="auto"
     src="surprise/nastelbom-motivational-music-495881.mp3">
   </audio>
 
   <div class="map-container">
-    <!-- 蜿蜒路線：從右下角到左上角的 S 形曲線 -->
+    <!-- 蜿蜒路線：從左下角斜向右上角，約 45 度的朝聖路徑 -->
     <svg class="winding-path" preserveAspectRatio="none" viewBox="0 0 100 100">
       <defs>
-        <linearGradient id="pathGrad" x1="0.38" y1="1" x2="0.62" y2="0">
+        <linearGradient id="pathGrad" x1="0.15" y1="1" x2="0.85" y2="0">
           <stop offset="0%"   stop-color="#ff007f"/>
           <stop offset="40%"  stop-color="#d4af37"/>
           <stop offset="100%" stop-color="rgba(212,175,55,0.25)"/>
@@ -211,15 +250,17 @@
           <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
       </defs>
-      <!-- 左下(38,95) → 右(62,79) → 左(38,63) → 右(62,47) → 左(38,31) → 右上(62,10) -->
-      <path d="M 38,95
-               C 50,90 50,82 62,79
-               C 72,76 28,66 38,63
-               C 48,60 52,50 62,47
-               C 72,44 28,34 38,31
-               C 48,28 52,13 62,10"
-            fill="none" stroke="url(#pathGrad)" stroke-width="1.2"
+      <!-- 左下(15,95) 一路斜向 右上(85,10)，微微擺動但整體方向不變 -->
+      <path id="pilgrimPath" d="M 15,95
+               C 20,88 24,80 29,78
+               C 34,76 39,64 43,61
+               C 47,58 53,48 57,44
+               C 61,40 67,30 71,27
+               C 75,24 81,15 85,10"
+            fill="none" stroke="url(#pathGrad)" stroke-width="1.8"
             stroke-linecap="round" filter="url(#glow)"/>
+      <!-- 台階橫木：讓路徑看起來像實際的石階/步道，而不是一條抽象細線 -->
+      <g id="pathTreads"></g>
     </svg>
 
     <!-- 終章（頂部）：滾到最上面看到蓋章獎賞 -->
@@ -227,6 +268,7 @@
       <div class="finale-stamp">🏅</div>
       <h2>當音樂穿過城市，記憶在最高處定格。</h2>
       <div class="finale-btn" onclick="triggerFinale()">✨ 解鎖朝聖紀念章</div>
+      <div class="confetti-layer" id="confettiLayer"></div>
     </footer>
 
     <!-- 站點容器：column-reverse 讓01在底部、06在頂部 -->
@@ -274,7 +316,7 @@
       </div>
 
       <!-- 站點 04 -->
-      <div class="trail-station">
+      <div class="trail-station" id="station-04">
         <div class="footprint-node" onclick="onNodeClick(this, 4)"></div>
         <div class="memory-card">
           <div class="photo-wrapper m-photo">
@@ -331,7 +373,66 @@
     let finaleTimer = null;
     const cardTimers = {}; /* 每站的自動收回計時器 */
 
+    /* 把路徑畫成一階一階的石階，而不是一條抽象細線：
+       沿路徑等距取點，垂直於切線方向畫短橫木，並依實際渲染的像素比例（preserveAspectRatio=none
+       會把 100x100 的座標非等比拉伸）換算法線方向，橫木才會在畫面上真的垂直於路徑。 */
+    function buildPathTreads() {
+      const svg = document.querySelector('.winding-path');
+      const path = document.getElementById('pilgrimPath');
+      const treadsGroup = document.getElementById('pathTreads');
+      if (!svg || !path || !treadsGroup) return;
+      const rect = svg.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      treadsGroup.innerHTML = '';
+      const scaleX = rect.width / 100;
+      const scaleY = rect.height / 100;
+      const totalLen = path.getTotalLength();
+      const treadGapPx = 34; /* 橫木間隔（畫面像素） */
+      const treadCount = Math.max(6, Math.round((totalLen * scaleY) / treadGapPx));
+      const treadHalfLenPx = 15;
+      const svgNS = 'http://www.w3.org/2000/svg';
+      for (let i = 1; i < treadCount; i++) {
+        const len = (i / treadCount) * totalLen;
+        const p0 = path.getPointAtLength(Math.max(0, len - 0.3));
+        const p1 = path.getPointAtLength(Math.min(totalLen, len + 0.3));
+        const mid = path.getPointAtLength(len);
+        const dxPx = (p1.x - p0.x) * scaleX;
+        const dyPx = (p1.y - p0.y) * scaleY;
+        const segLenPx = Math.hypot(dxPx, dyPx) || 1;
+        const nxPx = -dyPx / segLenPx;
+        const nyPx = dxPx / segLenPx;
+        const ax = mid.x + (nxPx * treadHalfLenPx) / scaleX;
+        const ay = mid.y + (nyPx * treadHalfLenPx) / scaleY;
+        const bx = mid.x - (nxPx * treadHalfLenPx) / scaleX;
+        const by = mid.y - (nyPx * treadHalfLenPx) / scaleY;
+        const line = document.createElementNS(svgNS, 'line');
+        line.setAttribute('x1', ax.toFixed(2));
+        line.setAttribute('y1', ay.toFixed(2));
+        line.setAttribute('x2', bx.toFixed(2));
+        line.setAttribute('y2', by.toFixed(2));
+        line.setAttribute('stroke', 'rgba(255,238,190,0.65)');
+        line.setAttribute('stroke-width', '0.6');
+        line.setAttribute('stroke-linecap', 'round');
+        treadsGroup.appendChild(line);
+      }
+    }
+    window.addEventListener('load', buildPathTreads);
+    window.addEventListener('resize', buildPathTreads);
+
+    /* 開頁先跳到最底部：讀者第一眼看到的是開場標題＋第一站，不是終章畫面 */
+    function scrollToStart() {
+      window.scrollTo(0, document.body.scrollHeight);
+    }
+    scrollToStart();
+    let userHasScrolled = false;
+    window.addEventListener('scroll', () => { userHasScrolled = true; }, { once: true, passive: true });
+    window.addEventListener('load', () => {
+      /* 圖片載入完成後版面高度可能變化，若讀者還沒動過就再校正一次 */
+      if (!userHasScrolled) scrollToStart();
+    });
+
     document.addEventListener("DOMContentLoaded", function () {
+      scrollToStart();
       /* 滾動觸發站點淡入 */
       const stations = document.querySelectorAll('.trail-station');
       const observer = new IntersectionObserver((entries) => {
@@ -349,6 +450,39 @@
       }, { threshold: 0.5 });
       const finale = document.getElementById('finaleZone');
       if (finale) finaleObserver.observe(finale);
+
+      /* 第四站「皇宮之路」：走到這一站背景短暫換圖，走過就淡出消失 */
+      const station4 = document.getElementById('station-04');
+      if (station4) {
+        const station4Observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            document.body.classList.toggle('station4-reveal', entry.isIntersecting);
+          });
+        }, { threshold: 0.4 });
+        station4Observer.observe(station4);
+      }
+
+      /* 產生終章彩花碎片 */
+      const confettiLayer = document.getElementById('confettiLayer');
+      if (confettiLayer) {
+        const colors = ['#d4af37', '#ff007f', '#c41e3a', '#ffffff', '#f2c14e'];
+        const pieceCount = 16;
+        for (let i = 0; i < pieceCount; i++) {
+          const angle = (Math.PI * 2 * i) / pieceCount;
+          const dist = 90 + (i % 3) * 30;
+          const dx = Math.cos(angle) * dist;
+          const dy = Math.sin(angle) * dist - 40; /* 整體偏往上噴 */
+          const rot = (i % 2 === 0 ? 1 : -1) * (180 + i * 20);
+          const piece = document.createElement('div');
+          piece.className = 'confetti-piece';
+          piece.style.setProperty('--dx', dx.toFixed(1) + 'px');
+          piece.style.setProperty('--dy', dy.toFixed(1) + 'px');
+          piece.style.setProperty('--rot', rot + 'deg');
+          piece.style.background = colors[i % colors.length];
+          piece.style.animationDelay = (i % 4) * 0.05 + 's';
+          confettiLayer.appendChild(piece);
+        }
+      }
     });
 
     /* 點呼吸燈：顯示卡片，5 秒後自動收回 */

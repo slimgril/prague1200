@@ -64,7 +64,7 @@
             width: 84%; height: 44%;
             border: 1px solid rgba(138,109,59,0.2); border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            background-image: url('surprise/p04_right.png');
+            background-image: url('surprise/p04-rudolfinum.png');
             background-size: cover;
             background-position: center center;
             overflow: hidden;
@@ -96,10 +96,10 @@
         .node-tooltip img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .map-node:hover .node-tooltip { opacity: 1; transform: translateX(-50%) scale(1); }
 
-        /* 拍立得 */
+        /* 拍立得：再縮小到 36px（60px 的 60%） */
         .p03-polaroid {
             position: absolute; bottom: 4%; right: 6%;
-            width: 210px; background: #FFFFFF; padding: 12px 12px 24px 12px;
+            width: 36px; background: #FFFFFF; padding: 3px 3px 6px 3px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.12);
             transform: rotate(6deg); transform-origin: bottom right;
             transition: all 0.4s ease; cursor: pointer; z-index: 25;
@@ -119,7 +119,7 @@
 </head>
 <body>
 
-<div class="p04-container" onclick="initAudio()">
+<div class="p04-container">
 
     <!-- 左欄：德弗札克廳合照 -->
     <div class="p03-left-panel" id="leftPanel">
@@ -174,8 +174,8 @@
                 </div>
 
                 <!-- ⑤ clock -->
-                <div class="map-node" style="left:30%;top:25%;" onclick="triggerLightbox('surprise/p04_clock.png',event)">⏰
-                    <div class="node-tooltip"><img src="surprise/p04_clock.png" alt="clock"></div>
+                <div class="map-node" style="left:30%;top:25%;" onclick="triggerLightbox('surprise/p04-clock-still.jpg',event)">⏰
+                    <div class="node-tooltip"><img src="surprise/p04-clock-still.jpg" alt="clock"></div>
                 </div>
 
                 <!-- ⑥ salon -->
@@ -186,8 +186,8 @@
             </div>
         </div>
 
-        <!-- 拍立得（第五張圖）-->
-        <div class="p03-polaroid" id="polaroidPic" onclick="triggerLightbox('surprise/image_1f6vVU.png',event)">
+        <!-- 拍立得（第五張圖）：純裝飾用，不可點擊，避免擋到翻頁、也避免彈窗曝露圖片來源 -->
+        <div class="p03-polaroid" id="polaroidPic">
             <img src="surprise/image_1f6vVU.png" alt="布拉格下午茶拍立得">
         </div>
 
@@ -205,62 +205,10 @@
         document.getElementById('gunBarrel').style.setProperty('--mouse-y', `${y}%`);
     });
 
-    /* Web Audio API 雙音軌 */
-    let audioCtx = null, bgmOsc = null, bgmGain = null;
-
-    function initAudio() {
-        if (audioCtx) return;
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        bgmOsc = audioCtx.createOscillator();
-        bgmGain = audioCtx.createGain();
-        bgmOsc.type = 'triangle';
-        bgmOsc.frequency.setValueAtTime(73.41, audioCtx.currentTime);
-        bgmGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-        bgmOsc.connect(bgmGain);
-        bgmGain.connect(audioCtx.destination);
-        bgmOsc.start();
-    }
-
-    function playMusicBox() {
-        if (!audioCtx) return;
-        const now = audioCtx.currentTime;
-        const freqs = [587.3, 739.9, 880.0, 1174.7];
-        freqs.forEach((f, i) => {
-            const osc = audioCtx.createOscillator();
-            const g = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(f, now + i * 0.08);       // ✅ 修正
-            g.gain.setValueAtTime(0.06, now + i * 0.08);           // ✅ 修正
-            g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.4);
-            osc.connect(g); g.connect(audioCtx.destination);
-            osc.start(); osc.stop(now + i * 0.08 + 0.5);
-        });
-    }
-
-    function playSymphony() {
-        if (!audioCtx) return;
-        const now = audioCtx.currentTime;
-        const notes = [293.7, 349.2, 440.0, 587.3];
-        notes.forEach((f, i) => {
-            const osc = audioCtx.createOscillator();
-            const g = audioCtx.createGain();
-            const filter = audioCtx.createBiquadFilter();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(f, now + i * 0.1);        // ✅ 修正
-            filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(600, now);
-            g.gain.setValueAtTime(0.12, now + i * 0.1);            // ✅ 修正
-            g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.8);
-            osc.connect(filter); filter.connect(g); g.connect(audioCtx.destination);
-            osc.start(); osc.stop(now + i * 0.1 + 0.9);
-        });
-    }
-
-    /* 滑桿互動 */
+    /* 滑桿互動（音效已移除） */
     const slider = document.getElementById('timeSlider');
     const poemZone = document.getElementById('poemZone');
     const polaroid = document.getElementById('polaroidPic');
-    let hasPlayedLeft = false, hasPlayedRight = false;
 
     slider.addEventListener('input', (e) => {
         const val = parseInt(e.target.value);
@@ -269,31 +217,24 @@
             poemZone.style.opacity = '0';
             poemZone.style.transform = 'translateY(10px)';
             document.getElementById('heroImg').style.filter = 'sepia(0) brightness(1)';
-            if (bgmGain) bgmGain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-            if (!hasPlayedLeft) { playMusicBox(); hasPlayedLeft = true; hasPlayedRight = false; }
         } else if (val >= 70) {
             document.getElementById('heroImg').style.filter = 'sepia(0.5) brightness(0.65)';
             poemZone.style.opacity = '1';
             poemZone.style.transform = 'translateY(0)';
-            if (bgmGain) bgmGain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-            if (!hasPlayedRight) { playSymphony(); hasPlayedRight = true; hasPlayedLeft = false; }
         } else {
             polaroid.style.transform = 'rotate(6deg) scale(1)';
             poemZone.style.opacity = '0';
             poemZone.style.transform = 'translateY(10px)';
             document.getElementById('heroImg').style.filter = 'sepia(0) brightness(1)';
-            if (bgmGain) bgmGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-            hasPlayedLeft = false; hasPlayedRight = false;
         }
     });
 
-    /* Lightbox 觸發 */
+    /* Lightbox 觸發：目前 parent 沒有實作 handleLightbox，
+       改成安靜地不做事（不要再跳 alert 曝露圖片檔名、也不要擋住翻頁） */
     function triggerLightbox(imgName, e) {
         if (e) e.stopPropagation();
         if (window.parent && window.parent.handleLightbox) {
             window.parent.handleLightbox(imgName);
-        } else {
-            alert('解鎖布拉格之春相簿觀看: ' + imgName);
         }
     }
 </script>
