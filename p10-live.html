@@ -363,8 +363,8 @@
        跳到第 5 天 52.5 公里／82,500 步時停住，彈彩花＋跳金句。
        ============================================================ */
     (function () {
-      var TICK_MS = 35;
-      var PAUSE_MS = 2500;
+      var TICK_MS = 70;   // 整體再慢一倍，讓右邊照片輪播來得及跑完
+      var PAUSE_MS = 5000;
       var TICKS_PER_DAY = 105;      // 10.5km / 0.1km
       var TOTAL_TICKS = TICKS_PER_DAY * 5; // 525 → 52.5km
       var STEPS_PER_KM = 82500 / 52.5;     // 1571.428571...
@@ -448,11 +448,43 @@
         timer = setInterval(tick, TICK_MS);
       }
 
-      if (document.readyState === 'complete') {
-        setTimeout(start, 800);
-      } else {
-        window.addEventListener('load', function () { setTimeout(start, 800); });
+      var startTimer = null;
+
+      /* 離頁：整個停下來、歸零，下次翻回來才會從第一天重新開始，
+         不會因為背景預載時已經偷跑很多秒，一翻過來就看到跑到第五天。 */
+      function resetAll() {
+        clearInterval(timer);
+        clearTimeout(startTimer);
+        ticks = 0;
+        updateDisplay();
+        $day.classList.remove('show');
+        $day.textContent = '第 1 天';
+        $status.textContent = '';
+        $status.classList.remove('finished');
+        $status.classList.remove('running');
+        document.getElementById('quoteLine1')?.classList.remove('show');
+        document.getElementById('quoteLine2')?.classList.remove('show');
+        document.getElementById('ticketPhoto')?.classList.remove('show');
+        var layer = document.getElementById('confettiLayer');
+        if (layer) layer.innerHTML = '';
       }
+
+      /* 進頁：真正翻到這一頁才開始跑（用 flipbook.js 的
+         __onSpreadActivated／__onSpreadDeactivated，避免用 load 事件
+         在背景預載時就先跑掉，跟配樂被瀏覽器擋掉是同一種舊寫法的問題）。
+         用「串接」而不是直接覆蓋 window.__onSpreadActivated，
+         這樣才不會跟本頁另一段負責配樂淡入淡出的 script 互相蓋掉。 */
+      var prevActivated = window.__onSpreadActivated;
+      var prevDeactivated = window.__onSpreadDeactivated;
+      window.__onSpreadActivated = function () {
+        if (prevActivated) prevActivated();
+        resetAll();
+        startTimer = setTimeout(start, 800);
+      };
+      window.__onSpreadDeactivated = function () {
+        if (prevDeactivated) prevDeactivated();
+        resetAll();
+      };
     })();
 
     /* ============================================================
@@ -483,8 +515,12 @@
       function fadeOut() {
         try { parent.SoundEngine?.fadeOutTrack?.({ fadeMs: 2000 }); } catch (e) {}
       }
-      window.__onSpreadActivated = fadeIn;
-      window.__onSpreadDeactivated = fadeOut;
+      /* 用「串接」而不是直接覆蓋，這樣才不會跟本頁另一段負責左側計時器
+         啟動／歸零的 script 互相蓋掉彼此的 __onSpreadActivated。 */
+      var prevActivated = window.__onSpreadActivated;
+      var prevDeactivated = window.__onSpreadDeactivated;
+      window.__onSpreadActivated = function () { if (prevActivated) prevActivated(); fadeIn(); };
+      window.__onSpreadDeactivated = function () { if (prevDeactivated) prevDeactivated(); fadeOut(); };
       window.addEventListener('pagehide', fadeOut);
       window.addEventListener('beforeunload', fadeOut);
     })();
