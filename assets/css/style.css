@@ -21,7 +21,7 @@
   --page-w:   600px;
   --page-h:   800px;
   --pad:      48px 52px;
-  --turn-duration: 850ms;
+  --turn-duration: 2000ms;
 }
 
 /* ── Reset ── */

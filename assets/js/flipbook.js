@@ -28,7 +28,7 @@
  */
 
 const FLIP_CONFIG = {
-  duration: 850,        // ms — 翻頁時間
+  duration: 2000,       // ms — 翻頁時間（實際動畫時間由 CSS 變數 --turn-duration 控制，這裡僅供參考）
   prepareTimeout: 6000, // ms — 單一跨頁預載安全逾時，避免壞掉的資源卡住翻頁
 };
 

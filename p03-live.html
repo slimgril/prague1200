@@ -236,9 +236,11 @@
         /* 5. 史詩級隱藏反思金句：移到左上角空白處，每行間隔2秒依序彈出 */
         .p03-poem-zone {
             position: absolute !important;
-            top: 10% !important;
+            /* 原本放在最頂端左上角，離兩位女生太遠很容易被忽略；
+               改放到左邊女生旁邊、她左側的空白區域 */
+            top: 42% !important;
             left: 5% !important;
-            width: 280px !important;
+            width: 420px !important;
             text-align: left !important;
             line-height: 2 !important;
             z-index: 40 !important;
@@ -247,8 +249,8 @@
         .p03-poem-line {
             color: #FFFFFF;
             font-weight: 700;
-            font-size: 15px;
-            margin-bottom: 4px;
+            font-size: 30px;
+            margin-bottom: 8px;
             opacity: 0;
             transform: translateY(10px);
             transition: opacity 1s ease, transform 1s ease;
@@ -415,10 +417,12 @@
     </div>
 
     <!-- Lightbox 雜誌風格彈窗（上圖下文） -->
-    <div class="lightbox-overlay" id="lightboxOverlay" onclick="closeLightbox()">
+    <div class="lightbox-overlay" id="lightboxOverlay">
         <div class="lightbox-container" onclick="event.stopPropagation()">
             <div class="lightbox-image-area">
-                <img src="" alt="Lightbox Image" class="lightbox-image" id="lightboxImage">
+                <!-- 改成只有點圖片本身才會關閉：原本點四周背景關閉，但背景範圍很大，
+                     常常點到左右邊緣的翻頁熱區，變成整頁被翻走而不是關閉大圖 -->
+                <img src="" alt="Lightbox Image" class="lightbox-image" id="lightboxImage" onclick="closeLightbox()" style="cursor:pointer">
             </div>
             <div class="lightbox-text-area">
                 <div class="lightbox-title" id="lightboxTitle">景點標題</div>

@@ -391,7 +391,7 @@ html,body{width:100%;height:100%;background:#111;overflow:hidden;font-family:-ap
           <!-- Outer glow ring -->
           <circle r="13" fill="none" stroke="#FF5A00" stroke-width="2" opacity="0.5"/>
           <circle r="20" fill="none" stroke="#FFD700" stroke-width="1" opacity="0.3"/>
-          <animateMotion id="run-anim" dur="13.5s" fill="freeze" begin="indefinite"
+          <animateMotion id="run-anim" dur="60s" fill="freeze" begin="indefinite"
                          keyPoints="0;1" keyTimes="0;1" calcMode="linear">
             <mpath href="#river-path"/>
           </animateMotion>
@@ -841,20 +841,20 @@ html,body{width:100%;height:100%;background:#111;overflow:hidden;font-family:-ap
     // Gunshot + fanfare
     raceFanfare();
 
-    // 🏃 Launch runner along Vltava river (bottom → top, 13.5s，放慢到3倍)
+    // 🏃 Launch runner along Vltava river (bottom → top, 60s，整整跑一分鐘)
     if(runner && runAnim){
       runner.style.opacity = '1';
       runAnim.beginElement();
     }
 
-    // ── Live KM counter (0.0 → 52.5 over 13.5s) ──
+    // ── Live KM counter (0.0 → 52.5 over 60s) ──
     (function(){
       const counterWrap = document.getElementById('run-counter');
       const counterNum  = document.getElementById('counter-num');
       if(!counterWrap || !counterNum) return;
       counterNum.textContent = '0.0';
       counterWrap.classList.add('running');
-      const DURATION = 13500;
+      const DURATION = 60000;
       const TARGET   = 52.5;
       const t0 = performance.now();
       function tick(now){
@@ -870,17 +870,17 @@ html,body{width:100%;height:100%;background:#111;overflow:hidden;font-family:-ap
       requestAnimationFrame(tick);
     })();
 
-    // Node lighting timed to runner position (13.5s total，放慢到 3 倍，讓讀者
+    // Node lighting timed to runner position (60s total，整整跑一分鐘，讓讀者
     // 看清楚沿途經過的每一個地標，不是只看一次帶過去):
-    //   Powder Tower  (~33%) → 4500ms
-    //   Charles Bridge (~44%) → 5940ms  (兩張一起亮)
-    //   Old Town Hall (~55%) → 7425ms
-    //   Prague Castle (~78%) → 10530ms
+    //   Powder Tower  (~33%) → 20000ms
+    //   Charles Bridge (~44%) → 26400ms  (兩張一起亮)
+    //   Old Town Hall (~55%) → 33000ms
+    //   Prague Castle (~78%) → 46800ms
     const nodeData = [
-      { id:'node-powder', po:['po-powder'],              t:4500, audioIdx:0 },
-      { id:null,          po:['po-bridge1','po-bridge2'], t:5940, audioIdx:null },
-      { id:'node-clock',  po:['po-clock','po-clock2'],   t:7425, audioIdx:1 },
-      { id:'node-castle', po:['po-castle'],              t:10530, audioIdx:2 },
+      { id:'node-powder', po:['po-powder'],              t:20000, audioIdx:0 },
+      { id:null,          po:['po-bridge1','po-bridge2'], t:26400, audioIdx:null },
+      { id:'node-clock',  po:['po-clock','po-clock2'],   t:33000, audioIdx:1 },
+      { id:'node-castle', po:['po-castle'],              t:46800, audioIdx:2 },
     ];
 
     nodeData.forEach(function({id, po, t, audioIdx}){
@@ -905,21 +905,21 @@ html,body{width:100%;height:100%;background:#111;overflow:hidden;font-family:-ap
       }, t);
     });
 
-    // Runner finishes at ~13.5s → stars, bell, quote
-    setTimeout(burstStars, 13950);
+    // Runner finishes at ~60s → stars, bell, quote
+    setTimeout(burstStars, 62000);
     setTimeout(function(){
       churchBell();
       const quote = document.querySelector('.p02-quote');
       if(quote) quote.classList.add('revealed');
-    }, 14700);
+    }, 65333);
     // 🎯 目標數字：小人物跑到終點才彈出來，等跑步計數器淡出後再顯示，呼吸5秒後停止
     setTimeout(function(){
       const goal = document.getElementById('goal-reveal');
       if(goal) goal.classList.add('revealed');
-    }, 16350);
+    }, 72667);
 
     // 🔄 Auto-reset after display (quote shown for ~3.5s) → gun sparkles again
-    setTimeout(resetAll, 27000);
+    setTimeout(resetAll, 120000);
   }
 
   card.addEventListener('click',     triggerSequence);
