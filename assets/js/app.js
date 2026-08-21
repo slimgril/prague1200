@@ -28,9 +28,17 @@ async function init() {
      iframe 撐滿整個書本寬度），P00 封面到 P11 封底，共 12 個跨頁。
      每個跨頁另外配一張同比例 WebP 靜態預覽圖（previews/pXX.webp），只在翻頁
      動畫過程中短暫使用，翻頁本身絕不去複製/重新載入互動網址。 */
+  /* 每個 pXX-live.html 是獨立網址，瀏覽器／GitHub Pages CDN 對它沒有任何
+     cache-busting，跟 style.css／flipbook.js／pages_*.js 不一樣（那些每次
+     改完都會記得把 index.html 裡的 ?v= 往上加）。這造成好幾次「明明已經
+     修好、也確認 push 上去了，但讀者那邊看起來還是舊的」的誤會（例如 P09、
+     P10）。修法：每個跨頁網址也統一加上 ?v=CHAPTER_ASSET_VERSION，之後只
+     要有任何一個 pXX-live.html 內容變動，就把這個版本號 +1，瀏覽器就會直接
+     抓新的，不會再被舊的快取檔卡住。 */
+  const CHAPTER_ASSET_VERSION = 2;
   const spreads = Array.from({ length: 12 }, (_, i) => {
     const id = 'p' + String(i).padStart(2, '0');
-    return { title: id, url: `${id}-live.html`, preview: `previews/${id}.webp` };
+    return { title: id, url: `${id}-live.html?v=${CHAPTER_ASSET_VERSION}`, preview: `previews/${id}.webp` };
   });
 
   /* 3. Init the flipbook（跨頁預載管理器內建在 SoftFlipBook 裡：目前跨頁

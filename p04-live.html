@@ -96,6 +96,11 @@
         .node-tooltip img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .map-node:hover .node-tooltip { opacity: 1; transform: translateX(-50%) scale(1); }
 
+        /* 靠近相框上緣的熱區，往上彈出的預覽圖片空間不夠會被切掉，
+           改成往下彈出 */
+        .map-node.tip-below .node-tooltip { bottom: auto; top: 44px; }
+        .map-node.tip-below:hover .node-tooltip { transform: translateX(-50%) scale(1); }
+
         /* 拍立得：放大到 130px，往內推避開翻頁觸發區 */
         .p03-polaroid {
             position: absolute; bottom: 6%; right: 11%;
@@ -162,7 +167,7 @@
                 </div>
 
                 <!-- ② spot2 -->
-                <div class="map-node" style="left:78%;top:22%;" onclick="triggerLightbox('surprise/p04_spot2.png',event)">🏰
+                <div class="map-node tip-below" style="left:78%;top:22%;" onclick="triggerLightbox('surprise/p04_spot2.png',event)">🏰
                     <div class="node-tooltip"><img src="surprise/p04_spot2.png" alt="spot2"></div>
                 </div>
 
@@ -177,12 +182,12 @@
                 </div>
 
                 <!-- ⑤ clock -->
-                <div class="map-node" style="left:30%;top:25%;" onclick="triggerLightbox('surprise/p04-clock-still.jpg',event)">⏰
+                <div class="map-node tip-below" style="left:30%;top:25%;" onclick="triggerLightbox('surprise/p04-clock-still.jpg',event)">⏰
                     <div class="node-tooltip"><img src="surprise/p04-clock-still.jpg" alt="clock"></div>
                 </div>
 
                 <!-- ⑥ salon -->
-                <div class="map-node" style="left:55%;top:15%;" onclick="triggerLightbox('surprise/p04_salon.png',event)">🎨
+                <div class="map-node tip-below" style="left:55%;top:15%;" onclick="triggerLightbox('surprise/p04_salon.png',event)">🎨
                     <div class="node-tooltip"><img src="surprise/p04_salon.png" alt="salon"></div>
                 </div>
 
@@ -219,7 +224,7 @@
             setTimeout(() => {
                 const el = document.getElementById(id);
                 if (el) el.classList.add('show');
-            }, i * 500);
+            }, i * 2000);
         });
     }
     function hideP04Poem() {
