@@ -128,14 +128,20 @@
     .trail-station:nth-child(even).card-visible .memory-card { transform: rotate(1.5deg)  translateY(0); }
     .memory-card:hover { box-shadow: 0 0 20px rgba(212,175,55,0.3), 0 10px 30px rgba(0,0,0,0.6); }
 
-    /* 第一站下方配圖：全寬跨頁，最底層 */
+    /* 第一站下方配圖：原本被 .map-container 的 max-width:850px 夾在中間，
+       兩側留白，看起來只佔畫面中央一小塊。改成打破容器寬度限制、真正貼齊
+       整個跨頁的左右邊緣，當作「地面」；並把高度壓低、圖片用 object-fit
+       裁切，讓它扁平一點，看起來像一條地面而不是一大塊直立的圖 */
     .start-photo-wrap {
-      width: 100%; margin: 0;
-      position: relative; z-index: 6;
+      width: 100vw; height: 200px;
+      position: relative; left: 50%; right: 50%;
+      margin-left: -50vw; margin-right: -50vw;
+      z-index: 6; overflow: hidden;
       transition: opacity 1.2s ease;
     }
     .start-photo-wrap img {
-      width: 100%; display: block;
+      width: 100%; height: 100%; display: block;
+      object-fit: cover; object-position: center 35%;
       border-radius: 0;
       filter: brightness(0.75) contrast(1.05);
     }
@@ -233,7 +239,7 @@
   <div class="hero-fixed-bg-p4"></div>
 
   <audio id="finale-bgm" preload="auto"
-    src="surprise/nastelbom-motivational-music-495881.mp3">
+    src="surprise/p07-finale-zaichufa.mp3">
   </audio>
 
   <div class="map-container">
