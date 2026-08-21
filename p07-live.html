@@ -188,6 +188,20 @@
       50%       { opacity: 1;    text-shadow: 0 0 18px rgba(212,175,55,0.9), 0 0 30px rgba(212,175,55,0.5); }
     }
 
+    /* 這一頁需要讀者在頁面「內部」往上滾動才會一站一站出現，跟其他跨頁不一樣，
+       所以加一個會持續彈跳的大箭頭，明確提示「這裡要滾動」 */
+    .scroll-hint-chevron {
+      margin-top: 14px;
+      font-size: 1.6rem;
+      color: #d4af37;
+      animation: chevronBounce 1.6s ease-in-out infinite;
+      text-shadow: 0 0 14px rgba(212,175,55,0.7);
+    }
+    @keyframes chevronBounce {
+      0%, 100% { transform: translateY(0);   opacity: 0.6; }
+      50%      { transform: translateY(-10px); opacity: 1;   }
+    }
+
     /* 終章（最上方，滾到頂端看到） */
     .trail-footer {
       text-align: center; position: relative; z-index: 10; padding: 60px 0 40px;
@@ -363,7 +377,9 @@
     <!-- 開場標題（最下方，讀者第一眼看到） -->
     <header class="trail-header">
       <h1>P07｜皇家之路：記憶登高</h1>
-      <p>由河岸走向高處的登城旅程 ↑</p>
+      <p>由河岸走向高處的登城旅程</p>
+      <p>在這一頁裡向上滑動／滾動滑鼠滾輪，會看到路上一個個亮點，點一下亮點看照片與文字</p>
+      <div class="scroll-hint-chevron">↑</div>
     </header>
 
     <!-- 小城區全寬地圖：常駐底層，終章時消失，結束後重現 -->

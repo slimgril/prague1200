@@ -12,7 +12,7 @@
       overflow-x: hidden;
     }
 
-    /* 電影視窗：position:relative 讓固定字幕能定位 */
+    /* 電影視窗：position:relative 讓固定字幕能定位；perspective 讓內部 3D 圓筒有立體深度 */
     .cinema-window {
       width: 100%;
       height: 540px;
@@ -21,32 +21,44 @@
       background: #000;
       box-shadow: inset 0 0 60px rgba(0,0,0,0.95);
       margin: 40px 0;
+      perspective: 1400px;
     }
 
-    /* 全景軌道：在底層移動 */
-    .panorama-rail {
-      width: 300%;
+    /* 360 度立體圓筒：三個面（畫面）繞 Y 軸排列，整體持續旋轉 */
+    .carousel-3d {
+      width: 100%;
       height: 100%;
       position: absolute;
       top: 0; left: 0;
-      display: flex;
-      animation: moviePan 60s linear infinite;
+      transform-style: preserve-3d;
+      animation: carouselSpin 60s linear infinite;
       will-change: transform;
-      transform: translate3d(0, 0, 0);
     }
 
-    .cinema-window:hover .panorama-rail {
+    .cinema-window:hover .carousel-3d {
       animation-play-state: paused;
     }
 
-    @keyframes moviePan {
-      0%   { transform: translate3d(0, 0, 0); }
-      100% { transform: translate3d(-66.666%, 0, 0); }
+    @keyframes carouselSpin {
+      from { transform: rotateY(0deg); }
+      to   { transform: rotateY(-360deg); }
     }
 
-    /* 三段背景 */
+    /* 圓筒的一個面：以 JS 依實際寬度算出 translateZ 半徑，撐開成正三角柱 */
+    .carousel-face {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      backface-visibility: hidden;
+      background: #000;
+    }
+    .face-1 { transform: rotateY(0deg)   translateZ(var(--carousel-radius, 320px)); }
+    .face-2 { transform: rotateY(120deg) translateZ(var(--carousel-radius, 320px)); }
+    .face-3 { transform: rotateY(240deg) translateZ(var(--carousel-radius, 320px)); }
+
+    /* 每一面的背景畫面 */
     .time-slice {
-      width: 33.333%; height: 100%;
+      width: 100%; height: 100%;
       background-size: cover; background-position: center;
       position: relative;
     }
@@ -64,7 +76,7 @@
 
     .music-overlay {
       position: absolute;
-      top: 0; left: 33.333%; width: 33.333%; height: 100%;
+      top: 0; left: 0; width: 100%; height: 100%;
       background: radial-gradient(circle at center, transparent 40%, rgba(212,175,55,0.06) 70%, transparent 100%);
       pointer-events: none;
       z-index: 5;
@@ -90,15 +102,16 @@
     .c-size { width: 210px; border-radius: 4px; z-index: 12; border: 2px solid rgba(255,255,255,0.85); }
     .d-size { width: 125px; border-radius: 2px; z-index: 15; opacity: 0.78; }
 
-    #photo-oldtown-street       { top: 24%; left: 4%;  transform: rotate(-1.5deg); }
-    #photo-castle-tower         { top: 10%; left: 18%; transform: rotate(2deg); }
-    #photo-clocktower           { top: 16%; left: 36%; transform: rotate(-2deg); }
-    #photo-dr-closeup           { top: 6%;  left: 44%; transform: rotate(3deg); z-index: 14; }
-    #photo-janhus               { top: 44%; left: 52%; transform: rotate(-3deg); }
-    #fragment-clock-death       { bottom: 6%; left: 40%; transform: rotate(-8deg); filter: blur(0.3px); }
-    #fragment-apostles-mechanism{ top: 12%; left: 58%; transform: rotate(6deg); }
-    #photo-bridgetower          { top: 5%;  left: 74%; width: 320px; z-index: 10; filter: hue-rotate(35deg) brightness(0.32) contrast(1.15); }
-    #photo-bridge-statue        { top: 8%;  left: 88%; width: 175px; transform: rotate(-1deg); }
+    /* 座標已改為「相對各自所在的面」（0~100%），對應原本三段畫面各自的分組 */
+    #photo-oldtown-street       { top: 24%; left: 12%; transform: rotate(-1.5deg); }
+    #photo-castle-tower         { top: 10%; left: 54%; transform: rotate(2deg); }
+    #photo-clocktower           { top: 16%; left: 8%;  transform: rotate(-2deg); }
+    #photo-dr-closeup           { top: 6%;  left: 32%; transform: rotate(3deg); z-index: 14; }
+    #photo-janhus               { top: 44%; left: 56%; transform: rotate(-3deg); }
+    #fragment-clock-death       { bottom: 6%; left: 20%; transform: rotate(-8deg); filter: blur(0.3px); }
+    #fragment-apostles-mechanism{ top: 12%; left: 74%; transform: rotate(6deg); }
+    #photo-bridgetower          { top: 5%;  left: 22%; width: 320px; z-index: 10; filter: hue-rotate(35deg) brightness(0.32) contrast(1.15); }
+    #photo-bridge-statue        { top: 8%;  left: 64%; width: 175px; transform: rotate(-1deg); }
 
     /* =====================================================
        字幕層：移出 panorama-rail，固定在 cinema-window 上
@@ -147,51 +160,63 @@
 </head>
 <body>
 
-  <div class="cinema-window">
+  <div class="cinema-window" id="cinemaWindow">
 
-    <!-- 底層：移動的全景軌道 -->
-    <div class="panorama-rail">
-      <div class="time-slice slice-left"></div>
-      <div class="time-slice slice-mid"></div>
-      <div class="time-slice slice-right"></div>
-      <div class="music-overlay"></div>
+    <!-- 360 度立體圓筒：三面畫面繞 Y 軸旋轉 -->
+    <div class="carousel-3d" id="carousel3d">
 
-      <div class="photo-card c-size" id="photo-oldtown-street">
-        <img src="surprise/image_fR_FA9.png" alt="老城街道合照">
-        <div class="edge-vignette"></div>
+      <!-- 第一面：老城街道、城堡塔 -->
+      <div class="carousel-face face-1">
+        <div class="time-slice slice-left"></div>
+        <div class="photo-card c-size" id="photo-oldtown-street">
+          <img src="surprise/image_fR_FA9.png" alt="老城街道合照">
+          <div class="edge-vignette"></div>
+        </div>
+        <div class="photo-card b-size" id="photo-castle-tower">
+          <img src="surprise/image_-rPWeY.png" alt="中世紀風合照">
+          <div class="edge-vignette"></div>
+        </div>
       </div>
-      <div class="photo-card b-size" id="photo-castle-tower">
-        <img src="surprise/image_-rPWeY.png" alt="中世紀風合照">
-        <div class="edge-vignette"></div>
+
+      <!-- 第二面：天文鐘樓群像 -->
+      <div class="carousel-face face-2">
+        <div class="time-slice slice-mid"></div>
+        <div class="music-overlay"></div>
+        <div class="photo-card b-size" id="photo-clocktower">
+          <img src="surprise/image_Ex9PZd.png" alt="天文鐘樓雙人合照">
+          <div class="edge-vignette"></div>
+        </div>
+        <div class="photo-card c-size" id="photo-dr-closeup">
+          <img src="surprise/image_7jQQNK.png" alt="單人溫柔特寫">
+          <div class="edge-vignette"></div>
+        </div>
+        <div class="photo-card c-size" id="photo-janhus">
+          <img src="surprise/image_5-SNAy.png" alt="胡斯雕像合照">
+          <div class="edge-vignette"></div>
+        </div>
+        <div class="photo-card d-size" id="fragment-clock-death">
+          <img src="surprise/image_KkSKiY.png" alt="天文鐘死神碎片">
+          <div class="edge-vignette"></div>
+        </div>
+        <div class="photo-card d-size" id="fragment-apostles-mechanism">
+          <img src="surprise/image__Oqjd2.png" alt="天文鐘內部使徒碎片">
+          <div class="edge-vignette"></div>
+        </div>
       </div>
-      <div class="photo-card b-size" id="photo-clocktower">
-        <img src="surprise/image_Ex9PZd.png" alt="天文鐘樓雙人合照">
-        <div class="edge-vignette"></div>
+
+      <!-- 第三面：查理大橋橋塔 -->
+      <div class="carousel-face face-3">
+        <div class="time-slice slice-right"></div>
+        <div class="photo-card" id="photo-bridgetower">
+          <img src="surprise/image_fUPCtw.png" alt="老城橋塔全景實景照">
+          <div class="edge-vignette"></div>
+        </div>
+        <div class="photo-card c-size" id="photo-bridge-statue">
+          <img src="surprise/image_9KIY5C.png" alt="聖方濟沙勿略雕像">
+          <div class="edge-vignette"></div>
+        </div>
       </div>
-      <div class="photo-card c-size" id="photo-dr-closeup">
-        <img src="surprise/image_7jQQNK.png" alt="單人溫柔特寫">
-        <div class="edge-vignette"></div>
-      </div>
-      <div class="photo-card c-size" id="photo-janhus">
-        <img src="surprise/image_5-SNAy.png" alt="胡斯雕像合照">
-        <div class="edge-vignette"></div>
-      </div>
-      <div class="photo-card d-size" id="fragment-clock-death">
-        <img src="surprise/image_KkSKiY.png" alt="天文鐘死神碎片">
-        <div class="edge-vignette"></div>
-      </div>
-      <div class="photo-card d-size" id="fragment-apostles-mechanism">
-        <img src="surprise/image__Oqjd2.png" alt="天文鐘內部使徒碎片">
-        <div class="edge-vignette"></div>
-      </div>
-      <div class="photo-card" id="photo-bridgetower">
-        <img src="surprise/image_fUPCtw.png" alt="老城橋塔全景實景照">
-        <div class="edge-vignette"></div>
-      </div>
-      <div class="photo-card c-size" id="photo-bridge-statue">
-        <img src="surprise/image_9KIY5C.png" alt="聖方濟沙勿略雕像">
-        <div class="edge-vignette"></div>
-      </div>
+
     </div>
 
     <!-- 上層：固定不動的字幕層 -->
@@ -214,8 +239,24 @@
   </div>
 
   <script>
+    /* 立體圓筒半徑：依實際渲染寬度算出正三角柱的 translateZ，
+       撐開後三個面才會剛好首尾相接、不露縫也不重疊。 */
+    (function () {
+      const cinemaWindow = document.getElementById('cinemaWindow');
+      const carousel = document.getElementById('carousel3d');
+      function updateRadius() {
+        const w = cinemaWindow.offsetWidth;
+        const radius = Math.round(w / (2 * Math.tan(Math.PI / 3)));
+        carousel.style.setProperty('--carousel-radius', radius + 'px');
+      }
+      updateRadius();
+      window.addEventListener('resize', updateRadius);
+    })();
+
     /* 本頁配樂：進頁淡入，離頁（無論往前往後翻）淡出，即使已翻過去也會慢慢收掉。
-       透過 parent.SoundEngine 呼叫外層翻頁主程式共用的淡入／淡出引擎。 */
+       透過 parent.SoundEngine 呼叫外層翻頁主程式共用的淡入／淡出引擎。
+       改用 __onSpreadActivated／__onSpreadDeactivated（由 flipbook.js 在真正翻到本頁
+       時才觸發），避免像舊寫法用 load 事件那樣，在背景預載時就被瀏覽器擋掉自動播放。 */
     (function () {
       function fadeIn() {
         try { parent.SoundEngine?.fadeInTrack?.('surprise/p06-beethoven9-finale.mp3', { volume: 0.6, fadeMs: 2500, loop: true }); } catch (e) {}
@@ -223,8 +264,8 @@
       function fadeOut() {
         try { parent.SoundEngine?.fadeOutTrack?.({ fadeMs: 2000 }); } catch (e) {}
       }
-      if (document.readyState === 'complete') fadeIn();
-      else window.addEventListener('load', fadeIn);
+      window.__onSpreadActivated = fadeIn;
+      window.__onSpreadDeactivated = fadeOut;
       window.addEventListener('pagehide', fadeOut);
       window.addEventListener('beforeunload', fadeOut);
     })();
