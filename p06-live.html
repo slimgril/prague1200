@@ -12,8 +12,13 @@
       overflow-x: hidden;
     }
 
-    /* 電影視窗：position:relative 讓固定字幕能定位；perspective 讓內部 3D 圓筒有立體深度
-       （perspective 數值改由 JS 依半徑動態計算，這裡的 1800px 只是 JS 尚未執行前的備援值） */
+    /* 電影視窗：position:relative 讓固定字幕能定位；perspective 是整個 3D
+       場景「攝影機離畫面多近」的關鍵值——數值越小、離得越近，轉動時的
+       放大縮小／位移幅度就越明顯，立體感越強。固定用 1500px（不再依容器
+       寬度動態換算），確保是真正「靠近觀眾」的攝影機視角，而不是先前
+       那種為了讓一圈 12 面剛好貼滿畫面寬度、半徑被迫拉到 2000px 以上，
+       透視值也只好跟著放大到快 8500px 的「幾乎正交投影」——那樣數學上
+       是 3D，但視覺上跟平面沒兩樣。 */
     .cinema-window {
       width: 100%;
       height: 540px;
@@ -22,21 +27,54 @@
       background: #000;
       box-shadow: inset 0 0 60px rgba(0,0,0,0.95);
       margin: 40px 0;
-      perspective: var(--cinema-perspective, 1800px);
+      perspective: 1500px;
     }
 
-    /* 360 度立體圓筒：整體持續旋轉。
-       【修正「三角錐」問題】原本只用 3 個大平面（每面 120 度）繞 Y 軸排列，
-       相鄰兩面交界處的夾角太大，轉動時看起來像三片鏡子硬拼成的「三角柱」，
-       完全不是圓筒。改成 12 個較窄的縱向面、每面只轉 30 度（3 段風景各佔 4
-       面），多邊形輪廓大幅趨近圓形，轉動時不再有生硬的縱向折角。 */
+    /* =============================================
+       遠景背景：三張大圖交叉淡入淡出，「固定不跟著圓筒轉」，
+       只用 translateZ(-200px) scale(1.4) 往後退、放大鋪滿，
+       跟前景懸浮旋轉的照片之間拉開明顯的距離——這才是畫面「有沒有
+       深度」的關鍵：不是背景本身要不要轉，而是背景跟前景「是不是在
+       不同的距離上」。原本背景也切成 12 面貼在跟照片同一個半徑上，
+       兩者永遠等距、轉動時完全沒有前後視差，看起來就是整片貼皮的
+       牆面在轉，而不是有縱深的空間。 */
+    .backdrop-slice {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-size: cover; background-position: center;
+      opacity: 0;
+      transform: translateZ(-200px) scale(1.4);
+      transform-style: preserve-3d;
+    }
+    .backdrop-slice.slice-left  { background-image: url('surprise/image_oxeP6p.png');  filter: brightness(0.55) contrast(1.05); animation: bgLeft  28s linear infinite; }
+    .backdrop-slice.slice-mid   { background-image: url('surprise/image_111llO.png');  filter: brightness(0.5)  contrast(1.1);  animation: bgMid   28s linear infinite; }
+    .backdrop-slice.slice-right { background-image: url('surprise/image_9KIY5C.png');  filter: brightness(0.3)  contrast(1.15); animation: bgRight 28s linear infinite; }
+
+    /* 跟字幕完全同一組時間切點（0~30% / 35~68% / 72~98%），背景換場、
+       字幕出現同步發生，視覺上像「場景真的換了」而不是各轉各的。 */
+    @keyframes bgLeft   { 0%, 30%, 100% { opacity: 0; } 5%, 25%   { opacity: 1; } }
+    @keyframes bgMid    { 0%, 35%, 68%, 100% { opacity: 0; } 40%, 63% { opacity: 1; } }
+    @keyframes bgRight  { 0%, 72%, 98% { opacity: 0; } 77%, 93%   { opacity: 1; } }
+
+    .backdrop-vignette {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(to right, rgba(5,5,5,0.85) 0%, transparent 14%, transparent 86%, rgba(5,5,5,0.85) 100%);
+      pointer-events: none;
+    }
+
+    /* 360 度旋轉圓筒：現在「只承載懸浮照片」，不再背著整片背景牆一起轉。
+       每張照片各自在自己的 rotateY(角度) 上用 translateZ(450px) 懸浮在
+       一個比背景近得多的距離，跟着圓筒整體慢慢環繞——離攝影機近、
+       transform 幅度大，轉動時看得出明顯的靠近／遠離／左右穿梭，這才是
+       「立體圓筒」該有的樣子。 */
     .carousel-3d {
       width: 100%;
       height: 100%;
       position: absolute;
       top: 0; left: 0;
       transform-style: preserve-3d;
-      animation: carouselSpin 62s linear infinite;
+      animation: carouselSpin 28s linear infinite;
       will-change: transform;
     }
 
@@ -49,74 +87,25 @@
       to   { transform: rotateY(-360deg); }
     }
 
-    /* 背景圓筒的一個縱向面：12 面平分 360 度（每面 30 度），半徑由 JS 依實際
-       寬度動態算出（N 邊形內接半徑公式 w / (2·tan(π/N))，N=12），確保 12 面
-       首尾相接、不露縫也不重疊。同一段風景的 4 面顯示同一張背景圖，內容
-       完全一致、無縫相接，只有真正換場景的地方才有畫面變化，而且角度已
-       縮小到 30 度，邊緣也有既有的漸層可以柔化交界。 */
-    .bg-segment {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      backface-visibility: hidden;
-      background: #000;
-    }
-    .bg-seg-0  { transform: rotateY(0deg)   translateZ(var(--carousel-radius, 900px)); }
-    .bg-seg-1  { transform: rotateY(30deg)  translateZ(var(--carousel-radius, 900px)); }
-    .bg-seg-2  { transform: rotateY(60deg)  translateZ(var(--carousel-radius, 900px)); }
-    .bg-seg-3  { transform: rotateY(90deg)  translateZ(var(--carousel-radius, 900px)); }
-    .bg-seg-4  { transform: rotateY(120deg) translateZ(var(--carousel-radius, 900px)); }
-    .bg-seg-5  { transform: rotateY(150deg) translateZ(var(--carousel-radius, 900px)); }
-    .bg-seg-6  { transform: rotateY(180deg) translateZ(var(--carousel-radius, 900px)); }
-    .bg-seg-7  { transform: rotateY(210deg) translateZ(var(--carousel-radius, 900px)); }
-    .bg-seg-8  { transform: rotateY(240deg) translateZ(var(--carousel-radius, 900px)); }
-    .bg-seg-9  { transform: rotateY(270deg) translateZ(var(--carousel-radius, 900px)); }
-    .bg-seg-10 { transform: rotateY(300deg) translateZ(var(--carousel-radius, 900px)); }
-    .bg-seg-11 { transform: rotateY(330deg) translateZ(var(--carousel-radius, 900px)); }
-
-    /* 照片群：跟背景分段完全分離的獨立圖層（對應使用者建議的「小照片與背景
-       分開圖層、各自 rotateY／translateZ」），各自維持原本 3 段
-       （0°／120°／240°）的角度與淡入時機，只是不再直接畫在牆面上，而是貼
-       在跟背景同一圓筒半徑的位置、疊在對應背景面前方——效果上像照片懸浮
-       環繞在圓筒表面，而不是被拉伸成牆面的一部分。 */
-    .photo-group {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-    }
-    .group-left  { transform: rotateY(0deg)   translateZ(var(--carousel-radius, 900px)); }
-    .group-mid   { transform: rotateY(120deg) translateZ(var(--carousel-radius, 900px)); }
-    .group-right { transform: rotateY(240deg) translateZ(var(--carousel-radius, 900px)); }
-
-    /* 每一面的背景畫面 */
-    .time-slice {
-      width: 100%; height: 100%;
-      background-size: cover; background-position: center;
-      position: relative;
-    }
-    .slice-left  { background-image: url('surprise/image_oxeP6p.png');  filter: brightness(0.65) contrast(1.05); }
-    .slice-mid   { background-image: url('surprise/image_111llO.png');  filter: brightness(0.6)  contrast(1.1);  }
-    .slice-right { background-image: url('surprise/image_9KIY5C.png');  filter: brightness(0.35) contrast(1.15); }
-
-    .time-slice::after {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: linear-gradient(to right, rgba(5,5,5,0.85) 0%, transparent 12%, transparent 88%, rgba(5,5,5,0.85) 100%);
-      pointer-events: none;
-    }
-
     .music-overlay {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
       background: radial-gradient(circle at center, transparent 40%, rgba(212,175,55,0.06) 70%, transparent 100%);
       pointer-events: none;
       z-index: 5;
+      transform: translateZ(450px) rotateY(120deg);
     }
 
-    /* 照片卡片 */
+    /* 照片卡片：不再用 top/left 平鋪定位，改成「各自獨立的 rotateY(角度) +
+       translateZ(450px)」懸浮環繞圓筒——同一段敘事（老城／天文鐘／查理
+       大橋）裡的照片彼此角度略有差異，環繞時才有前後穿梭的層次，而不是
+       死死貼在同一片牆上。translateX(-50%) 先把卡片自己的版面置中，
+       後面接的 rotate(傾角) 是原本「拍立得微微歪一點」的效果，順序放在
+       translateZ／rotateY 之前，代表是卡片自己平面內的旋轉，不影響它在
+       圓筒上的環繞位置。 */
     .photo-card {
       position: absolute;
+      left: 50%;
       box-shadow: 0 15px 35px rgba(0,0,0,0.65);
       border-radius: 4px;
       overflow: hidden;
@@ -134,16 +123,20 @@
     .c-size { width: 210px; border-radius: 4px; z-index: 12; border: 2px solid rgba(255,255,255,0.85); }
     .d-size { width: 125px; border-radius: 2px; z-index: 15; opacity: 0.78; }
 
-    /* 座標已改為「相對各自所在的面」（0~100%），對應原本三段畫面各自的分組 */
-    #photo-oldtown-street       { top: 24%; left: 12%; transform: rotate(-1.5deg); }
-    #photo-castle-tower         { top: 10%; left: 54%; transform: rotate(2deg); }
-    #photo-clocktower           { top: 16%; left: 8%;  transform: rotate(-2deg); }
-    #photo-dr-closeup           { top: 6%;  left: 32%; transform: rotate(3deg); z-index: 14; }
-    #photo-janhus               { top: 44%; left: 56%; transform: rotate(-3deg); }
-    #fragment-clock-death       { bottom: 6%; left: 20%; transform: rotate(-8deg); filter: blur(0.3px); }
-    #fragment-apostles-mechanism{ top: 12%; left: 74%; transform: rotate(6deg); }
-    #photo-bridgetower          { top: 5%;  left: 22%; width: 320px; z-index: 10; filter: hue-rotate(35deg) brightness(0.32) contrast(1.15); }
-    #photo-bridge-statue        { top: 8%;  left: 64%; width: 175px; transform: rotate(-1deg); }
+    /* 第一段：老城街道、城堡塔（圍繞在 -30°~+20° 附近） */
+    #photo-oldtown-street       { top: 4%;  width: 150px; transform: translateX(-50%) rotate(-1.5deg) translateZ(450px) rotateY(-24deg); }
+    #photo-castle-tower         { top: 10%;               transform: translateX(-50%) rotate(2deg)   translateZ(450px) rotateY(18deg); }
+
+    /* 第二段：天文鐘樓群像（圍繞在 100°~145° 附近） */
+    #photo-clocktower           { top: 16%;               transform: translateX(-50%) rotate(-2deg)  translateZ(450px) rotateY(100deg); }
+    #photo-dr-closeup           { top: 6%;  z-index: 14;  transform: translateX(-50%) rotate(3deg)   translateZ(450px) rotateY(114deg); }
+    #photo-janhus               { top: 44%;               transform: translateX(-50%) rotate(-3deg)  translateZ(450px) rotateY(130deg); }
+    #fragment-clock-death       { top: 68%; filter: blur(0.3px); transform: translateX(-50%) rotate(-8deg) translateZ(450px) rotateY(106deg); }
+    #fragment-apostles-mechanism{ top: 12%;               transform: translateX(-50%) rotate(6deg)   translateZ(450px) rotateY(142deg); }
+
+    /* 第三段：查理大橋橋塔（圍繞在 218°~258° 附近） */
+    #photo-bridgetower          { top: 5%;  width: 320px; z-index: 10; filter: hue-rotate(35deg) brightness(0.32) contrast(1.15); transform: translateX(-50%) translateZ(450px) rotateY(220deg); }
+    #photo-bridge-statue        { top: 8%;  width: 175px; transform: translateX(-50%) rotate(-1deg) translateZ(450px) rotateY(256deg); }
 
     /* =====================================================
        字幕層：移出 panorama-rail，固定在 cinema-window 上
@@ -169,21 +162,21 @@
     .movie-caption { font-size: 1.35rem; font-weight: bold; letter-spacing: 0.05em; margin-bottom: 6px; }
 
     /* 三段字幕垂直位置（固定在視窗黃金比例） */
-    .subtitle-left  { top: 42%; animation: subtitleLeft  62s linear infinite; }
-    .subtitle-mid   { top: 38%; animation: subtitleMid   62s linear infinite; }
-    .subtitle-right { top: 45%; animation: subtitleRight 62s linear infinite; }
+    .subtitle-left  { top: 42%; animation: subtitleLeft  28s linear infinite; }
+    .subtitle-mid   { top: 38%; animation: subtitleMid   28s linear infinite; }
+    .subtitle-right { top: 45%; animation: subtitleRight 28s linear infinite; }
 
-    /* 左段：0~20秒 */
+    /* 左段 */
     @keyframes subtitleLeft {
       0%, 30%, 100% { opacity: 0; transform: translateY(10px); }
       5%, 25%       { opacity: 1; transform: translateY(0); }
     }
-    /* 中段：20~45秒 */
+    /* 中段 */
     @keyframes subtitleMid {
       0%, 35%, 68%, 100% { opacity: 0; transform: translateY(10px); }
       40%, 63%           { opacity: 1; transform: translateY(0); }
     }
-    /* 右段：45~60秒 */
+    /* 右段 */
     @keyframes subtitleRight {
       0%, 72%, 98% { opacity: 0; transform: translateY(10px); }
       77%, 93%     { opacity: 1; transform: translateY(0); }
@@ -194,78 +187,59 @@
 
   <div class="cinema-window" id="cinemaWindow">
 
-    <!-- 360 度立體圓筒：12 個縱向背景面（3 段風景各 4 面、每面 30 度）取代
-         原本 3 個大平面，轉動時輪廓趨近圓形，不再是生硬的三角柱；
-         照片群另外用獨立的 .photo-group 疊在對應背景前方（各自的 rotateY／
-         translateZ 跟背景分開），效果是照片懸浮環繞、背景平滑圓筒。 -->
+    <!-- 遠景背景：三張大圖交叉淡入淡出，固定往後退，不跟著圓筒轉 -->
+    <div class="backdrop-slice slice-left"></div>
+    <div class="backdrop-slice slice-mid"></div>
+    <div class="backdrop-slice slice-right"></div>
+    <div class="backdrop-vignette"></div>
+
+    <!-- 360 度立體圓筒：只承載懸浮照片，各自獨立 rotateY／translateZ(450px)
+         環繞在比背景近得多的距離，轉動時看得出明顯的靠近、遠離、左右
+         穿梭——這是跟遠景背景之間「遠近視差」的來源。 -->
     <div class="carousel-3d" id="carousel3d">
 
-      <!-- 背景：老城街道、城堡塔（4 面同一張場景，內容一致、無縫相接） -->
-      <div class="bg-segment bg-seg-0"><div class="time-slice slice-left"></div></div>
-      <div class="bg-segment bg-seg-1"><div class="time-slice slice-left"></div></div>
-      <div class="bg-segment bg-seg-2"><div class="time-slice slice-left"></div></div>
-      <div class="bg-segment bg-seg-3"><div class="time-slice slice-left"></div></div>
+      <div class="music-overlay"></div>
 
-      <!-- 背景：天文鐘樓群像（4 面） -->
-      <div class="bg-segment bg-seg-4"><div class="time-slice slice-mid"></div></div>
-      <div class="bg-segment bg-seg-5"><div class="time-slice slice-mid"></div></div>
-      <div class="bg-segment bg-seg-6"><div class="time-slice slice-mid"></div></div>
-      <div class="bg-segment bg-seg-7"><div class="time-slice slice-mid"></div></div>
-
-      <!-- 背景：查理大橋橋塔（4 面） -->
-      <div class="bg-segment bg-seg-8"><div class="time-slice slice-right"></div></div>
-      <div class="bg-segment bg-seg-9"><div class="time-slice slice-right"></div></div>
-      <div class="bg-segment bg-seg-10"><div class="time-slice slice-right"></div></div>
-      <div class="bg-segment bg-seg-11"><div class="time-slice slice-right"></div></div>
-
-      <!-- 第一段照片：老城街道、城堡塔（角度／時機跟原本完全一樣，只是改成
-           獨立圖層，疊在 bg-seg-0～3 前方） -->
-      <div class="photo-group group-left">
-        <div class="photo-card c-size" id="photo-oldtown-street">
-          <img src="surprise/image_fR_FA9.png" alt="老城街道合照">
-          <div class="edge-vignette"></div>
-        </div>
-        <div class="photo-card b-size" id="photo-castle-tower">
-          <img src="surprise/image_-rPWeY.png" alt="中世紀風合照">
-          <div class="edge-vignette"></div>
-        </div>
+      <!-- 第一段照片：老城街道、城堡塔 -->
+      <div class="photo-card c-size" id="photo-oldtown-street">
+        <img src="surprise/image_fR_FA9.png" alt="老城街道合照">
+        <div class="edge-vignette"></div>
+      </div>
+      <div class="photo-card b-size" id="photo-castle-tower">
+        <img src="surprise/image_-rPWeY.png" alt="中世紀風合照">
+        <div class="edge-vignette"></div>
       </div>
 
       <!-- 第二段照片：天文鐘樓群像 -->
-      <div class="photo-group group-mid">
-        <div class="music-overlay"></div>
-        <div class="photo-card b-size" id="photo-clocktower">
-          <img src="surprise/image_Ex9PZd.png" alt="天文鐘樓雙人合照">
-          <div class="edge-vignette"></div>
-        </div>
-        <div class="photo-card c-size" id="photo-dr-closeup">
-          <img src="surprise/image_7jQQNK.png" alt="單人溫柔特寫">
-          <div class="edge-vignette"></div>
-        </div>
-        <div class="photo-card c-size" id="photo-janhus">
-          <img src="surprise/image_5-SNAy.png" alt="胡斯雕像合照">
-          <div class="edge-vignette"></div>
-        </div>
-        <div class="photo-card d-size" id="fragment-clock-death">
-          <img src="surprise/image_KkSKiY.png" alt="天文鐘死神碎片">
-          <div class="edge-vignette"></div>
-        </div>
-        <div class="photo-card d-size" id="fragment-apostles-mechanism">
-          <img src="surprise/image__Oqjd2.png" alt="天文鐘內部使徒碎片">
-          <div class="edge-vignette"></div>
-        </div>
+      <div class="photo-card b-size" id="photo-clocktower">
+        <img src="surprise/image_Ex9PZd.png" alt="天文鐘樓雙人合照">
+        <div class="edge-vignette"></div>
+      </div>
+      <div class="photo-card c-size" id="photo-dr-closeup">
+        <img src="surprise/image_7jQQNK.png" alt="單人溫柔特寫">
+        <div class="edge-vignette"></div>
+      </div>
+      <div class="photo-card c-size" id="photo-janhus">
+        <img src="surprise/image_5-SNAy.png" alt="胡斯雕像合照">
+        <div class="edge-vignette"></div>
+      </div>
+      <div class="photo-card d-size" id="fragment-clock-death">
+        <img src="surprise/image_KkSKiY.png" alt="天文鐘死神碎片">
+        <div class="edge-vignette"></div>
+      </div>
+      <div class="photo-card d-size" id="fragment-apostles-mechanism">
+        <img src="surprise/image__Oqjd2.png" alt="天文鐘內部使徒碎片">
+        <div class="edge-vignette"></div>
       </div>
 
       <!-- 第三段照片：查理大橋橋塔 -->
-      <div class="photo-group group-right">
-        <div class="photo-card" id="photo-bridgetower">
-          <img src="surprise/image_fUPCtw.png" alt="老城橋塔全景實景照">
-          <div class="edge-vignette"></div>
-        </div>
-        <div class="photo-card c-size" id="photo-bridge-statue">
-          <img src="surprise/image_9KIY5C.png" alt="聖方濟沙勿略雕像">
-          <div class="edge-vignette"></div>
-        </div>
+      <div class="photo-card" id="photo-bridgetower">
+        <img src="surprise/image_fUPCtw.png" alt="老城橋塔全景實景照">
+        <div class="edge-vignette"></div>
+      </div>
+      <div class="photo-card c-size" id="photo-bridge-statue">
+        <img src="surprise/image_9KIY5C.png" alt="聖方濟沙勿略雕像">
+        <div class="edge-vignette"></div>
       </div>
 
     </div>
@@ -290,29 +264,6 @@
   </div>
 
   <script>
-    /* 立體圓筒半徑：依實際渲染寬度算出「12 邊形」的 translateZ 半徑
-       （N 邊形內接半徑公式 w / (2·tan(π/N))，N=12），撐開後 12 面才會
-       剛好首尾相接、不露縫也不重疊，而且因為面數變多、角度變小，整體
-       輪廓會接近圓形，不再是原本 N=3 時那種一眼就看得出來的三角柱。
-       perspective 隨半徑等比放大，避免面數變多、半徑跟著變大之後，
-       正面的面因為離攝影機太近而變形過度或穿框。 */
-    (function () {
-      const cinemaWindow = document.getElementById('cinemaWindow');
-      const carousel = document.getElementById('carousel3d');
-      const SEGMENTS = 12; // 3 段風景 × 每段 4 面
-      function updateRadius() {
-        const w = cinemaWindow.offsetWidth;
-        const radius = Math.round(w / (2 * Math.tan(Math.PI / SEGMENTS)));
-        carousel.style.setProperty('--carousel-radius', radius + 'px');
-        // perspective 用固定倍率 3.5 換算（perspective/(perspective-radius) 這個
-        // 「放大倍率」只跟這個倍率有關、跟半徑本身無關），確保面數變多、半徑
-        // 跟著變大之後，畫面的放大程度維持一致，不會變成貼到鏡頭前的特寫。
-        cinemaWindow.style.setProperty('--cinema-perspective', Math.round(radius * 3.5) + 'px');
-      }
-      updateRadius();
-      window.addEventListener('resize', updateRadius);
-    })();
-
     /* 本頁配樂：進頁淡入，離頁（無論往前往後翻）淡出，即使已翻過去也會慢慢收掉。
        透過 parent.SoundEngine 呼叫外層翻頁主程式共用的淡入／淡出引擎。
        改用 __onSpreadActivated／__onSpreadDeactivated（由 flipbook.js 在真正翻到本頁
