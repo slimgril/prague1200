@@ -19,7 +19,15 @@
             background-color: #0A0A0A;
             position: relative; overflow: hidden;
         }
-        .compare-layer { position: absolute; inset: 0; }
+        /* transform: translateZ(0) 把上下兩層各自升成獨立的合成層（GPU
+           layer）。原本只有 .compare-layer--before 有 will-change，
+           下面那層（查理大橋）沒有——快速拖曳拉桿、clip-path 一直改變時，
+           瀏覽器有時候來不及即時把「剛被露出來的那塊查理大橋」重繪好，
+           會有一瞬間先看到 .p05-left-panel 的黑底（#0A0A0A）才補上圖片，
+           也就是拖曳當下「電車右邊被切斷、露出黑底」的感覺。兩層都獨立
+           成層之後，瀏覽器一直保留兩張圖各自完整合成好的畫面，裁切只是
+           改變可見範圍，不需要即時重繪，就不會有黑底閃現的問題。 */
+        .compare-layer { position: absolute; inset: 0; transform: translateZ(0); }
         .hero-image {
             width: 100%; height: 100%;
             object-fit: cover;
