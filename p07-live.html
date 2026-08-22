@@ -255,44 +255,208 @@
     .trail-footer {
       text-align: center; position: relative; z-index: 10; padding: 60px 0 40px;
     }
-    .trail-footer h2 { font-size: 1.4rem; color: #c41e3a; letter-spacing: 0.15em; margin-top: 20px; text-shadow: 0 0 20px rgba(196,30,58,0.4); }
 
-    /* 蓋章獎賞效果 */
-    .finale-stamp {
-      display: inline-block;
-      font-size: 5rem; margin-bottom: 16px;
-      opacity: 0; transform: scale(2) rotate(-15deg);
-      transition: all 0.8s cubic-bezier(0.2,0.8,0.2,1);
+    /* ============================================================
+       【任務包二】聖維特紀念章解鎖：階段化演出
+       取代原本「紅色警示文字＋紅框可點擊按鈕＋吊掛式運動獎牌」的舊版，
+       改成「教堂聚焦 → 金色粒子聚攏 → 古董徽記生成 → 已解鎖訊息 →
+       收藏 → 故事卡延遲出現」的儀式化流程，全程用 data-stage 屬性
+       驅動樣式，狀態邏輯在下面主程式的狀態機裡。
+       ============================================================ */
+    #finaleZone {
+      --relic-gold: #D9B44A;
+      --relic-gold-light: #F3D77A;
+      --relic-gold-dark: #9A7526;
+      --relic-ivory: #F5E9C9;
+      --relic-mask: rgba(9,12,16,0.42);
     }
-    body.reveal-finale .finale-stamp {
-      opacity: 1; transform: scale(1) rotate(-8deg);
-    }
-    .finale-btn {
-      display: inline-block; margin-top: 20px;
-      padding: 12px 28px; border: 2px solid #c41e3a;
-      color: #c41e3a; border-radius: 30px; cursor: pointer;
-      font-size: 1rem; letter-spacing: 0.1em;
-      background: rgba(196,30,58,0.08);
-      transition: all 0.3s ease; z-index: 20; position: relative;
-    }
-    .finale-btn:hover { background: rgba(196,30,58,0.25); box-shadow: 0 0 16px rgba(196,30,58,0.4); }
 
-    /* 終章彩花：蓋章的同時噴出一圈彩花 */
-    .confetti-layer {
-      position: absolute; top: 20%; left: 50%; width: 0; height: 0;
-      pointer-events: none; z-index: 30;
+    /* 深色遮罩：解鎖流程進行中，稍微壓暗複雜的教堂細節，讓文字/徽記
+       對比更清楚（不影響教堂本身作為主場景） */
+    #finaleZone::before {
+      content: ''; position: fixed; inset: 0;
+      background: var(--relic-mask);
+      opacity: 0; pointer-events: none; z-index: 2;
+      transition: opacity 0.8s ease;
     }
-    .confetti-piece {
-      position: absolute; top: 0; left: 0;
-      width: 8px; height: 8px; border-radius: 2px;
+    #finaleZone[data-stage]:not([data-stage="idle"])::before { opacity: 1; }
+
+    .unlock-scene {
+      position: relative;
+      min-height: 200px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 4px;
+    }
+
+    /* 焦點光點：原本粉紅色，現在改成暖金色，且會移動到教堂視覺焦點附近 */
+    .unlock-focus-dot {
+      position: absolute; width: 16px; height: 16px; border-radius: 50%;
+      left: 50%; top: 55%;
+      background: radial-gradient(circle, var(--relic-gold-light), var(--relic-gold));
+      box-shadow: 0 0 14px rgba(217,180,74,0.85), 0 0 30px rgba(217,180,74,0.4);
+      opacity: 0; transform: translate(-50%,-50%) scale(0.6);
+      transition: opacity 0.7s ease, transform 0.9s cubic-bezier(0.2,0.8,0.2,1);
+      pointer-events: none;
+    }
+    #finaleZone[data-stage="focusing"]   .unlock-focus-dot,
+    #finaleZone[data-stage="revealing"]  .unlock-focus-dot {
+      opacity: 1; top: 12%; transform: translate(-50%,-50%) scale(1);
+    }
+    #finaleZone[data-stage="unlocked"]     .unlock-focus-dot,
+    #finaleZone[data-stage="collecting"]   .unlock-focus-dot,
+    #finaleZone[data-stage="storyVisible"] .unlock-focus-dot { opacity: 0; }
+
+    /* 柔和的環境提亮閃光（200~350ms），不是刺眼全白閃爍 */
+    .unlock-flash {
+      position: fixed; inset: 0;
+      background: radial-gradient(circle at 50% 22%, rgba(243,215,122,0.32), transparent 60%);
+      opacity: 0; pointer-events: none; z-index: 3;
+      transition: opacity 0.28s ease;
+    }
+    #finaleZone[data-stage="focusing"] .unlock-flash { opacity: 1; }
+
+    /* 金色粒子：由 JS 動態生成，只在 revealing 階段各自往中心聚攏一次 */
+    .unlock-particles { position: absolute; inset: 0; pointer-events: none; }
+    .unlock-particle {
+      position: absolute; left: 50%; top: 8%;
+      width: 5px; height: 5px; border-radius: 50%;
+      background: radial-gradient(circle, var(--relic-gold-light), var(--relic-gold));
       opacity: 0;
+      transform: translate(-50%,-50%);
     }
-    body.reveal-finale .confetti-piece {
-      animation: confettiPop 1.7s cubic-bezier(0.2,0.8,0.2,1) forwards;
+    #finaleZone[data-stage="revealing"] .unlock-particle {
+      animation: relicParticleIn 1.1s ease-out forwards;
+      animation-delay: var(--p-delay, 0s);
     }
-    @keyframes confettiPop {
-      0%   { opacity: 1; transform: translate(0,0) rotate(0deg) scale(1); }
-      100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(0.4); }
+    @keyframes relicParticleIn {
+      0%   { opacity: 0; transform: translate(calc(-50% + var(--px)), calc(-50% + var(--py))) scale(1); }
+      55%  { opacity: 1; }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+    }
+
+    /* 古董金箔徽記：取代原本的吊掛式運動獎牌 emoji */
+    .relic-badge {
+      position: relative; width: 132px; height: 132px;
+      margin: 0 auto 18px;
+      opacity: 0; transform: scale(0.72) rotate(-6deg);
+    }
+    #finaleZone[data-stage="revealing"] .relic-badge,
+    #finaleZone[data-stage="unlocked"]  .relic-badge {
+      animation: relicBadgeIn 1.3s cubic-bezier(0.16,0.9,0.28,1) forwards;
+    }
+    #finaleZone[data-stage="collecting"]   .relic-badge,
+    #finaleZone[data-stage="storyVisible"] .relic-badge {
+      opacity: 0; transform: scale(0.55) translateY(-30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    @keyframes relicBadgeIn {
+      0%   { opacity: 0; transform: scale(0.72) rotate(-6deg); }
+      55%  { opacity: 1; transform: scale(1.05) rotate(3deg); }
+      80%  { transform: scale(0.98) rotate(-1deg); }
+      100% { opacity: 1; transform: scale(1) rotate(0deg); }
+    }
+    .relic-badge__glow {
+      position: absolute; inset: -22px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(243,215,122,0.55), rgba(217,180,74,0.12) 55%, transparent 75%);
+      filter: blur(2px);
+    }
+    .relic-badge__ring {
+      position: absolute; inset: 0; border-radius: 50%; padding: 6px;
+      background: conic-gradient(from 0deg, var(--relic-gold-dark), var(--relic-gold-light), var(--relic-gold), var(--relic-gold-dark));
+      box-shadow: 0 6px 20px rgba(0,0,0,0.55), inset 0 0 0 2px rgba(245,233,201,0.35);
+    }
+    .relic-badge__face {
+      width: 100%; height: 100%; border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, var(--relic-gold-light), var(--relic-gold) 55%, var(--relic-gold-dark) 100%);
+      box-shadow: inset 0 2px 6px rgba(255,255,255,0.5), inset 0 -6px 14px rgba(0,0,0,0.35);
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    /* 中央紋章：兩個旋轉方形疊成八角星（羅盤玫瑰／哥德窗花意象），
+       用純 CSS 圖形而不是用大量 emoji 充當圖示 */
+    .relic-badge__crest { position: relative; width: 44%; height: 44%; }
+    .relic-badge__crest::before,
+    .relic-badge__crest::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--relic-gold-dark), rgba(154,117,38,0.55));
+      box-shadow: inset 0 0 0 1px rgba(245,233,201,0.5);
+    }
+    .relic-badge__crest::before { transform: rotate(0deg); }
+    .relic-badge__crest::after  { transform: rotate(45deg); }
+
+    .relic-badge__sparkle {
+      position: absolute; color: var(--relic-ivory); font-size: 0.8rem;
+      opacity: 0; text-shadow: 0 0 6px rgba(243,215,122,0.8);
+    }
+    .relic-badge__sparkle--a { top: -2px; right: 4px; }
+    .relic-badge__sparkle--b { bottom: 0px; left: -4px; }
+    #finaleZone[data-stage="unlocked"] .relic-badge__sparkle {
+      animation: relicSparkle 1.6s ease-in-out 0.2s infinite;
+    }
+    @keyframes relicSparkle { 0%, 100% { opacity: 0; } 50% { opacity: 0.9; } }
+
+    /* 完成訊息：取代原本紅色主文＋紅框按鈕 */
+    .unlock-message { position: relative; z-index: 4; }
+    .unlock-message__main {
+      font-size: clamp(1.25rem, 2vw, 2rem);
+      color: var(--relic-ivory);
+      letter-spacing: 0.08em; line-height: 1.5;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.75), 0 0 16px rgba(217,180,74,0.30);
+      margin: 0 0 14px;
+      opacity: 0.55;
+      transition: opacity 0.8s ease;
+    }
+    #finaleZone[data-stage]:not([data-stage="idle"]):not([data-stage="arriving"]) .unlock-message__main {
+      opacity: 1;
+    }
+    .unlock-message__status {
+      display: inline-block;
+      min-height: 1.6em;
+      font-size: clamp(1rem, 1.35vw, 1.35rem);
+      color: var(--relic-gold-light);
+      letter-spacing: 0.1em; line-height: 1.5;
+      padding: 8px 22px; border-radius: 999px;
+      background: rgba(217,180,74,0.08);
+      opacity: 0; transform: translateY(6px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    #finaleZone[data-stage="unlocked"]     .unlock-message__status,
+    #finaleZone[data-stage="collecting"]   .unlock-message__status,
+    #finaleZone[data-stage="storyVisible"] .unlock-message__status {
+      opacity: 1; transform: translateY(0);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .relic-badge, .relic-badge__sparkle, .unlock-particle,
+      .unlock-focus-dot, .unlock-flash,
+      .unlock-message__main, .unlock-message__status {
+        animation: none !important;
+        transition: opacity 0.4s ease !important;
+      }
+      #finaleZone[data-stage="revealing"] .relic-badge,
+      #finaleZone[data-stage="unlocked"]  .relic-badge {
+        opacity: 1; transform: scale(1) rotate(0deg);
+      }
+    }
+
+    /* 右下故事卡（06站的記憶卡兼任）：桌面版縮到 24~28% 寬度區間，
+       避免比徽記還搶眼；手機改成貼底部的 bottom sheet */
+    .story-card { width: 26%; }
+    @media (max-width: 720px) {
+      .story-card { width: 60%; }
+    }
+    @media (max-width: 480px) {
+      .story-card {
+        position: fixed; left: 0; right: 0; bottom: 0; width: 100%;
+        max-width: 100%; margin: 0; border-radius: 16px 16px 0 0;
+        padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+        z-index: 70;
+        transform: translateY(110%) !important;
+        transition: transform 0.45s cubic-bezier(0.2,0.8,0.2,1), opacity 0.3s ease !important;
+      }
+      .trail-station.card-visible .story-card {
+        transform: translateY(0) !important; opacity: 1 !important;
+      }
     }
   </style>
 </head>
@@ -338,12 +502,28 @@
       <g id="pathTreads"></g>
     </svg>
 
-    <!-- 終章（頂部）：滾到最上面看到蓋章獎賞 -->
-    <footer class="trail-footer" id="finaleZone">
-      <div class="finale-stamp">🏅</div>
-      <h2>當音樂穿過城市，記憶在最高處定格。</h2>
-      <div class="finale-btn" onclick="triggerFinale()">✨ 解鎖朝聖紀念章</div>
-      <div class="confetti-layer" id="confettiLayer"></div>
+    <!-- 終章（頂部）：滾到最上面觸發聖維特紀念章解鎖演出（任務包二） -->
+    <footer class="trail-footer" id="finaleZone" data-stage="idle">
+      <div class="unlock-scene" id="unlockScene" aria-hidden="true">
+        <div class="unlock-flash"></div>
+        <div class="unlock-particles" id="unlockParticles"></div>
+        <div class="relic-badge" id="relicBadge">
+          <div class="relic-badge__glow"></div>
+          <div class="relic-badge__ring">
+            <div class="relic-badge__face">
+              <div class="relic-badge__crest"></div>
+            </div>
+          </div>
+          <span class="relic-badge__sparkle relic-badge__sparkle--a">✦</span>
+          <span class="relic-badge__sparkle relic-badge__sparkle--b">✦</span>
+        </div>
+        <div class="unlock-focus-dot" id="unlockFocusDot"></div>
+      </div>
+
+      <div class="unlock-message">
+        <p class="unlock-message__main">當音樂穿過城市，記憶在最高處定格。</p>
+        <p class="unlock-message__status" id="unlockStatusText" aria-live="polite"></p>
+      </div>
     </footer>
 
     <!-- 站點容器：column-reverse 讓01在底部、06在頂部 -->
@@ -416,10 +596,10 @@
         </div>
       </div>
 
-      <!-- 站點 06（終點，在螢幕最上方） -->
+      <!-- 站點 06（終點，在螢幕最上方）：故事卡＝紀念章解鎖後才出現的收藏卡片 -->
       <div class="trail-station">
         <div class="footprint-node" onclick="onNodeClick(this, 6)"></div>
-        <div class="memory-card">
+        <div class="memory-card story-card" id="storyCard">
           <div class="photo-wrapper m-photo">
             <img src="surprise/image_111llO.png" alt="聖維特大教堂">
           </div>
@@ -561,31 +741,28 @@
         station4Observer.observe(station4);
       }
 
-      /* 產生終章彩花碎片 */
-      const confettiLayer = document.getElementById('confettiLayer');
-      if (confettiLayer) {
-        const colors = ['#d4af37', '#ff007f', '#c41e3a', '#ffffff', '#f2c14e'];
-        const pieceCount = 16;
-        for (let i = 0; i < pieceCount; i++) {
-          const angle = (Math.PI * 2 * i) / pieceCount;
-          const dist = 90 + (i % 3) * 30;
-          const dx = Math.cos(angle) * dist;
-          const dy = Math.sin(angle) * dist - 40; /* 整體偏往上噴 */
-          const rot = (i % 2 === 0 ? 1 : -1) * (180 + i * 20);
-          const piece = document.createElement('div');
-          piece.className = 'confetti-piece';
-          piece.style.setProperty('--dx', dx.toFixed(1) + 'px');
-          piece.style.setProperty('--dy', dy.toFixed(1) + 'px');
-          piece.style.setProperty('--rot', rot + 'deg');
-          piece.style.background = colors[i % colors.length];
-          piece.style.animationDelay = (i % 4) * 0.05 + 's';
-          confettiLayer.appendChild(piece);
-        }
-      }
     });
 
-    /* 點呼吸燈：顯示卡片，5 秒後自動收回 */
+    /* 點呼吸燈：顯示卡片，5 秒後自動收回。第六顆燈（終章／紀念章）走
+       獨立的解鎖演出流程，不用這裡的「立刻顯示＋5秒收回」。 */
     function onNodeClick(nodeEl, stationNum) {
+      if (stationNum === 6) {
+        triggerFinale();
+        if (finaleTimer) clearTimeout(finaleTimer);
+        finaleTimer = setTimeout(() => {
+          const fadeOut = setInterval(() => {
+            bgm.volume = Math.max(bgm.volume - 0.04, 0);
+            if (bgm.volume <= 0) {
+              clearInterval(fadeOut);
+              bgm.pause();
+              bgm.currentTime = 0;
+              musicStarted = false; /* 重置，允許重新互動；紀念章／教堂背景維持已解鎖狀態，不因此收回 */
+            }
+          }, 80);
+        }, 17000);
+        return;
+      }
+
       const station = nodeEl.parentElement;
       station.classList.add('card-visible');
 
@@ -609,29 +786,172 @@
           }, 60);
         }).catch(() => {});
       }
+    }
 
-      /* 第六顆燈：立刻觸發教堂背景全開，17 秒後淡出重置 */
-      if (stationNum === 6) {
-        triggerFinale();
-        if (finaleTimer) clearTimeout(finaleTimer);
-        finaleTimer = setTimeout(() => {
-          document.body.classList.remove('reveal-finale');
-          const fadeOut = setInterval(() => {
-            bgm.volume = Math.max(bgm.volume - 0.04, 0);
-            if (bgm.volume <= 0) {
-              clearInterval(fadeOut);
-              bgm.pause();
-              bgm.currentTime = 0;
-              musicStarted = false; /* 重置，允許重新互動 */
-            }
-          }, 80);
-        }, 17000);
+    /* ============================================================
+       【任務包二】聖維特紀念章解鎖：狀態機
+       idle → arriving → focusing → revealing → unlocked → collecting
+       → storyVisible
+       - 每次「抵達終章」只播放一次完整的解鎖演出；已經解鎖過的紀念章
+         （用 localStorage 記錄，讀不到就退化成本次瀏覽記憶）之後只
+         快速呈現最終狀態＋故事卡，不重播整段動畫。
+       - 動畫進行中暫停左右翻頁／導覽列視覺權重，結束後一定恢復（含
+         中途離頁與最長 8 秒保險），不會永久鎖死。
+       ============================================================ */
+    const RELIC_KEY = 'prague1200_p07_relic_unlocked';
+    let relicUnlockedMemory = false; // localStorage 被瀏覽器擋掉時的退化記憶
+    function getRelicUnlocked() {
+      try { return localStorage.getItem(RELIC_KEY) === '1'; } catch (e) { return relicUnlockedMemory; }
+    }
+    function setRelicUnlocked() {
+      if (getRelicUnlocked()) return; // 已經寫過就不要重複寫
+      try { localStorage.setItem(RELIC_KEY, '1'); } catch (e) {}
+      relicUnlockedMemory = true;
+    }
+
+    const finaleZoneEl = document.getElementById('finaleZone');
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let unlockTimers = [];
+    let unlockRunning = false;
+    let navLockActive = false;
+
+    function clearUnlockTimers() {
+      unlockTimers.forEach(id => clearTimeout(id));
+      unlockTimers = [];
+    }
+    function scheduleUnlock(fn, ms) {
+      const id = setTimeout(fn, ms);
+      unlockTimers.push(id);
+      return id;
+    }
+    function setUnlockStage(stage) {
+      if (finaleZoneEl) finaleZoneEl.setAttribute('data-stage', stage);
+    }
+
+    /* 動畫期間暫時降低導覽列／翻頁按鈕的視覺權重與可互動性，結束或
+       離頁時一定恢復；拿不到 parent DOM 就直接忽略，不影響本頁其餘功能 */
+    function setParentNavLocked(locked) {
+      try {
+        const topBar = parent.document.getElementById('top-bar');
+        const prevBtn = parent.document.getElementById('nav-prev');
+        const nextBtn = parent.document.getElementById('nav-next');
+        const tapPrev = parent.document.getElementById('tapZonePrev');
+        const tapNext = parent.document.getElementById('tapZoneNext');
+        if (locked) {
+          navLockActive = true;
+          if (topBar) { topBar.style.transition = 'opacity 0.6s ease'; topBar.style.opacity = '0.35'; }
+          [prevBtn, nextBtn, tapPrev, tapNext].forEach(el => { if (el) el.style.pointerEvents = 'none'; });
+        } else {
+          if (!navLockActive) return;
+          navLockActive = false;
+          if (topBar) topBar.style.opacity = '';
+          [prevBtn, nextBtn, tapPrev, tapNext].forEach(el => { if (el) el.style.pointerEvents = ''; });
+        }
+      } catch (e) { /* 拿不到 parent DOM 就算了 */ }
+    }
+
+    function generateUnlockParticles() {
+      const layer = document.getElementById('unlockParticles');
+      if (!layer) return;
+      layer.innerHTML = '';
+      if (prefersReducedMotion) return;
+      const isNarrow = window.innerWidth < 640;
+      const count = isNarrow ? 12 : 20;
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count + Math.random() * 0.3;
+        const dist = 70 + Math.random() * 50;
+        const px = Math.cos(angle) * dist;
+        const py = Math.sin(angle) * dist;
+        const span = document.createElement('span');
+        span.className = 'unlock-particle';
+        span.setAttribute('aria-hidden', 'true');
+        span.style.setProperty('--px', px.toFixed(1) + 'px');
+        span.style.setProperty('--py', py.toFixed(1) + 'px');
+        span.style.setProperty('--p-delay', (Math.random() * 0.5).toFixed(2) + 's');
+        layer.appendChild(span);
       }
     }
 
-    /* 終章視覺（蓋章＋背景） */
+    function announceUnlocked() {
+      const statusEl = document.getElementById('unlockStatusText');
+      /* 先清空再寫入，確保 aria-live 一定偵測到內容變化並播報 */
+      if (statusEl) { statusEl.textContent = ''; statusEl.textContent = '聖維特紀念章已解鎖'; }
+    }
+
+    function showStoryCard() {
+      const card = document.getElementById('storyCard');
+      const station = card ? card.closest('.trail-station') : null;
+      if (station) station.classList.add('card-visible');
+    }
+
+    /* 已經收藏過：不重播整段動畫，直接呈現最終狀態 */
+    function showUnlockedInstantly() {
+      clearUnlockTimers();
+      unlockRunning = false;
+      setUnlockStage('storyVisible');
+      announceUnlocked();
+      showStoryCard();
+    }
+
+    /* 完整解鎖演出：只在「這次還沒解鎖過」時播放一次 */
+    function playUnlockSequence() {
+      if (unlockRunning) return;
+      unlockRunning = true;
+      clearUnlockTimers();
+      setParentNavLocked(true);
+      /* 保險：無論如何最長 8 秒後一定恢復導覽，不永久鎖死 */
+      scheduleUnlock(() => setParentNavLocked(false), 8000);
+
+      if (prefersReducedMotion) {
+        /* 簡化路徑：不跑粒子／閃光／旋轉，直接淡入完成狀態，但解鎖與
+           故事卡的狀態還是要正確跑完，不能因為省略動畫就少了功能 */
+        setUnlockStage('unlocked');
+        setRelicUnlocked();
+        announceUnlocked();
+        scheduleUnlock(() => {
+          setUnlockStage('collecting');
+          scheduleUnlock(() => {
+            setUnlockStage('storyVisible');
+            showStoryCard();
+            setParentNavLocked(false);
+            unlockRunning = false;
+          }, 350);
+        }, 450);
+        return;
+      }
+
+      setUnlockStage('arriving');
+      scheduleUnlock(() => {
+        setUnlockStage('focusing');
+        scheduleUnlock(() => {
+          generateUnlockParticles();
+          setUnlockStage('revealing');
+          scheduleUnlock(() => {
+            setUnlockStage('unlocked');
+            setRelicUnlocked();
+            announceUnlocked();
+            scheduleUnlock(() => {
+              setUnlockStage('collecting');
+              scheduleUnlock(() => {
+                setUnlockStage('storyVisible');
+                showStoryCard();
+                setParentNavLocked(false);
+                unlockRunning = false;
+              }, 450);
+            }, 1500);
+          }, 1300);
+        }, 300);
+      }, 300);
+    }
+
+    /* 終章視覺入口：教堂背景全開＋（視收藏狀態）播放解鎖演出或直接呈現結果 */
     function triggerFinale() {
       document.body.classList.add('reveal-finale');
+      if (getRelicUnlocked()) {
+        showUnlockedInstantly();
+      } else {
+        playUnlockSequence();
+      }
     }
 
     /* 【任務包一：旅程起點與向上捲動引導】
@@ -666,6 +986,15 @@
       musicStarted = false;
       document.body.classList.remove('reveal-finale');
       document.querySelectorAll('.trail-station.card-visible').forEach(s => s.classList.remove('card-visible'));
+
+      /* 【任務包二】離頁時一定清掉解鎖演出的計時器並恢復導覽列／翻頁
+         按鈕，避免中途離頁造成動畫卡死或其他頁面的導覽被永久鎖住；
+         若這次拜訪已經解鎖過紀念章，畫面狀態保留在 storyVisible（下次
+         捲回終章會直接呈現結果，不重播動畫），否則歸零回 idle。 */
+      clearUnlockTimers();
+      unlockRunning = false;
+      setParentNavLocked(false);
+      setUnlockStage(getRelicUnlocked() ? 'storyVisible' : 'idle');
     };
   </script>
 
