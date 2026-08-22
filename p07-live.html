@@ -344,10 +344,23 @@
     #finaleZone[data-stage="unlocked"]  .relic-badge {
       animation: relicBadgeIn 1.3s cubic-bezier(0.16,0.9,0.28,1) forwards;
     }
-    #finaleZone[data-stage="collecting"]   .relic-badge,
+    /* 收走徽章也改用 animation（不是 transition）：CSS 規格規定
+       transition 的起始值要用「拿掉當下這個動畫之後」的底值去算，
+       徽章前一刻的 opacity:1 是 relicBadgeIn 這個 animation 造成的，
+       並不是一般樣式值，一旦切到 collecting、animation 被换掉，
+       transition 抓到的起點其實是沒有動畫時的原始 opacity:0，等於從
+       0 轉到 0──畫面上徽章就會整個瞬間消失、完全沒有淡出動畫。改成
+       自己也是一個 animation（明確寫死 0%＝opacity:1 當起點），才不會
+       被「動畫值不算數」這條規則坑到。 */
+    #finaleZone[data-stage="collecting"] .relic-badge {
+      animation: relicBadgeOut 0.7s ease forwards;
+    }
     #finaleZone[data-stage="storyVisible"] .relic-badge {
       opacity: 0; transform: scale(0.55) translateY(-30px);
-      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    @keyframes relicBadgeOut {
+      0%   { opacity: 1; transform: scale(1) translateY(0); }
+      100% { opacity: 0; transform: scale(0.55) translateY(-30px); }
     }
     @keyframes relicBadgeIn {
       0%   { opacity: 0; transform: scale(0.72) rotate(-6deg); }
@@ -397,17 +410,26 @@
 
     /* 完成訊息：取代原本紅色主文＋紅框按鈕 */
     .unlock-message { position: relative; z-index: 4; }
+    /* 金句：原本只要不是 idle／arriving 就淡出到 0.55 透明度，等於教堂
+       焦點、粒子聚攏（focusing／revealing）階段就已經隱約看得到金句字樣，
+       跟徽章「解鎖後才由小變大出現」的節奏對不上，讀者會覺得「金句本來
+       就已經在那裡了」。改成跟徽章一樣，完全等到 unlocked（真正解鎖那一
+       刻）才由小放大＋淡入出現，之後 collecting／storyVisible 階段徽章
+       收走，金句本身留在原地不再跟著消失。 */
     .unlock-message__main {
       font-size: clamp(1.25rem, 2vw, 2rem);
       color: var(--relic-ivory);
       letter-spacing: 0.08em; line-height: 1.5;
       text-shadow: 0 1px 2px rgba(0,0,0,0.75), 0 0 16px rgba(217,180,74,0.30);
       margin: 0 0 14px;
-      opacity: 0.55;
-      transition: opacity 0.8s ease;
+      opacity: 0;
+      transform: scale(0.55);
+      transition: opacity 0.9s cubic-bezier(0.16,0.9,0.28,1), transform 0.9s cubic-bezier(0.16,0.9,0.28,1);
     }
-    #finaleZone[data-stage]:not([data-stage="idle"]):not([data-stage="arriving"]) .unlock-message__main {
-      opacity: 1;
+    #finaleZone[data-stage="unlocked"]     .unlock-message__main,
+    #finaleZone[data-stage="collecting"]   .unlock-message__main,
+    #finaleZone[data-stage="storyVisible"] .unlock-message__main {
+      opacity: 1; transform: scale(1);
     }
     .unlock-message__status {
       display: inline-block;
@@ -930,6 +952,8 @@
             setUnlockStage('unlocked');
             setRelicUnlocked();
             announceUnlocked();
+            /* 徽章＋金句在此刻一起由小放大出現，停留 3 秒鐘讓讀者看清楚，
+               再進入 collecting（徽章收走，金句留在原地）。 */
             scheduleUnlock(() => {
               setUnlockStage('collecting');
               scheduleUnlock(() => {
@@ -938,7 +962,7 @@
                 setParentNavLocked(false);
                 unlockRunning = false;
               }, 450);
-            }, 1500);
+            }, 3000);
           }, 1300);
         }, 300);
       }, 300);
