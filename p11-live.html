@@ -196,9 +196,10 @@
     }
     .chapter-badge.show { opacity: 1; transform: translateY(0); }
 
-    /* 金句改成：影片播放完畢才出現，從遠處縮小的狀態逐漸放大靠近讀者，
-       停留約 5 秒後再縮小淡出（呼應「播完才給你看、看完就把畫面留白」
-       的加映片段儀式感） */
+    /* 金句節奏：影片播完才出現 → 從遠處放大靠近，停在「正常閱讀尺寸」
+       至少 3 秒 → 再放大到約 1.5 倍、停留 5 秒 → 最後用 3 秒慢慢縮回
+       正常閱讀尺寸，並且「留在紙面上」不再消失（不是淡出退場，是真的
+       印在這一頁上，當作全書的收尾）。 */
     .closing-quote {
       max-width: 380px;
       display: flex; flex-direction: column; gap: 16px;
@@ -207,14 +208,22 @@
       transform: scale(0.35);
       transition: opacity 1.1s ease, transform 1.1s cubic-bezier(0.22, 1, 0.36, 1);
     }
-    .closing-quote.approach {
+    /* 第一階段：從遠處淡入、放大到「正常閱讀尺寸」（scale(1)），停留 */
+    .closing-quote.appear {
       opacity: 1;
       transform: scale(1);
     }
-    .closing-quote.retreat {
-      opacity: 0;
-      transform: scale(0.35);
-      transition: opacity 0.9s ease, transform 0.9s ease;
+    /* 第二階段：從正常尺寸再放大到約 1.5 倍，停留 5 秒 */
+    .closing-quote.grow {
+      opacity: 1;
+      transform: scale(1.5);
+      transition: opacity 1.1s ease, transform 1.8s ease;
+    }
+    /* 第三階段：花 3 秒慢慢縮回正常閱讀尺寸，並停在這裡（不淡出、不消失） */
+    .closing-quote.rest {
+      opacity: 1;
+      transform: scale(1);
+      transition: transform 3s ease;
     }
     .quote-line {
       font-family: 'Noto Serif TC', 'PingFang TC', serif;
@@ -390,15 +399,29 @@
       playBtn.addEventListener('click', toggle);
       if (filmFrame) filmFrame.addEventListener('click', toggle);
 
-      /* 右頁金句演出：章徽淡入 → 金句由遠而近放大 → 停留5秒 → 縮小退回
-         → 印章、署名收尾。每次影片播完都會重播一次，並清掉上一輪還沒
-         跑完的計時器，避免使用者反覆重播時動畫互相打架 */
+      /* 右頁金句演出：章徽淡入 → 金句由遠而近放大到正常閱讀尺寸 → 停留
+         至少3秒 → 再放大到約1.5倍 → 停留5秒 → 花3秒縮回正常閱讀尺寸並
+         「留在紙面上」（不淡出、不消失）→ 印章、署名收尾。每次影片播完
+         都會重播一次，並清掉上一輪還沒跑完的計時器，避免使用者反覆重播
+         時動畫互相打架 */
       var closingTimers = [];
       function clearClosingTimers() {
         closingTimers.forEach(function (t) { clearTimeout(t); });
         closingTimers = [];
       }
       function after(ms, fn) { closingTimers.push(setTimeout(fn, ms)); }
+
+      var T_APPEAR = 900;           // 開始淡入放大到正常尺寸
+      var D_APPEAR = 1100;          // 淡入放大過渡時間
+      var HOLD_NORMAL = 3000;       // 正常尺寸至少停留3秒才放大
+      var D_GROW = 1800;            // 放大到1.5倍的過渡時間
+      var HOLD_BIG = 5000;          // 放大狀態停留5秒
+      var D_REST = 3000;            // 縮回正常尺寸的過渡時間（3秒）
+
+      var T_GROW  = T_APPEAR + D_APPEAR + HOLD_NORMAL;
+      var T_REST  = T_GROW + D_GROW + HOLD_BIG;
+      var T_STAMP = T_REST + D_REST + 400;
+      var T_SIG   = T_STAMP + 800;
 
       function runClosingSequence() {
         clearClosingTimers();
@@ -408,19 +431,23 @@
         var line2 = document.getElementById('closeLine2');
         var stamp = document.getElementById('endStamp');
         var sig   = document.getElementById('finalSignature');
-        if (quote) quote.classList.remove('retreat');
+        /* 重播時重置到最初的「遠處、看不見」狀態，才能重新演出一次 */
+        if (quote) quote.classList.remove('appear', 'grow', 'rest');
 
         after(200, function () { if (badge) badge.classList.add('show'); });
-        after(900, function () {
+        after(T_APPEAR, function () {
           if (line1) line1.classList.add('show');
           if (line2) line2.classList.add('show');
-          if (quote) quote.classList.add('approach');
+          if (quote) quote.classList.add('appear');
         });
-        after(900 + 1100 + 5000, function () {
-          if (quote) { quote.classList.remove('approach'); quote.classList.add('retreat'); }
+        after(T_GROW, function () {
+          if (quote) { quote.classList.remove('appear'); quote.classList.add('grow'); }
         });
-        after(900 + 1100 + 5000 + 1400, function () { if (stamp) stamp.classList.add('show'); });
-        after(900 + 1100 + 5000 + 2200, function () { if (sig) sig.classList.add('show'); });
+        after(T_REST, function () {
+          if (quote) { quote.classList.remove('grow'); quote.classList.add('rest'); }
+        });
+        after(T_STAMP, function () { if (stamp) stamp.classList.add('show'); });
+        after(T_SIG, function () { if (sig) sig.classList.add('show'); });
       }
 
       video.addEventListener('ended', function () {

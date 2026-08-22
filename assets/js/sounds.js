@@ -192,15 +192,47 @@ const SoundEngine = (() => {
     if (!enabled) return;
     _clearFade();
     if (_track) { _track.pause(); }
-    _track = new Audio(src);
-    _track.loop = loop;
-    _track.volume = 0;
-    _track.play().catch(() => {});
+    const track = new Audio(src);
+    _track = track;
+    track.loop = loop;
+    track.preload = 'auto';
+    track.volume = 0;
+
+    /* 正翻/倒翻的配樂差異，根源是「第一次建立這個 Audio 物件時直接
+       play()」在部分瀏覽器下會因為尚未緩衝好、或自動播放政策而被悄悄
+       拒絕（promise reject 後被 .catch(()=>{}) 吞掉），之後淡入的音量
+       timer 還是照跑，只是套用在一個「其實沒有在播放」的靜音元素上，
+       完全聽不到聲音；倒翻回來時瀏覽器多半已經快取/緩衝過同一個檔案，
+       第二次 play() 就順利成功，所以才會「這個方向永遠沒聲音、那個方向
+       永遠有聲音」。改成：play() 失敗時，等 canplaythrough 或 loadeddata
+       再重試一次；如果是自動播放政策直接拒絕，改用「先靜音播放、隨後
+       嘗試取消靜音」這個已經在 P11 影片上驗證可行的退路，確保不會整段
+       靜音、聽不到任何聲音。 */
+    function attemptPlay() {
+      const p = track.play();
+      if (p && p.catch) {
+        p.catch(() => {
+          if (track.readyState >= 2) {
+            track.muted = true;
+            track.play().then(() => { track.muted = false; }).catch(() => {});
+          } else {
+            const retry = () => {
+              track.muted = true;
+              track.play().then(() => { track.muted = false; }).catch(() => {});
+            };
+            track.addEventListener('canplaythrough', retry, { once: true });
+            track.addEventListener('loadeddata', retry, { once: true });
+          }
+        });
+      }
+    }
+    attemptPlay();
+
     const steps = 30, stepTime = fadeMs / steps;
     let i = 0;
     _fadeTimer = setInterval(() => {
       i++;
-      if (_track) _track.volume = Math.min(volume, (volume * i) / steps);
+      if (_track === track) track.volume = Math.min(volume, (volume * i) / steps);
       if (i >= steps) _clearFade();
     }, stepTime);
   }

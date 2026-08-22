@@ -100,15 +100,18 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--dark); f
 .live-frame.slot-active { opacity:1; pointer-events:auto; z-index:1; }
 .preview-image { position:absolute; inset:0; width:100%; height:100%; display:block; object-fit:cover; }
 
-/* 中央書脊：非常輕微的凹陷陰影 */
+/* 中央書脊：非常輕微的凹陷陰影。
+   原本 mix-blend-mode:multiply 疊在淺色頁面（例如病歷表內頁）上會被放大
+   成一條生硬的黑線，中心不透明度也高達0.5、只有14px寬，羽化不夠寬。
+   改成：拿掉 multiply 混合模式、加寬羽化範圍、大幅降低中心不透明度，
+   變成若隱若現的自然摺頁陰影，不再壓在照片與文字上。 */
 .book-spine {
   position:absolute; z-index:30; top:0; bottom:0;
-  left:50%; width:14px; transform:translateX(-50%);
+  left:50%; width:32px; transform:translateX(-50%);
   pointer-events:none;
   background:linear-gradient(90deg,
-    transparent 0%, rgba(0,0,0,0.28) 30%, rgba(0,0,0,0.5) 50%,
-    rgba(255,255,255,0.06) 56%, rgba(0,0,0,0.28) 74%, transparent 100%);
-  mix-blend-mode:multiply;
+    transparent 0%, rgba(0,0,0,0.05) 30%, rgba(0,0,0,0.1) 50%,
+    rgba(0,0,0,0.05) 70%, transparent 100%);
 }
 
 /* 正在翻動的右半頁：只有這一半以書脊為軸旋轉，保持硬挺平直，不彎曲不捲角 */
