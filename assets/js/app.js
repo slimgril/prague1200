@@ -35,7 +35,7 @@ async function init() {
      P10）。修法：每個跨頁網址也統一加上 ?v=CHAPTER_ASSET_VERSION，之後只
      要有任何一個 pXX-live.html 內容變動，就把這個版本號 +1，瀏覽器就會直接
      抓新的，不會再被舊的快取檔卡住。 */
-  const CHAPTER_ASSET_VERSION = 20;
+  const CHAPTER_ASSET_VERSION = 21;
   const spreads = Array.from({ length: 12 }, (_, i) => {
     const id = 'p' + String(i).padStart(2, '0');
     return { title: id, url: `${id}-live.html?v=${CHAPTER_ASSET_VERSION}`, preview: `previews/${id}.webp` };
@@ -117,11 +117,16 @@ async function init() {
   document.getElementById('btn-scroll')?.addEventListener('click',  () => setMode('scroll'));
   document.getElementById('btn-archive')?.addEventListener('click', () => window.open('album.html', '_blank'));
 
-  /* 8. Sound toggle */
+  /* 8. Sound toggle：不管前面「自動判斷該不該播放」的邏輯到底準不準，
+     讀者手動點這顆鈕永遠是貨真價實的使用者手勢，瀏覽器不可能擋。
+     切成開啟時，順便對「目前這一跨頁」補踢一次配樂——這是保底手段，
+     解決像 P10 這種「自動播放偶爾起不來」的狀況：聽不到音樂時，
+     點一下這顆鈕就一定會響。 */
   document.getElementById('btn-sound')?.addEventListener('click', () => {
     const on = SoundEngine.toggle();
     const btn = document.getElementById('btn-sound');
     if (btn) btn.textContent = on ? '🔊' : '🔇';
+    if (on) window._book?.kickSound?.();
   });
 
   /* 9. 第一次互動就自動打開音效：SoundEngine 預設是關的（🔇），配樂全靠

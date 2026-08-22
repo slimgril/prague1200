@@ -206,6 +206,16 @@ class SoftFlipBook {
     } catch (e) {}
   }
 
+  /* ── 保底手動觸發：不管前面自動播放的判斷邏輯猜得準不準，只要讀者
+     手動點一下右上角的喇叭鈕，這裡會直接對「目前這一跨頁」發出
+     __onSoundKick 通知——這是貨真價實、瀏覽器不可能拒絕的使用者手勢，
+     哪個瀏覽器的自動播放規則都擋不住。個別頁面只要掛上
+     window.__onSoundKick，就能在讀者手動點擊時重新嘗試播放配樂。 */
+  kickSound() {
+    const frame = this._frameSlot(this.currentIndex);
+    this._notifySpread(frame, '__onSoundKick');
+  }
+
   async _openBook() {
     await this._ensurePrepared(0);
     this._activateFrame(0);

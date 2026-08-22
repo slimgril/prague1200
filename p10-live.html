@@ -472,17 +472,12 @@
       /* 進頁：真正翻到這一頁才開始跑（用 flipbook.js 的
          __onSpreadActivated／__onSpreadDeactivated，避免用 load 事件
          在背景預載時就先跑掉，跟配樂被瀏覽器擋掉是同一種舊寫法的問題）。
-         用「串接」而不是直接覆蓋 window.__onSpreadActivated，
-         這樣才不會跟本頁另一段負責配樂淡入淡出的 script 互相蓋掉。 */
-      var prevActivated = window.__onSpreadActivated;
-      var prevDeactivated = window.__onSpreadDeactivated;
+         直接設置 window.__onSpreadActivated，音樂淡入淡出邏輯會在下方統一處理。 */
       window.__onSpreadActivated = function () {
-        if (prevActivated) prevActivated();
         resetAll();
         startTimer = setTimeout(start, 800);
       };
       window.__onSpreadDeactivated = function () {
-        if (prevDeactivated) prevDeactivated();
         resetAll();
       };
     })();
@@ -507,7 +502,8 @@
     /* 本頁配樂：進頁淡入，離頁（無論往前往後翻）淡出，即使已翻過去也會慢慢收掉。
        透過 parent.SoundEngine 呼叫外層翻頁主程式共用的淡入／淡出引擎。
        用 __onSpreadActivated／__onSpreadDeactivated（由 flipbook.js 在真正翻到本頁
-       時才觸發），避免用 load 事件在背景預載時就被瀏覽器擋掉自動播放。 */
+       時才觸發），避免用 load 事件在背景預載時就被瀏覽器擋掉自動播放。
+       擴展上方計時器設置的生命週期函數，確保進頁時同時啟動計時器和音樂。 */
     (function () {
       function fadeIn() {
         try { parent.SoundEngine?.fadeInTrack?.('surprise/p10-theme.mp3', { volume: 0.7, fadeMs: 2500, loop: true }); } catch (e) {}
@@ -515,12 +511,26 @@
       function fadeOut() {
         try { parent.SoundEngine?.fadeOutTrack?.({ fadeMs: 2000 }); } catch (e) {}
       }
-      /* 用「串接」而不是直接覆蓋，這樣才不會跟本頁另一段負責左側計時器
-         啟動／歸零的 script 互相蓋掉彼此的 __onSpreadActivated。 */
-      var prevActivated = window.__onSpreadActivated;
-      var prevDeactivated = window.__onSpreadDeactivated;
-      window.__onSpreadActivated = function () { if (prevActivated) prevActivated(); fadeIn(); };
-      window.__onSpreadDeactivated = function () { if (prevDeactivated) prevDeactivated(); fadeOut(); };
+
+      /* 擴展已設置的生命週期函數，在計時器邏輯之後立即執行音樂淡入 */
+      var baseActivated = window.__onSpreadActivated;
+      var baseDeactivated = window.__onSpreadDeactivated;
+
+      window.__onSpreadActivated = function () {
+        if (baseActivated) baseActivated();
+        fadeIn();
+      };
+
+      window.__onSpreadDeactivated = function () {
+        if (baseDeactivated) baseDeactivated();
+        fadeOut();
+      };
+
+      /* 保底：不管自動播放的判斷準不準，讀者手動點右上角喇叭鈕時
+         （flipbook.js 的 kickSound()）一定會呼叫到這裡，用真正的
+         使用者手勢重新嘗試播放——保證聽得到。 */
+      window.__onSoundKick = fadeIn;
+
       window.addEventListener('pagehide', fadeOut);
       window.addEventListener('beforeunload', fadeOut);
     })();
