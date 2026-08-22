@@ -26,14 +26,14 @@
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background-image: url('surprise/image_111llO.png');
       background-size: cover; background-position: center;
-      opacity: 0.04; filter: blur(10px) brightness(0.25);
+      opacity: 0.15; filter: blur(8px) brightness(0.5);
       z-index: 1; pointer-events: none;
       transition: opacity 1.4s ease, filter 1.4s ease, transform 1.2s ease;
       transform: scale(1);
     }
     body.reveal-finale .hero-fixed-bg {
-      opacity: 0.92;
-      filter: blur(0px) brightness(0.9);
+      opacity: 0.95;
+      filter: blur(0px) brightness(1.0);
       transform: scale(1.06);
     }
 
@@ -42,12 +42,12 @@
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background-image: url('surprise/image_Ex9PZd.png');
       background-size: cover; background-position: center;
-      opacity: 0; filter: blur(6px) brightness(0.5);
+      opacity: 0; filter: blur(4px) brightness(0.7);
       z-index: 1; pointer-events: none;
       transition: opacity 1.4s ease, filter 1.4s ease;
     }
     body.station4-reveal .hero-fixed-bg-p4 {
-      opacity: 0.8; filter: blur(0px) brightness(0.85);
+      opacity: 0.85; filter: blur(0px) brightness(0.95);
     }
 
     /* 蜿蜒路線改用 SVG，直線隱藏 */
@@ -68,7 +68,7 @@
       position: relative; width: 100%; margin-bottom: 140px;
       display: flex; justify-content: flex-start; z-index: 5;
       opacity: 0; transform: translateY(30px);
-      transition: opacity 0.8s ease, transform 0.8s ease;
+      transition: opacity 0.7s ease-in-out, transform 0.7s ease-in-out;
     }
     .trail-station.is-visible { opacity: 1; transform: translateY(0); }
     .trail-station:nth-child(even) { justify-content: flex-end; }
@@ -77,7 +77,7 @@
     .footprint-node {
       position: absolute; top: 20px;
       width: 20px; height: 20px;
-      background: #ff007f; border: 3px solid #ff007f;
+      background: #D4AF37; border: 3px solid #D4AF37;
       border-radius: 50%; z-index: 10;
       animation: nodeGlow 1.5s infinite ease-in-out;
       transform: translateX(-50%);
@@ -88,8 +88,8 @@
     .trail-station:nth-child(even) .footprint-node { left: 62%; }
 
     @keyframes nodeGlow {
-      0%, 100% { box-shadow: 0 0 5px #ff007f; opacity: 0.6; transform: translateX(-50%) scale(0.9); }
-      50%       { box-shadow: 0 0 20px #ff007f, 0 0 35px rgba(255,0,127,0.6); opacity: 1; transform: translateX(-50%) scale(1.2); }
+      0%, 100% { box-shadow: 0 0 8px #D4AF37; opacity: 0.7; transform: translateX(-50%) scale(0.9); }
+      50%       { box-shadow: 0 0 25px #F0D56B, 0 0 40px rgba(212,175,55,0.7); opacity: 1; transform: translateX(-50%) scale(1.2); }
     }
 
     /* 起點引導人物背影（站點01） */
@@ -116,7 +116,7 @@
       padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.6);
       box-sizing: border-box;
       opacity: 0; pointer-events: none;
-      transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.3s ease;
+      transition: opacity 0.7s ease-in-out, transform 0.7s ease-in-out, box-shadow 0.3s ease;
     }
     .trail-station:nth-child(odd)  .memory-card { transform: rotate(-1.5deg) translateY(12px); }
     .trail-station:nth-child(even) .memory-card { transform: rotate(1.5deg)  translateY(12px); }
@@ -126,7 +126,7 @@
     }
     .trail-station:nth-child(odd).card-visible  .memory-card { transform: rotate(-1.5deg) translateY(0); }
     .trail-station:nth-child(even).card-visible .memory-card { transform: rotate(1.5deg)  translateY(0); }
-    .memory-card:hover { box-shadow: 0 0 20px rgba(212,175,55,0.3), 0 10px 30px rgba(0,0,0,0.6); }
+    .memory-card:hover { box-shadow: 0 0 20px rgba(212,175,55,0.4), 0 10px 30px rgba(0,0,0,0.6); }
 
     /* 第一站下方配圖：原本被 .map-container 的 max-width:850px 夾在中間，
        兩側留白，看起來只佔畫面中央一小塊。改成打破容器寬度限制、真正貼齊
@@ -169,16 +169,20 @@
     .m-photo { width: 100%; }
     .s-photo { width: 85%; margin: 0 auto; }
 
-    .station-title { font-size: 1.1rem; font-weight: bold; color: #d4af37; margin: 0 0 6px 0; letter-spacing: 0.1em; }
+    .station-title { font-size: 1.15rem; font-weight: 700; color: #D4AF37; margin: 0 0 6px 0; letter-spacing: 0.12em; text-shadow: 0 1px 4px rgba(0,0,0,0.6); }
     .station-desc  { font-size: 0.9rem; color: #ccc; line-height: 1.6; margin: 0; letter-spacing: 0.05em; }
-    .magenta-caption { color: #ff007f; font-size: 0.85rem; font-weight: 500; margin-top: 8px; display: block; }
+    .magenta-caption { color: #D4AF37; font-size: 0.85rem; font-weight: 500; margin-top: 8px; display: block; }
 
     /* 開場（最下方，讀者第一眼看到） */
     .trail-header {
       text-align: center; position: relative; z-index: 10; padding: 40px 0 20px;
       order: 999;
     }
-    .trail-header h1 { font-size: 1.6rem; color: #fff; letter-spacing: 0.2em; margin-bottom: 10px; }
+    .trail-header h1 {
+      font-size: 1.8rem; color: #fff; letter-spacing: 0.25em; margin-bottom: 10px;
+      font-weight: 700;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(212,175,55,0.4);
+    }
     .trail-header p  {
       font-size: 1rem; color: #d4af37; letter-spacing: 0.1em;
       animation: headerHintGlow 2.2s ease-in-out infinite;
@@ -334,39 +338,23 @@
       100% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
     }
 
-    /* 古董金箔徽記：取代原本的吊掛式運動獎牌 emoji */
+    /* 古董金箔徽記：從無放大到最大、停留3秒、縮回消失 */
     .relic-badge {
       position: relative; width: 132px; height: 132px;
       margin: 0 auto 18px;
-      opacity: 0; transform: scale(0.72) rotate(-6deg);
+      opacity: 0; transform: scale(0);
     }
-    #finaleZone[data-stage="revealing"] .relic-badge,
-    #finaleZone[data-stage="unlocked"]  .relic-badge {
-      animation: relicBadgeIn 1.3s cubic-bezier(0.16,0.9,0.28,1) forwards;
-    }
-    /* 收走徽章也改用 animation（不是 transition）：CSS 規格規定
-       transition 的起始值要用「拿掉當下這個動畫之後」的底值去算，
-       徽章前一刻的 opacity:1 是 relicBadgeIn 這個 animation 造成的，
-       並不是一般樣式值，一旦切到 collecting、animation 被换掉，
-       transition 抓到的起點其實是沒有動畫時的原始 opacity:0，等於從
-       0 轉到 0──畫面上徽章就會整個瞬間消失、完全沒有淡出動畫。改成
-       自己也是一個 animation（明確寫死 0%＝opacity:1 當起點），才不會
-       被「動畫值不算數」這條規則坑到。 */
-    #finaleZone[data-stage="collecting"] .relic-badge {
-      animation: relicBadgeOut 0.7s ease forwards;
+    #finaleZone[data-stage="unlocked"] .relic-badge {
+      animation: relicBadgeGrowShrink 9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
     #finaleZone[data-stage="storyVisible"] .relic-badge {
-      opacity: 0; transform: scale(0.55) translateY(-30px);
+      opacity: 0; transform: scale(0);
     }
-    @keyframes relicBadgeOut {
-      0%   { opacity: 1; transform: scale(1) translateY(0); }
-      100% { opacity: 0; transform: scale(0.55) translateY(-30px); }
-    }
-    @keyframes relicBadgeIn {
-      0%   { opacity: 0; transform: scale(0.72) rotate(-6deg); }
-      55%  { opacity: 1; transform: scale(1.05) rotate(3deg); }
-      80%  { transform: scale(0.98) rotate(-1deg); }
-      100% { opacity: 1; transform: scale(1) rotate(0deg); }
+    @keyframes relicBadgeGrowShrink {
+      0%   { opacity: 0; transform: scale(0) rotate(0deg); }
+      33%  { opacity: 1; transform: scale(1.5) rotate(3deg); }
+      66%  { opacity: 1; transform: scale(1.5) rotate(-1deg); }
+      100% { opacity: 0; transform: scale(0.3) rotate(0deg); }
     }
     .relic-badge__glow {
       position: absolute; inset: -22px; border-radius: 50%;
@@ -404,18 +392,13 @@
     .relic-badge__sparkle--a { top: -2px; right: 4px; }
     .relic-badge__sparkle--b { bottom: 0px; left: -4px; }
     #finaleZone[data-stage="unlocked"] .relic-badge__sparkle {
-      animation: relicSparkle 1.6s ease-in-out 0.2s infinite;
+      animation: relicSparkle 1.6s ease-in-out 0.2s 3;
     }
     @keyframes relicSparkle { 0%, 100% { opacity: 0; } 50% { opacity: 0.9; } }
 
     /* 完成訊息：取代原本紅色主文＋紅框按鈕 */
     .unlock-message { position: relative; z-index: 4; }
-    /* 金句：原本只要不是 idle／arriving 就淡出到 0.55 透明度，等於教堂
-       焦點、粒子聚攏（focusing／revealing）階段就已經隱約看得到金句字樣，
-       跟徽章「解鎖後才由小變大出現」的節奏對不上，讀者會覺得「金句本來
-       就已經在那裡了」。改成跟徽章一樣，完全等到 unlocked（真正解鎖那一
-       刻）才由小放大＋淡入出現，之後 collecting／storyVisible 階段徽章
-       收走，金句本身留在原地不再跟著消失。 */
+    /* 金句：解鎖後從小放大到1.5倍、停留3秒、縮回紙面（scale 1）並保留 */
     .unlock-message__main {
       font-size: clamp(1.25rem, 2vw, 2rem);
       color: var(--relic-ivory);
@@ -423,12 +406,19 @@
       text-shadow: 0 1px 2px rgba(0,0,0,0.75), 0 0 16px rgba(217,180,74,0.30);
       margin: 0 0 14px;
       opacity: 0;
-      transform: scale(0.55);
-      transition: opacity 0.9s cubic-bezier(0.16,0.9,0.28,1), transform 0.9s cubic-bezier(0.16,0.9,0.28,1);
+      transform: scale(0.35);
     }
-    #finaleZone[data-stage="unlocked"]     .unlock-message__main,
-    #finaleZone[data-stage="collecting"]   .unlock-message__main,
+    #finaleZone[data-stage="unlocked"] .unlock-message__main {
+      animation: quoteGrowSettle 9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    @keyframes quoteGrowSettle {
+      0%   { opacity: 0; transform: scale(0.35); }
+      33%  { opacity: 1; transform: scale(1.5); }
+      66%  { opacity: 1; transform: scale(1.5); }
+      100% { opacity: 1; transform: scale(1); }
+    }
     #finaleZone[data-stage="storyVisible"] .unlock-message__main {
+      animation: none;
       opacity: 1; transform: scale(1);
     }
     .unlock-message__status {
@@ -443,7 +433,6 @@
       transition: opacity 0.6s ease, transform 0.6s ease;
     }
     #finaleZone[data-stage="unlocked"]     .unlock-message__status,
-    #finaleZone[data-stage="collecting"]   .unlock-message__status,
     #finaleZone[data-stage="storyVisible"] .unlock-message__status {
       opacity: 1; transform: translateY(0);
     }
@@ -463,9 +452,9 @@
 
     /* 右下故事卡（06站的記憶卡兼任）：桌面版縮到 24~28% 寬度區間，
        避免比徽記還搶眼；手機改成貼底部的 bottom sheet */
-    .story-card { width: 26%; }
+    .story-card { width: 22%; }
     @media (max-width: 720px) {
-      .story-card { width: 60%; }
+      .story-card { width: 55%; }
     }
     @media (max-width: 480px) {
       .story-card {
@@ -952,17 +941,13 @@
             setUnlockStage('unlocked');
             setRelicUnlocked();
             announceUnlocked();
-            /* 徽章＋金句在此刻一起由小放大出現，停留 3 秒鐘讓讀者看清楚，
-               再進入 collecting（徽章收走，金句留在原地）。 */
+            /* 徽章＋金句動畫 9 秒：放大 3 秒 + 停留 3 秒 + 縮回 3 秒 */
             scheduleUnlock(() => {
-              setUnlockStage('collecting');
-              scheduleUnlock(() => {
-                setUnlockStage('storyVisible');
-                showStoryCard();
-                setParentNavLocked(false);
-                unlockRunning = false;
-              }, 450);
-            }, 3000);
+              setUnlockStage('storyVisible');
+              showStoryCard();
+              setParentNavLocked(false);
+              unlockRunning = false;
+            }, 9000);
           }, 1300);
         }, 300);
       }, 300);

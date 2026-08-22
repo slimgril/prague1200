@@ -35,7 +35,7 @@ async function init() {
      P10）。修法：每個跨頁網址也統一加上 ?v=CHAPTER_ASSET_VERSION，之後只
      要有任何一個 pXX-live.html 內容變動，就把這個版本號 +1，瀏覽器就會直接
      抓新的，不會再被舊的快取檔卡住。 */
-  const CHAPTER_ASSET_VERSION = 18;
+  const CHAPTER_ASSET_VERSION = 19;
   const spreads = Array.from({ length: 12 }, (_, i) => {
     const id = 'p' + String(i).padStart(2, '0');
     return { title: id, url: `${id}-live.html?v=${CHAPTER_ASSET_VERSION}`, preview: `previews/${id}.webp` };
@@ -132,6 +132,12 @@ async function init() {
      除非那第一下就是點在音效鈕本身（那顆鈕自己的開關邏輯優先，不要搶著
      處理，否則會變成「點兩下才會有聲音」）。 */
   function autoEnableSoundOnFirstInteraction(e) {
+    /* 不管這一下點在哪裡，先同步解鎖 <audio> 自動播放權限（Safari 用得到，
+       這是 P10 配樂「正翻沒有、反翻卻有」的真正修法——見 sounds.js
+       unlockMedia() 的說明）。這一步要放在 #btn-sound 判斷之前，
+       因為就算讀者第一下點的正好是音效鈕，也一樣算是一次有效的
+       使用者手勢，一樣要解鎖。 */
+    SoundEngine.unlockMedia?.();
     if (e.target?.closest?.('#btn-sound')) return; // 交給上面按鈕自己的開關邏輯
     document.removeEventListener('pointerdown', autoEnableSoundOnFirstInteraction, true);
     document.removeEventListener('keydown',     autoEnableSoundOnFirstInteraction, true);

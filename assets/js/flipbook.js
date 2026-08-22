@@ -248,6 +248,7 @@ class SoftFlipBook {
   /* ── 前往下一跨頁：右半頁翻起，背面露出下一跨頁左半頁 ── */
   async flipForward() {
     if (this.busy || this.currentIndex >= this.totalSpreads - 1) return;
+    window.SoundEngine?.unlockMedia?.(); // 翻頁本身就是使用者手勢，同步解鎖一次保險
     this.busy = true;
     this._updateNav();
 
@@ -303,6 +304,7 @@ class SoftFlipBook {
   /* ── 返回上一跨頁：對稱動作 ── */
   async flipBackward() {
     if (this.busy || this.currentIndex <= 0) return;
+    window.SoundEngine?.unlockMedia?.(); // 翻頁本身就是使用者手勢，同步解鎖一次保險
     this.busy = true;
     this._updateNav();
 

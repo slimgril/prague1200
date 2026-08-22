@@ -7,6 +7,36 @@ const SoundEngine = (() => {
   let ctx = null;
   let enabled = false;
 
+  /* ── HTMLMediaElement 自動播放解鎖 ──
+     真正的根因找到了：P10 配樂「正翻沒有、反翻卻有」不是隨機的自動播放
+     擋播被吞掉，而是 Safari／WebKit 的規則——第一次 play() 如果不是
+     直接發生在使用者手勢的同步呼叫堆疊裡，就會被永久拒絕；翻頁動畫要
+     等圖片準備好、等 transitionend 才觸發配樂，這已經是非同步事件，
+     不算使用者手勢，所以「正翻第一次进某頁」這種配樂一定會被擋。反翻
+     回去能聽到，只是因為那顆 iframe 沒有重新載入、音檔已經在瀏覽器
+     快取裡，剛好蒙混過關而已，並不是真的修好了。
+     解法：只要在使用者「第一次」點擊／觸控／按鍵這個真正的手勢裡，
+     同步地 play()＋立刻 pause() 一顆隱形靜音的 <audio>，就能讓整頁
+     被瀏覽器判定「已經有過使用者互動的播放」，之後不管翻頁配樂是在
+     多久以後、多不同步的地方觸發，都能正常播放——不用管是正翻還是
+     反翻、也不用管是不是第一次進某一頁。 */
+  let _mediaUnlocked = false;
+  function unlockMedia() {
+    if (_mediaUnlocked) return;
+    _mediaUnlocked = true;
+    try {
+      const a = new Audio();
+      a.muted = true;
+      a.playsInline = true;
+      const p = a.play();
+      if (p && p.then) {
+        p.then(() => a.pause()).catch(() => { _mediaUnlocked = false; });
+      } else {
+        a.pause();
+      }
+    } catch (e) { _mediaUnlocked = false; }
+  }
+
   function getCtx() {
     if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
     return ctx;
@@ -261,7 +291,7 @@ const SoundEngine = (() => {
     toggle()  { enabled ? this.disable() : this.enable(); return enabled; },
     isEnabled() { return enabled; },
     pageTurn, tramBell, beerGlug, stampThud, tick, magic, achievement,
-    fadeInTrack, fadeOutTrack,
+    fadeInTrack, fadeOutTrack, unlockMedia,
   };
 })();
 
