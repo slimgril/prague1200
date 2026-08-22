@@ -732,10 +732,14 @@
       }, { threshold: 0.1 });
       stations.forEach(s => observer.observe(s));
 
-      /* 滾到頂部時自動觸發終章視覺（不觸發音樂） */
+      /* 滾到終章區塊時只打開教堂背景（純視覺，不觸發音樂），紀念章／
+         金句的解鎖演出改成一定要讀者親手點第 6 顆呼吸燈才會播放
+         （見 onNodeClick 裡 stationNum === 6 的分支）——之前這裡直接
+         呼叫 triggerFinale()，會連解鎖動畫一起播，變成「還沒點第六顆
+         燈，金句跟徽章就自己跑出來、還顯示已解鎖」，跟預期不符。 */
       const finaleObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-          if (entry.isIntersecting) setTimeout(() => triggerFinale(), 600);
+          if (entry.isIntersecting) setTimeout(() => revealFinaleBackground(), 600);
         });
       }, { threshold: 0.5 });
       const finale = document.getElementById('finaleZone');
@@ -953,9 +957,17 @@
       }, 300);
     }
 
-    /* 終章視覺入口：教堂背景全開＋（視收藏狀態）播放解鎖演出或直接呈現結果 */
-    function triggerFinale() {
+    /* 純視覺：打開教堂背景，跟紀念章／金句的解鎖演出完全脫鉤——
+       單純捲動到終章區塊就可以看到背景，不代表紀念章已經解鎖。 */
+    function revealFinaleBackground() {
       document.body.classList.add('reveal-finale');
+    }
+
+    /* 終章視覺入口：教堂背景全開＋（視收藏狀態）播放解鎖演出或直接呈現結果。
+       只有讀者親手點第 6 顆呼吸燈（onNodeClick 的 stationNum === 6 分支）
+       才會呼叫到這裡，不會單純捲動經過就自動觸發。 */
+    function triggerFinale() {
+      revealFinaleBackground();
       if (getRelicUnlocked()) {
         showUnlockedInstantly();
       } else {
