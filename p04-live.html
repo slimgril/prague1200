@@ -270,12 +270,13 @@
     const polaroid = document.getElementById('polaroidPic');
 
     const poemLineIds = ['p04PoemLine1', 'p04PoemLine2', 'p04PoemLine3', 'p04PoemLine4'];
+    /* 每行間隔3秒，讓讀者讀完這行再出現下一行 */
     function revealP04Poem() {
         poemLineIds.forEach((id, i) => {
             setTimeout(() => {
                 const el = document.getElementById(id);
                 if (el) el.classList.add('show');
-            }, i * 2000);
+            }, i * 3000);
         });
     }
     function hideP04Poem() {

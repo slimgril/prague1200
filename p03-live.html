@@ -551,7 +551,8 @@
         const poemZone = document.getElementById('poemZone');
         const polaroid = document.getElementById('polaroidPic');
 
-        /* 金句依序彈出：每行間隔2秒，往右拉到70前只觸發一次，往回拉重置 */
+        /* 金句依序彈出：每行間隔3秒（讓讀者讀完這行再出現下一行），
+           往右拉到70前只觸發一次，往回拉重置 */
         let poemRevealed = false;
         let poemTimers = [];
         const poemLineIds = ['poemLine1', 'poemLine2', 'poemLine3', 'poemLine4'];
@@ -561,7 +562,7 @@
             poemLineIds.forEach((id, i) => {
                 poemTimers.push(setTimeout(() => {
                     document.getElementById(id)?.classList.add('show');
-                }, i * 2000));
+                }, i * 3000));
             });
         }
         function hidePoem() {

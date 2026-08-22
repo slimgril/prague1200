@@ -243,7 +243,7 @@
         document.getElementById('gunBarrel').style.setProperty('--mouse-y', `${y}%`);
     });
 
-    /* 逐行淡入：每一行停留 2 秒 */
+    /* 逐行淡入：每一行間隔 3 秒，讓讀者讀完這行再出現下一行 */
     let p05PoemRevealed = false;
     let p05PoemTimers = [];
     const p05PoemLineIds = ['p05PoemLine1', 'p05PoemLine2'];
@@ -251,7 +251,7 @@
         if (p05PoemRevealed) return;
         p05PoemRevealed = true;
         p05PoemLineIds.forEach((id, i) => {
-            p05PoemTimers.push(setTimeout(() => { document.getElementById(id)?.classList.add('show'); }, i * 2000));
+            p05PoemTimers.push(setTimeout(() => { document.getElementById(id)?.classList.add('show'); }, i * 3000));
         });
     }
     function hideP05Poem() {
