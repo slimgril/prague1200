@@ -66,6 +66,35 @@
       background: linear-gradient(to left, transparent, rgba(255,140,0,0.5));
     }
 
+    /* 播放鍵：整個計時動畫（天數、公里數、步數、右側照片輪播、配樂）
+       一律等讀者按下這顆鍵才開始，翻頁翻到這一頁時全部保持靜止不動——
+       這樣不管正翻反翻，音樂能不能播全靠這顆鍵的真人點擊來觸發，
+       不會再有「瀏覽器自動播放規則」猜不準的問題。 */
+    .play-trigger {
+      width: 62px; height: 62px;
+      border-radius: 50%;
+      border: 2px solid #ff8c00;
+      background: rgba(10,10,10,0.55);
+      color: #ff8c00;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.35rem;
+      cursor: pointer;
+      margin: 0 auto 22px;
+      box-shadow: 0 0 16px rgba(255,140,0,0.35);
+      transition: opacity 0.4s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .play-trigger:hover { transform: scale(1.08); box-shadow: 0 0 22px rgba(255,140,0,0.55); }
+    .play-trigger #p10PlayIcon { margin-left: 3px; }
+    .play-trigger.hidden { opacity: 0; pointer-events: none; transform: scale(0.85); }
+    .play-hint {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.58rem; letter-spacing: 0.15em;
+      color: rgba(255,140,0,0.55);
+      margin-bottom: 22px;
+      transition: opacity 0.4s ease;
+    }
+    .play-hint.hidden { opacity: 0; height: 0; margin: 0; overflow: hidden; }
+
     /* 目前第幾天：放在左頁最上方，字體放大約3倍，並持續呼吸感動畫 */
     .day-label {
       font-family: 'Share Tech Mono', monospace;
@@ -286,6 +315,11 @@
     <div class="confetti-layer" id="confettiLayer"></div>
 
     <div class="left-content">
+      <button class="play-trigger" id="p10PlayBtn" type="button" aria-label="開始播放馬拉松計時動畫與配樂">
+        <span id="p10PlayIcon">▶</span>
+      </button>
+      <div class="play-hint" id="p10PlayHint">點擊播放本頁動畫與配樂</div>
+
       <div class="day-label" id="dayLabel">第 1 天</div>
 
       <div class="chapter-badge">▌ PRAGUE 1200 ／ FINAL CHAPTER ／ P10</div>
@@ -315,7 +349,7 @@
         <div class="progress-fill" id="progressFill"></div>
       </div>
 
-      <div class="status-line running" id="statusLine">▶ PROJECT STATUS : IN PROGRESS</div>
+      <div class="status-line" id="statusLine"></div>
     </div>
 
     <div class="left-signature">
@@ -361,6 +395,13 @@
        馬拉松雙計時器：公里數 ＋ 步數，同步從 0 開始，
        以 100 公尺為單位慢慢跳，跳到每天里程碑停 2.5 秒再繼續，
        跳到第 5 天 52.5 公里／82,500 步時停住，彈彩花＋跳金句。
+
+       改版重點：不管正翻反翻進到這一頁，一律先保持完全靜止
+       （天數、公里數、步數、右側照片輪播、配樂全部不動），
+       等讀者親手按下左邊那顆播放鍵才開始——瀏覽器自動播放規則
+       只認「真人手勢」，用按鍵直接觸發就不會再有「正翻沒聲音、
+       反翻才有聲音」這種猜不準的問題，兩個方向都要按鍵才會動，
+       完全對稱。
        ============================================================ */
     (function () {
       var TICK_MS = 70;   // 整體再慢一倍，讓右邊照片輪播來得及跑完
@@ -371,12 +412,15 @@
 
       var ticks = 0;
       var timer = null;
+      var dayAdvanceTimer = null;
 
       var $day = document.getElementById('dayLabel');
       var $km = document.getElementById('kmValue');
       var $steps = document.getElementById('stepsValue');
       var $fill = document.getElementById('progressFill');
       var $status = document.getElementById('statusLine');
+      var $playBtn = document.getElementById('p10PlayBtn');
+      var $playHint = document.getElementById('p10PlayHint');
 
       function updateDisplay() {
         var km = ticks / 10;
@@ -403,7 +447,7 @@
           if (ticks >= TOTAL_TICKS) {
             onFinish();
           } else {
-            setTimeout(function () {
+            dayAdvanceTimer = setTimeout(function () {
               showDay(ticks / TICKS_PER_DAY + 1);
               timer = setInterval(tick, TICK_MS);
             }, PAUSE_MS);
@@ -428,11 +472,13 @@
         }
       }
 
+      /* 播完第 5 天：計時器、右側照片輪播、配樂全部一起停下來 */
       function onFinish() {
         $status.textContent = '🏁 PROJECT STATUS : COMPLETED';
         $status.classList.remove('running');
         $status.classList.add('finished');
         spawnConfetti();
+        window.dispatchEvent(new CustomEvent('p10:stop'));
 
         setTimeout(function () {
           document.getElementById('quoteLine1').classList.add('show');
@@ -445,16 +491,16 @@
 
       function start() {
         showDay(1);
+        $status.textContent = '▶ PROJECT STATUS : IN PROGRESS';
+        $status.classList.add('running');
         timer = setInterval(tick, TICK_MS);
       }
 
-      var startTimer = null;
-
-      /* 離頁：整個停下來、歸零，下次翻回來才會從第一天重新開始，
-         不會因為背景預載時已經偷跑很多秒，一翻過來就看到跑到第五天。 */
+      /* 離頁／進頁重置：整個停下來、歸零，並讓播放鍵重新出現，
+         下次不管正翻反翻進到這一頁，都是同一個「按下去才開始」的狀態。 */
       function resetAll() {
         clearInterval(timer);
-        clearTimeout(startTimer);
+        clearTimeout(dayAdvanceTimer);
         ticks = 0;
         updateDisplay();
         $day.classList.remove('show');
@@ -467,15 +513,25 @@
         document.getElementById('ticketPhoto')?.classList.remove('show');
         var layer = document.getElementById('confettiLayer');
         if (layer) layer.innerHTML = '';
+        $playBtn?.classList.remove('hidden');
+        $playHint?.classList.remove('hidden');
+        window.dispatchEvent(new CustomEvent('p10:stop'));
       }
 
-      /* 進頁：真正翻到這一頁才開始跑（用 flipbook.js 的
-         __onSpreadActivated／__onSpreadDeactivated，避免用 load 事件
-         在背景預載時就先跑掉，跟配樂被瀏覽器擋掉是同一種舊寫法的問題）。
-         直接設置 window.__onSpreadActivated，音樂淡入淡出邏輯會在下方統一處理。 */
+      /* 按下播放鍵：真人點擊，同步觸發計時器＋（透過 p10:play 事件）
+         右側照片輪播與配樂，三者一起開始，瀏覽器不會擋。 */
+      function handlePlayClick() {
+        $playBtn.classList.add('hidden');
+        $playHint.classList.add('hidden');
+        start();
+        window.dispatchEvent(new CustomEvent('p10:play'));
+      }
+      $playBtn?.addEventListener('click', handlePlayClick);
+
+      /* 進頁／離頁一律重置成「靜止、等待按鍵」的狀態，不再自動開始
+         任何動畫或配樂。 */
       window.__onSpreadActivated = function () {
         resetAll();
-        startTimer = setTimeout(start, 800);
       };
       window.__onSpreadDeactivated = function () {
         resetAll();
@@ -483,27 +539,48 @@
     })();
 
     /* ============================================================
-       右頁照片輪播：7 張持續循環播放，跟左邊計時器脫鉤，
-       不管播到第幾張，計時器一到終點就直接觸發彩花＋金句。
+       右頁照片輪播：跟左邊播放鍵同步——沒按播放鍵之前完全靜止，
+       停在第一張；按下播放鍵（p10:play）才開始循環播放；
+       計時器跑完或離開頁面（p10:stop）就停在當下那一張。
        ============================================================ */
     (function () {
       var imgs = document.querySelectorAll('#photoCarousel img');
       if (!imgs.length) return;
       var idx = 0;
-      setInterval(function () {
-        imgs[idx].classList.remove('active');
-        idx = (idx + 1) % imgs.length;
-        imgs[idx].classList.add('active');
-      }, 3800);
+      var carouselTimer = null;
+
+      function startCarousel() {
+        if (carouselTimer) return;
+        carouselTimer = setInterval(function () {
+          imgs[idx].classList.remove('active');
+          idx = (idx + 1) % imgs.length;
+          imgs[idx].classList.add('active');
+        }, 3800);
+      }
+      function stopCarousel() {
+        clearInterval(carouselTimer);
+        carouselTimer = null;
+      }
+      function resetCarousel() {
+        stopCarousel();
+        imgs.forEach(function (img, i) { img.classList.toggle('active', i === 0); });
+        idx = 0;
+      }
+
+      window.addEventListener('p10:play', startCarousel);
+      window.addEventListener('p10:stop', function () {
+        stopCarousel();
+      });
+      resetCarousel();
     })();
   </script>
 
   <script>
-    /* 本頁配樂：進頁淡入，離頁（無論往前往後翻）淡出，即使已翻過去也會慢慢收掉。
-       透過 parent.SoundEngine 呼叫外層翻頁主程式共用的淡入／淡出引擎。
-       用 __onSpreadActivated／__onSpreadDeactivated（由 flipbook.js 在真正翻到本頁
-       時才觸發），避免用 load 事件在背景預載時就被瀏覽器擋掉自動播放。
-       擴展上方計時器設置的生命週期函數，確保進頁時同時啟動計時器和音樂。 */
+    /* 本頁配樂：不再嘗試「翻頁翻到就自動播放」（這是瀏覽器自動播放規則
+       猜不準、正翻反翻不對稱的根源），改成完全跟左邊播放鍵綁在一起——
+       讀者按下播放鍵（p10:play）這個真實的手勢，才觸發配樂淡入；
+       計時器跑完或離開頁面（p10:stop）就淡出。這樣不管正翻反翻，
+       只要讀者按鍵，聲音一定會出來，行為完全對稱、可預期。 */
     (function () {
       function fadeIn() {
         try { parent.SoundEngine?.fadeInTrack?.('surprise/p10-theme.mp3', { volume: 0.7, fadeMs: 2500, loop: true }); } catch (e) {}
@@ -512,23 +589,11 @@
         try { parent.SoundEngine?.fadeOutTrack?.({ fadeMs: 2000 }); } catch (e) {}
       }
 
-      /* 擴展已設置的生命週期函數，在計時器邏輯之後立即執行音樂淡入 */
-      var baseActivated = window.__onSpreadActivated;
-      var baseDeactivated = window.__onSpreadDeactivated;
+      window.addEventListener('p10:play', fadeIn);
+      window.addEventListener('p10:stop', fadeOut);
 
-      window.__onSpreadActivated = function () {
-        if (baseActivated) baseActivated();
-        fadeIn();
-      };
-
-      window.__onSpreadDeactivated = function () {
-        if (baseDeactivated) baseDeactivated();
-        fadeOut();
-      };
-
-      /* 保底：不管自動播放的判斷準不準，讀者手動點右上角喇叭鈕時
-         （flipbook.js 的 kickSound()）一定會呼叫到這裡，用真正的
-         使用者手勢重新嘗試播放——保證聽得到。 */
+      /* 保底：右上角喇叭鈕（flipbook.js 的 kickSound()）也能直接
+         強制重新淡入一次配樂，多一層保險。 */
       window.__onSoundKick = fadeIn;
 
       window.addEventListener('pagehide', fadeOut);
