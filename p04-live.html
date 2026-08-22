@@ -151,6 +151,16 @@
             transform: rotate(6deg); transform-origin: bottom right;
             transition: all 0.4s ease; cursor: pointer; z-index: 25;
         }
+        /* 之前只留了 transition 跟 cursor:pointer，卻沒有寫任何
+           :hover / :active 規則，滑過或點下去畫面完全沒有反應，
+           看起來像壞掉一樣。補上「拿起卡片」的抬起＋擺正效果，
+           滑鼠移過去或觸控按住都會有明顯回饋。 */
+        .p03-polaroid:hover,
+        .p03-polaroid:active {
+            transform: rotate(0deg) scale(1.1) translateY(-8px);
+            box-shadow: 0 16px 36px rgba(0,0,0,0.32);
+            z-index: 26;
+        }
         .p03-polaroid img { width: 100%; height: auto; display: block; border: 1px solid #EEE; }
 
         /* 詩句金句：逐行淡入 */

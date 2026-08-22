@@ -154,6 +154,14 @@
             transform: rotate(-5deg); transform-origin: bottom right;
             transition: all 0.4s ease; cursor: pointer; z-index: 25;
         }
+        /* 同 p04：只有 transition 跟 cursor:pointer，沒有 :hover / :active，
+           滑過或點下去完全沒反應。補上抬起＋擺正效果，跟 p04 一致。 */
+        .p05-polaroid:hover,
+        .p05-polaroid:active {
+            transform: rotate(0deg) scale(1.1) translateY(-8px);
+            box-shadow: 0 16px 36px rgba(0,0,0,0.28);
+            z-index: 26;
+        }
         .p05-polaroid img { width: 100%; height: auto; display: block; border: 1px solid #EEE; }
 
         /* 詩句金句 */
