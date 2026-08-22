@@ -202,6 +202,55 @@
       50%      { transform: translateY(-10px); opacity: 1;   }
     }
 
+    /* 【任務包一・可發現性】只在「這輩子第一次」翻到本頁時出現的柔和提示：
+       底部一顆膠囊文字＋起點旁邊一顆金色光點往上輕輕挪一次，讓讀者在幾秒內
+       意會「要往上走」，不是教學彈窗、不擋內容、開始滾動或幾秒後就自動收起，
+       之後再翻回本頁不會再出現。 */
+    .first-scroll-hint {
+      position: fixed; left: 50%; bottom: 34px;
+      transform: translateX(-50%) translateY(8px);
+      background: rgba(8,8,12,0.78);
+      border: 1px solid rgba(212,175,55,0.4);
+      border-radius: 999px;
+      padding: 10px 22px;
+      display: flex; align-items: center; gap: 10px;
+      color: #f3d77a; font-size: 0.85rem; letter-spacing: 0.1em;
+      white-space: nowrap;
+      z-index: 60; pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.6s ease, transform 0.6s ease;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .first-scroll-hint.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .first-scroll-hint .arrow-up {
+      display: inline-block;
+      animation: chevronBounce 1.4s ease-in-out infinite;
+    }
+
+    .intro-guide-dot {
+      position: absolute; top: 20px; left: 38%;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: radial-gradient(circle, #f3d77a, #d4af37);
+      box-shadow: 0 0 10px rgba(212,175,55,0.8), 0 0 18px rgba(212,175,55,0.4);
+      z-index: 15; pointer-events: none;
+      opacity: 0;
+      transform: translateX(-50%);
+    }
+    .intro-guide-dot.nudge {
+      animation: introDotNudge 1.8s ease-in-out 1;
+    }
+    @keyframes introDotNudge {
+      0%   { transform: translateX(-50%) translateY(0);    opacity: 0; }
+      15%  { opacity: 1; }
+      65%  { transform: translateX(-50%) translateY(-46px); opacity: 1; }
+      100% { transform: translateX(-50%) translateY(-46px); opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .first-scroll-hint { transition: opacity 0.3s ease; }
+      .first-scroll-hint .arrow-up { animation: none; }
+      .intro-guide-dot.nudge { animation: none; opacity: 0; }
+    }
+
     /* 終章（最上方，滾到頂端看到） */
     .trail-footer {
       text-align: center; position: relative; z-index: 10; padding: 60px 0 40px;
@@ -256,6 +305,12 @@
     src="surprise/p07-finale-zaichufa.mp3">
   </audio>
 
+  <!-- 只在第一次翻到本頁時出現一次的柔和提示，之後翻回來不會再顯示 -->
+  <div class="first-scroll-hint" id="firstScrollHint" aria-hidden="true">
+    <span class="arrow-up">↑</span>
+    <span>向上探索旅程</span>
+  </div>
+
   <div class="map-container">
     <!-- 蜿蜒路線：從左下角斜向右上角，約 45 度的朝聖路徑 -->
     <svg class="winding-path" preserveAspectRatio="none" viewBox="0 0 100 100">
@@ -297,6 +352,7 @@
       <!-- 站點 01（起點，在螢幕最下方，讀者第一眼看到） -->
       <div class="trail-station" id="station-01">
         <div class="footprint-node" onclick="onNodeClick(this, 1)"></div>
+        <div class="intro-guide-dot" id="introGuideDot" aria-hidden="true"></div>
         <div class="memory-card">
           <div class="photo-wrapper m-photo">
             <img src="surprise/image_fR_FA9.png" alt="小城區起點">
@@ -394,6 +450,27 @@
     let musicStarted = false;
     let finaleTimer = null;
     const cardTimers = {}; /* 每站的自動收回計時器 */
+
+    /* 【任務包一・可發現性】只演出一次的「向上探索」提示：底部文字膠囊
+       ＋起點旁邊金色光點往上輕挪一次。使用者一開始滾動、或最多 4 秒後，
+       自動淡出；之後翻回本頁不會再播放。 */
+    let hasShownIntro = false;
+    function showFirstScrollHint() {
+      if (hasShownIntro) return;
+      hasShownIntro = true;
+      const hint = document.getElementById('firstScrollHint');
+      const dot  = document.getElementById('introGuideDot');
+      if (hint) hint.classList.add('show');
+      if (dot)  dot.classList.add('nudge');
+      let hidden = false;
+      const hide = () => {
+        if (hidden) return;
+        hidden = true;
+        if (hint) hint.classList.remove('show');
+      };
+      window.addEventListener('scroll', hide, { once: true, passive: true });
+      setTimeout(hide, 4000); // 保險：就算沒有滾動也不要一直卡在畫面上
+    }
 
     /* 把路徑畫成一階一階的石階，而不是一條抽象細線：
        沿路徑等距取點，垂直於切線方向畫短橫木，並依實際渲染的像素比例（preserveAspectRatio=none
@@ -556,6 +633,21 @@
     function triggerFinale() {
       document.body.classList.add('reveal-finale');
     }
+
+    /* 【任務包一：旅程起點與向上捲動引導】
+       抵達本頁（第一次翻到，或翻走後再翻回來）一律重新回到旅程起點
+       （最下方、01站），並讓向上捲動的提示重新可見。
+       原本只有 DOMContentLoaded／load 事件呼叫過 scrollToStart()，只處理
+       「第一次載入」；如果讀者已經捲到中途（例如03站）才翻走、之後又翻
+       回本頁，iframe 因為預載機制不會重新整理，會維持在離開時的捲動位置，
+       讀者會誤以為「怎麼一進來就在故事中間」，看不到起點與捲動提示。
+       用 __onSpreadActivated（flipbook.js 真正翻到本頁才觸發）在每次抵達
+       時都重新校正回起點，行為跟「第一次打開」完全一致。 */
+    window.__onSpreadActivated = function () {
+      userHasScrolled = false;
+      scrollToStart();
+      showFirstScrollHint();
+    };
 
     /* 離開本頁：把配樂完全停掉、狀態歸零，下次翻回來才能重新從第一顆燈
        觸發配樂——原本 musicStarted 這個旗標一旦設成 true 就永久卡住，
