@@ -438,15 +438,15 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .relic-badge, .relic-badge__sparkle, .unlock-particle,
+      /* 只關掉「移動／閃爍／旋轉」這類真正會讓人不舒服的效果（粒子聚攏、
+         閃光、焦點光點移動）；徽章＋金句的放大→停留→縮回這段核心演出
+         讀者明確要求一定要保留，不能因為降低動態效果就變成整個消失、
+         直接平貼在紙面上——那樣反而看起來像壞掉了。 */
+      .relic-badge__sparkle, .unlock-particle,
       .unlock-focus-dot, .unlock-flash,
-      .unlock-message__main, .unlock-message__status {
+      .unlock-message__status {
         animation: none !important;
         transition: opacity 0.4s ease !important;
-      }
-      #finaleZone[data-stage="revealing"] .relic-badge,
-      #finaleZone[data-stage="unlocked"]  .relic-badge {
-        opacity: 1; transform: scale(1) rotate(0deg);
       }
     }
 
@@ -813,7 +813,12 @@
        - 動畫進行中暫停左右翻頁／導覽列視覺權重，結束後一定恢復（含
          中途離頁與最長 8 秒保險），不會永久鎖死。
        ============================================================ */
-    const RELIC_KEY = 'prague1200_p07_relic_unlocked';
+    /* v2：改版鍵名，強制讓「舊版 bug（捲動就自動解鎖）」時期已經被誤寫入
+       localStorage 的讀者（包含測試時的自己）重新看到完整動畫，而不是
+       誤判成「已收藏過」直接跳到平貼的最終畫面——這正是「按了第6顆以後
+       金句沒有效果，只是顯示在紙面上」最可能的真正原因：之前捲到底就
+       誤觸發過一次，已經把已解鎖狀態寫進瀏覽器了。 */
+    const RELIC_KEY = 'prague1200_p07_relic_unlocked_v2';
     let relicUnlockedMemory = false; // localStorage 被瀏覽器擋掉時的退化記憶
     function getRelicUnlocked() {
       try { return localStorage.getItem(RELIC_KEY) === '1'; } catch (e) { return relicUnlockedMemory; }
@@ -918,20 +923,19 @@
       scheduleUnlock(() => setParentNavLocked(false), 8000);
 
       if (prefersReducedMotion) {
-        /* 簡化路徑：不跑粒子／閃光／旋轉，直接淡入完成狀態，但解鎖與
-           故事卡的狀態還是要正確跑完，不能因為省略動畫就少了功能 */
+        /* 簡化路徑：跳過教堂聚焦／閃光／粒子聚攏這些「移動類」前置效果，
+           但徽章＋金句放大→停留→縮回的核心演出（9秒）完整保留——讀者
+           明確要求這段一定要有效果，不能省略掉，只省略真正會讓人不舒服
+           的移動／閃爍效果 */
         setUnlockStage('unlocked');
         setRelicUnlocked();
         announceUnlocked();
         scheduleUnlock(() => {
-          setUnlockStage('collecting');
-          scheduleUnlock(() => {
-            setUnlockStage('storyVisible');
-            showStoryCard();
-            setParentNavLocked(false);
-            unlockRunning = false;
-          }, 350);
-        }, 450);
+          setUnlockStage('storyVisible');
+          showStoryCard();
+          setParentNavLocked(false);
+          unlockRunning = false;
+        }, 9000);
         return;
       }
 
