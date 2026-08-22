@@ -100,100 +100,46 @@
     }
 
     /* =============================================
-       黑膠唱片啟動機：唱片＋唱臂，點擊播放影片
+       播放／暫停鍵：取代原本的黑膠唱片，改用讀者一看就懂的
+       標準三角形播放鍵／暫停鍵，放在影片正下方，不會再擋到
+       下面的說明文字
        ============================================= */
-    .vinyl-launcher {
+    .play-control {
       position: relative;
-      width: 150px; height: 96px;
       margin-top: 20px;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
       opacity: 0;
       transform: translateY(10px);
       transition: opacity 1s ease, transform 1s ease;
       z-index: 4;
     }
-    .vinyl-launcher.show { opacity: 1; transform: translateY(0); }
+    .play-control.show { opacity: 1; transform: translateY(0); }
 
-    .vinyl-record {
-      position: absolute; left: 6px; top: 12px;
-      width: 76px; height: 76px;
+    .play-btn {
+      width: 52px; height: 52px;
       border-radius: 50%;
-      background:
-        radial-gradient(circle at center, #d4af37 0 6px, #0a0a0a 7px 9px, transparent 9px),
-        repeating-radial-gradient(circle at center, #1c1c1c 0px, #1c1c1c 2px, #0a0a0a 3px, #0a0a0a 4px);
-      /* 唱片本身跟背景一樣都是黑的，容易糊在一起看不清楚，
-         所以用實心的金色外框把邊緣清楚勾出來，裡面維持黑色 */
-      box-shadow:
-        0 8px 18px rgba(0,0,0,0.65),
-        0 0 0 3px #d4af37,
-        0 0 10px 3px rgba(212,175,55,0.35);
-      cursor: pointer;
-      animation: vinylSpin 2.4s linear infinite;
-      animation-play-state: paused;
-      transition: transform 0.25s ease;
-    }
-    .vinyl-record:hover { transform: scale(1.06); }
-    .vinyl-record.spinning { animation-play-state: running; }
-
-    .vinyl-play-icon {
-      position: absolute; left: 6px; top: 12px;
-      width: 76px; height: 76px;
+      border: 2px solid #d4af37;
+      background: rgba(10,10,10,0.6);
+      color: #d4af37;
       display: flex; align-items: center; justify-content: center;
-      color: rgba(255,255,255,0.65);
-      font-size: 0.8rem;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
+      font-size: 1.05rem;
+      line-height: 1;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 0 10px rgba(212,175,55,0.25);
     }
-    .vinyl-launcher.playing .vinyl-play-icon { opacity: 0; }
+    .play-btn:hover { transform: scale(1.08); box-shadow: 0 0 16px rgba(212,175,55,0.5); }
+    .play-btn #playIcon { margin-left: 2px; } /* 三角形視覺置中微調 */
+    .play-control.playing .play-btn #playIcon { margin-left: 0; }
 
-    @keyframes vinylSpin {
-      from { transform: rotate(0deg); }
-      to   { transform: rotate(360deg); }
-    }
-
-    .tonearm {
-      position: absolute; top: 0; right: 14px;
-      width: 4px; height: 54px;
-      background: linear-gradient(to bottom, #d4af37, #8a6d3b);
-      border-radius: 2px;
-      transform-origin: top center;
-      transform: rotate(-40deg);
-      transition: transform 1.1s cubic-bezier(0.65,0,0.35,1);
-      z-index: 6;
-    }
-    /* 支點：多加一個配重塊，看起來更像真的唱臂尾端 */
-    .tonearm::before {
-      content: '';
-      position: absolute; top: -6px; left: 50%;
-      transform: translateX(-50%);
-      width: 13px; height: 13px; border-radius: 50%;
-      background: #d4af37;
-      box-shadow: 0 0 4px rgba(212,175,55,0.6),
-                  0 -9px 0 -3px #8a6d3b,
-                  0 -9px 0 -1px rgba(212,175,55,0.5);
-    }
-    /* 唱頭：改成長方形唱頭殼＋前端小小的唱針點 */
-    .tonearm::after {
-      content: '';
-      position: absolute; bottom: -7px; left: 50%;
-      transform: translateX(-50%) rotate(-40deg);
-      width: 8px; height: 14px; border-radius: 2px;
-      background: linear-gradient(to bottom, #2a2a2a, #111);
-      border: 1.5px solid #d4af37;
-      box-shadow: 0 3px 0 -1px #d4af37 inset;
-    }
-    .tonearm.active { transform: rotate(88deg); }
-
-    .vinyl-hint {
-      position: absolute; left: 0; bottom: -4px;
-      width: 100%;
-      text-align: center;
+    .play-hint {
       font-family: 'Share Tech Mono', monospace;
       font-size: 0.55rem;
       letter-spacing: 0.15em;
       color: rgba(212,175,55,0.55);
       transition: opacity 0.4s ease;
     }
-    .vinyl-launcher.playing .vinyl-hint { opacity: 0; }
+    .play-control.playing .play-hint { opacity: 0; }
 
     .left-caption {
       margin-top: 14px;
@@ -250,10 +196,25 @@
     }
     .chapter-badge.show { opacity: 1; transform: translateY(0); }
 
+    /* 金句改成：影片播放完畢才出現，從遠處縮小的狀態逐漸放大靠近讀者，
+       停留約 5 秒後再縮小淡出（呼應「播完才給你看、看完就把畫面留白」
+       的加映片段儀式感） */
     .closing-quote {
       max-width: 380px;
       display: flex; flex-direction: column; gap: 16px;
       z-index: 4;
+      opacity: 0;
+      transform: scale(0.35);
+      transition: opacity 1.1s ease, transform 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .closing-quote.approach {
+      opacity: 1;
+      transform: scale(1);
+    }
+    .closing-quote.retreat {
+      opacity: 0;
+      transform: scale(0.35);
+      transition: opacity 0.9s ease, transform 0.9s ease;
     }
     .quote-line {
       font-family: 'Noto Serif TC', 'PingFang TC', serif;
@@ -320,11 +281,11 @@
       <video id="p11Video" src="surprise/p11.mp4" playsinline preload="auto"></video>
     </div>
 
-    <div class="vinyl-launcher" id="vinylLauncher">
-      <div class="tonearm" id="tonearm"></div>
-      <div class="vinyl-record" id="vinylRecord"></div>
-      <div class="vinyl-play-icon" id="vinylPlayIcon">▶</div>
-      <div class="vinyl-hint" id="vinylHint">點擊唱片，播放加映片段</div>
+    <div class="play-control" id="playControl">
+      <button class="play-btn" id="playBtn" type="button" aria-label="播放或暫停加映片段">
+        <span id="playIcon">▶</span>
+      </button>
+      <div class="play-hint" id="playHint">點擊播放加映片段</div>
     </div>
 
     <div class="left-caption" id="leftCaption">蒲公英飛遠了，<br>願望留在布拉格的風裡。</div>
@@ -383,32 +344,29 @@
         }, s.at);
       });
     }
+    /* 左頁一進來就照原本節奏淡入；右頁的章徽／金句／印章／署名改成
+       等影片播完才出現（見下方 runClosingSequence），不再跟左頁搶時間 */
     seq([
       { id: 'leftEyebrow',    at: 300 },
       { id: 'filmFrame',      at: 700 },
-      { id: 'vinylLauncher',  at: 1500 },
-      { id: 'leftCaption',    at: 2100 },
-      { id: 'chapterBadge',   at: 400 },
-      { id: 'closeLine1',     at: 1200 },
-      { id: 'closeLine2',     at: 3200 },
-      { id: 'endStamp',       at: 4600 },
-      { id: 'finalSignature', at: 5400 }
+      { id: 'playControl',    at: 1500 },
+      { id: 'leftCaption',    at: 2100 }
     ]);
 
-    /* 黑膠唱片啟動機：點擊唱片（或影片本身）→ 唱針落下、唱片轉動、影片播放；
-       播放完畢 → 唱針歸位、唱片停轉，可再次點擊重播 */
+    /* 播放鍵：點擊按鈕（或影片本身）→ 播放，圖示變暫停；
+       播放完畢 → 圖示歸位成播放鍵，可再次點擊重播；
+       同時，影片第一次播完後才觸發右頁金句的「靠近→停留5秒→退回」演出 */
     (function () {
-      var video    = document.getElementById('p11Video');
-      var launcher = document.getElementById('vinylLauncher');
-      var record   = document.getElementById('vinylRecord');
-      var tonearm  = document.getElementById('tonearm');
-      var filmFrame = document.getElementById('filmFrame');
-      if (!video || !launcher || !record || !tonearm) return;
+      var video      = document.getElementById('p11Video');
+      var control    = document.getElementById('playControl');
+      var playBtn    = document.getElementById('playBtn');
+      var playIcon   = document.getElementById('playIcon');
+      var filmFrame  = document.getElementById('filmFrame');
+      if (!video || !control || !playBtn || !playIcon) return;
 
       function startPlayback() {
-        record.classList.add('spinning');
-        tonearm.classList.add('active');
-        launcher.classList.add('playing');
+        control.classList.add('playing');
+        playIcon.textContent = '⏸';
         if (video.ended) { video.currentTime = 0; }
         video.muted = false;
         var p = video.play();
@@ -421,20 +379,54 @@
         }
       }
       function stopPlayback() {
-        record.classList.remove('spinning');
-        tonearm.classList.remove('active');
-        launcher.classList.remove('playing');
+        control.classList.remove('playing');
+        playIcon.textContent = '▶';
       }
       function toggle() {
         if (video.paused || video.ended) { startPlayback(); }
         else { video.pause(); stopPlayback(); }
       }
 
-      record.addEventListener('click', toggle);
+      playBtn.addEventListener('click', toggle);
       if (filmFrame) filmFrame.addEventListener('click', toggle);
+
+      /* 右頁金句演出：章徽淡入 → 金句由遠而近放大 → 停留5秒 → 縮小退回
+         → 印章、署名收尾。每次影片播完都會重播一次，並清掉上一輪還沒
+         跑完的計時器，避免使用者反覆重播時動畫互相打架 */
+      var closingTimers = [];
+      function clearClosingTimers() {
+        closingTimers.forEach(function (t) { clearTimeout(t); });
+        closingTimers = [];
+      }
+      function after(ms, fn) { closingTimers.push(setTimeout(fn, ms)); }
+
+      function runClosingSequence() {
+        clearClosingTimers();
+        var badge = document.getElementById('chapterBadge');
+        var quote = document.querySelector('.closing-quote');
+        var line1 = document.getElementById('closeLine1');
+        var line2 = document.getElementById('closeLine2');
+        var stamp = document.getElementById('endStamp');
+        var sig   = document.getElementById('finalSignature');
+        if (quote) quote.classList.remove('retreat');
+
+        after(200, function () { if (badge) badge.classList.add('show'); });
+        after(900, function () {
+          if (line1) line1.classList.add('show');
+          if (line2) line2.classList.add('show');
+          if (quote) quote.classList.add('approach');
+        });
+        after(900 + 1100 + 5000, function () {
+          if (quote) { quote.classList.remove('approach'); quote.classList.add('retreat'); }
+        });
+        after(900 + 1100 + 5000 + 1400, function () { if (stamp) stamp.classList.add('show'); });
+        after(900 + 1100 + 5000 + 2200, function () { if (sig) sig.classList.add('show'); });
+      }
+
       video.addEventListener('ended', function () {
         stopPlayback();
         video.currentTime = 0;
+        runClosingSequence();
       });
     })();
   </script>
