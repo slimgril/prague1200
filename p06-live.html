@@ -93,7 +93,7 @@
       background: radial-gradient(circle at center, transparent 40%, rgba(212,175,55,0.06) 70%, transparent 100%);
       pointer-events: none;
       z-index: 5;
-      transform: translateZ(450px) rotateY(120deg);
+      transform: rotateY(120deg) translateZ(450px);
     }
 
     /* 照片卡片：不再用 top/left 平鋪定位，改成「各自獨立的 rotateY(角度) +
@@ -119,24 +119,28 @@
       pointer-events: none;
     }
 
-    .b-size { width: 310px; border-radius: 6px; z-index: 10; }
-    .c-size { width: 210px; border-radius: 4px; z-index: 12; border: 2px solid rgba(255,255,255,0.85); }
-    .d-size { width: 125px; border-radius: 2px; z-index: 15; opacity: 0.78; }
+    .b-size { width: 310px; margin-left: -155px; border-radius: 6px; z-index: 10; }
+    .c-size { width: 210px; margin-left: -105px; border-radius: 4px; z-index: 12; border: 2px solid rgba(255,255,255,0.85); }
+    .d-size { width: 125px; margin-left: -62.5px; border-radius: 2px; z-index: 15; opacity: 0.78; }
 
     /* 第一段：老城街道、城堡塔（圍繞在 -30°~+20° 附近） */
-    #photo-oldtown-street       { top: 4%;  width: 150px; transform: translateX(-50%) rotate(-1.5deg) translateZ(450px) rotateY(-24deg); }
-    #photo-castle-tower         { top: 10%;               transform: translateX(-50%) rotate(2deg)   translateZ(450px) rotateY(18deg); }
+    /* 修正：3D 定位改成「先 rotateY 轉到角度、再 translateZ 推出半徑」（原本
+       順序相反，導致全部照片被推到同一點，疊成一直條）；水平置中改用
+       margin-left（固定像素），不再跟 rotateY 混在同一串 transform 裡被
+       帶著偏移。 */
+    #photo-oldtown-street       { top: 4%;  width: 150px; margin-left: -75px; transform: rotateY(-24deg) translateZ(450px) rotate(-1.5deg); }
+    #photo-castle-tower         { top: 10%;               transform: rotateY(18deg)  translateZ(450px) rotate(2deg); }
 
     /* 第二段：天文鐘樓群像（圍繞在 100°~145° 附近） */
-    #photo-clocktower           { top: 16%;               transform: translateX(-50%) rotate(-2deg)  translateZ(450px) rotateY(100deg); }
-    #photo-dr-closeup           { top: 6%;  z-index: 14;  transform: translateX(-50%) rotate(3deg)   translateZ(450px) rotateY(114deg); }
-    #photo-janhus               { top: 44%;               transform: translateX(-50%) rotate(-3deg)  translateZ(450px) rotateY(130deg); }
-    #fragment-clock-death       { top: 68%; filter: blur(0.3px); transform: translateX(-50%) rotate(-8deg) translateZ(450px) rotateY(106deg); }
-    #fragment-apostles-mechanism{ top: 12%;               transform: translateX(-50%) rotate(6deg)   translateZ(450px) rotateY(142deg); }
+    #photo-clocktower           { top: 16%;               transform: rotateY(100deg) translateZ(450px) rotate(-2deg); }
+    #photo-dr-closeup           { top: 6%;  z-index: 14;  transform: rotateY(114deg) translateZ(450px) rotate(3deg); }
+    #photo-janhus               { top: 44%;               transform: rotateY(130deg) translateZ(450px) rotate(-3deg); }
+    #fragment-clock-death       { top: 68%; filter: blur(0.3px); transform: rotateY(106deg) translateZ(450px) rotate(-8deg); }
+    #fragment-apostles-mechanism{ top: 12%;               transform: rotateY(142deg) translateZ(450px) rotate(6deg); }
 
     /* 第三段：查理大橋橋塔（圍繞在 218°~258° 附近） */
-    #photo-bridgetower          { top: 5%;  width: 320px; z-index: 10; filter: hue-rotate(35deg) brightness(0.32) contrast(1.15); transform: translateX(-50%) translateZ(450px) rotateY(220deg); }
-    #photo-bridge-statue        { top: 8%;  width: 175px; transform: translateX(-50%) rotate(-1deg) translateZ(450px) rotateY(256deg); }
+    #photo-bridgetower          { top: 5%;  width: 320px; margin-left: -160px; z-index: 10; filter: hue-rotate(35deg) brightness(0.32) contrast(1.15); transform: rotateY(220deg) translateZ(450px); }
+    #photo-bridge-statue        { top: 8%;  width: 175px; margin-left: -87.5px; transform: rotateY(256deg) translateZ(450px) rotate(-1deg); }
 
     /* =====================================================
        字幕層：移出 panorama-rail，固定在 cinema-window 上
