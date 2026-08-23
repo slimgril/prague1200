@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+  <link rel="stylesheet" href="global.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>P05 - 布拉格紅色電車的火藥塔漫步</title>
@@ -10,73 +11,21 @@
 
         .p05-container { display: flex; width: 100%; height: 100%; position: relative; }
 
-        /* 左欄 40%：改成真正的 Before/After 圖片對比（電車 vs 大橋），
-           取代原本只是切換濾鏡的假拉桿。兩張圖等高滿版疊在同一個框裡，
-           上層（電車）用 clip-path 依拉桿百分比精準裁切露出/遮住，金色
-           拉桿貫穿整個對比區域高度、永遠在最上層。 */
+        /* 左欄 40% */
         .p05-left-panel {
             width: 40%; height: 100%;
             background-color: #0A0A0A;
             position: relative; overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
         }
-        /* transform: translateZ(0) 把上下兩層各自升成獨立的合成層（GPU
-           layer）。原本只有 .compare-layer--before 有 will-change，
-           下面那層（查理大橋）沒有——快速拖曳拉桿、clip-path 一直改變時，
-           瀏覽器有時候來不及即時把「剛被露出來的那塊查理大橋」重繪好，
-           會有一瞬間先看到 .p05-left-panel 的黑底（#0A0A0A）才補上圖片，
-           也就是拖曳當下「電車右邊被切斷、露出黑底」的感覺。兩層都獨立
-           成層之後，瀏覽器一直保留兩張圖各自完整合成好的畫面，裁切只是
-           改變可見範圍，不需要即時重繪，就不會有黑底閃現的問題。 */
-        .compare-layer { position: absolute; inset: 0; transform: translateZ(0); }
         .hero-image {
             width: 100%; height: 100%;
-            object-fit: cover;
-            object-position: center center;
-            display: block;
-        }
-        .compare-layer--before {
-            clip-path: inset(0 calc(100% - var(--split, 50%)) 0 0);
-            will-change: clip-path;
-        }
-        /* 垂直金色拉桿：貫穿整個對比區域高度，z-index 最高 */
-        .compare-handle {
-            position: absolute; top: 0; bottom: 0;
-            left: var(--split, 50%);
-            width: 3px; margin-left: -1.5px;
-            background: linear-gradient(to bottom, #F3D77A, #D4AF37, #8A6D3B);
-            box-shadow: 0 0 10px rgba(212,175,55,0.75);
-            z-index: 22; pointer-events: none;
-        }
-        .compare-handle::before {
-            content: '⇔';
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 34px; height: 34px; border-radius: 50%;
-            background: radial-gradient(circle, #FFF, #D4AF37, #8A6D3B);
-            border: 2px solid #332211; box-shadow: 0 0 10px rgba(212,175,55,0.8);
-            display: flex; align-items: center; justify-content: center;
-            color: #332211; font-size: 15px; font-weight: bold;
-        }
-        /* 拖曳輸入層：鋪滿整個對比區域，看不見但接收拖曳／鍵盤操作，
-           這樣在圖片任何地方按住拖曳都能移動拉桿，不必精準點到那條細線 */
-        .compare-drag-input {
-            position: absolute; inset: 0; width: 100%; height: 100%;
-            margin: 0; padding: 0; opacity: 0; cursor: ew-resize;
-            -webkit-appearance: none; appearance: none;
-            z-index: 23;
-        }
-        .compare-drag-input::-webkit-slider-thumb { -webkit-appearance: none; width: 100%; height: 100%; }
-        .compare-drag-input::-moz-range-thumb { width: 100%; height: 100%; border: none; background: transparent; }
-        .compare-caption {
-            position: absolute; top: 4%; left: 0; right: 0;
-            text-align: center; z-index: 21; pointer-events: none;
-            color: #F5E9C9; font-size: 11px; letter-spacing: 0.1em;
-            text-shadow: 0 1px 4px rgba(0,0,0,0.8);
-            display: flex; justify-content: space-between; padding: 0 6%;
+            object-fit: cover; object-position: center center;
+            transition: filter 0.5s ease;
         }
 
         /* 右欄 60% */
-        .p03-right-panel {
+        .p05-right-panel {
             width: 60%; height: 100%;
             background-color: #F4F1EA;
             background-image: linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px);
@@ -92,10 +41,25 @@
         }
         .p05-left-panel:hover .gun-barrel-overlay { opacity: 1; }
 
-        /* 黃銅拉桿：避開翻頁觸發區 */
+        /* 金邊花框 */
+        .floral-frame {
+            position: absolute; inset: 14px;
+            border: 1.5px solid rgba(184,150,12,0.5);
+            pointer-events: none; z-index: 2;
+        }
+        .floral-corner {
+            position: absolute; width: 96px; height: 96px;
+            pointer-events: none; z-index: 3; opacity: 0.88;
+        }
+        .floral-corner-tl { top: -4px; left: -4px; }
+        .floral-corner-tr { top: -4px; right: -4px; transform: scaleX(-1); }
+        .floral-corner-bl { bottom: -4px; left: -4px; transform: scaleY(-1); }
+        .floral-corner-br { bottom: -4px; right: -4px; transform: scale(-1,-1); }
+
+        /* 黃銅拉桿 */
         .timeline-slider-container {
-            position: absolute; top: 8%; left: 8%;
-            width: 66%; text-align: center; z-index: 50;
+            position: absolute; top: 8%; left: 10%;
+            width: 80%; text-align: center; z-index: 50;
         }
         .time-labels { display: flex; justify-content: space-between; color: #8A6D3B; font-size: 12px; margin-bottom: 5px; font-weight: bold; }
         .brass-slider {
@@ -109,101 +73,145 @@
             border: 2px solid #332211; box-shadow: 0 0 8px rgba(212,175,55,0.8);
         }
 
-        /* 地圖容器：避開翻頁觸發區，齒輪 tooltip 才不會被擋 */
+        /* 地圖容器 */
         .map-hotspots-container {
-            position: absolute; top: 22%; left: 6%;
-            width: 70%; height: 44%;
+            position: absolute; top: 22%; left: 8%;
+            width: 84%; height: 44%;
             border: 1px solid rgba(138,109,59,0.2); border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            background-image: url('surprise/p05_right.png');
-            background-size: cover;
-            background-position: center center;
+            background-image: url('surprise/p05-bg.png');
+            background-size: cover; background-position: center center;
             overflow: hidden;
         }
         .map-hotspots-layer { position: absolute; width: 100%; height: 100%; top: 0; left: 0; z-index: 10; pointer-events: none; }
 
-        /* 金色齒輪熱區 */
+        /* 熱區節點 — 燈塔閃爍（金色） */
         .map-node {
             position: absolute; width: 36px; height: 36px;
-            border: 2px solid #D4AF37; background-color: rgba(10,10,10,0.75);
+            border: 2px solid #FFD700;
+            background-color: rgba(255,215,0,0.25);
             border-radius: 50%; cursor: pointer; pointer-events: auto;
             display: flex; align-items: center; justify-content: center;
-            color: #D4AF37; font-weight: bold; font-size: 14px;
-            box-shadow: 0 0 10px rgba(212,175,55,0.5); transition: all 0.3s ease;
+            color: #FFD700; font-weight: bold; font-size: 14px;
+            transition: all 0.3s ease;
+            animation: lighthouseFlash 1.2s ease-in-out infinite;
         }
-        .map-node:hover { transform: scale(1.2) rotate(45deg); box-shadow: 0 0 15px #D4AF37; background-color: #D4AF37; color: #0A0A0A; }
-
-        /* tooltip 照片 */
-        .node-tooltip {
-            position: absolute; bottom: 46px; left: 50%;
-            transform: translateX(-50%) scale(0.9);
-            width: 200px; height: 150px;
-            border: 2px solid #D4AF37; border-radius: 6px;
-            overflow: hidden; opacity: 0;
-            pointer-events: none; transition: all 0.25s ease;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.7); z-index: 100;
+        .map-node:hover {
+            transform: scale(1.3);
+            background-color: rgba(255,215,0,0.7);
+            box-shadow: 0 0 25px #FFD700, 0 0 50px #FFD700;
+            animation: none;
         }
-        .node-tooltip img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .map-node:hover .node-tooltip { opacity: 1; transform: translateX(-50%) scale(1); }
+        @keyframes lighthouseFlash {
+            0%   { box-shadow: 0 0 4px #FFD700; opacity: 1; }
+            40%  { box-shadow: 0 0 18px #FFD700, 0 0 35px rgba(255,215,0,0.8); opacity: 1; }
+            50%  { box-shadow: 0 0 2px #FFD700; opacity: 0.4; }
+            60%  { box-shadow: 0 0 18px #FFD700, 0 0 35px rgba(255,215,0,0.8); opacity: 1; }
+            100% { box-shadow: 0 0 4px #FFD700; opacity: 1; }
+        }
 
         /* 拍立得 */
         .p05-polaroid {
-            position: absolute; bottom: 4%; right: 6%;
-            width: 210px; background: #FFFFFF; padding: 12px 12px 24px 12px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+            position: absolute; bottom: 3%; right: 6%;
+            width: 230px; background: #FFFFFF; padding: 10px 10px 28px 10px;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.14);
             transform: rotate(-5deg); transform-origin: bottom right;
             transition: all 0.4s ease; cursor: pointer; z-index: 25;
         }
-        /* 同 p04：只有 transition 跟 cursor:pointer，沒有 :hover / :active，
-           滑過或點下去完全沒反應。補上抬起＋擺正效果，跟 p04 一致。 */
-        .p05-polaroid:hover,
-        .p05-polaroid:active {
-            transform: rotate(0deg) scale(1.1) translateY(-8px);
-            box-shadow: 0 16px 36px rgba(0,0,0,0.28);
-            z-index: 26;
-        }
         .p05-polaroid img { width: 100%; height: auto; display: block; border: 1px solid #EEE; }
+        .p05-polaroid:hover { transform: rotate(-5deg) scale(1.08); box-shadow: 0 14px 36px rgba(0,0,0,0.22); }
 
-        /* 詩句金句 */
+        /* 詩句 — transition 模式 */
         .p05-poem-zone {
-            position: absolute; bottom: calc(5% + 40px); left: 8%;
-            width: 380px; text-align: left; line-height: 2.3;
-            color: #332211; font-weight: 700; font-size: 15px;
+            position: absolute;
+            top: calc(66% + 1.5em);
+            left: 8%; width: 55%;
+            text-align: center; opacity: 1;
             z-index: 40; pointer-events: none;
         }
-        .poem-line { display: block; opacity: 0; transform: translateY(6px); transition: opacity 1s ease, transform 1s ease; }
-        .poem-line.show { opacity: 1; transform: translateY(0); }
+        .poem-line {
+            display: block;
+            color: #C2186B;
+            text-shadow: 0 1px 6px rgba(180,0,80,0.2);
+            font-weight: 700; font-size: 18px;
+            line-height: 1.6; margin-bottom: 4px;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 1.5s ease, transform 1.5s ease;
+        }
+        .poem-line.fade-in-active {
+            opacity: 1; transform: translateY(0);
+        }
     </style>
 </head>
 <body>
 
 <div class="p05-container">
 
-    <!-- 左欄：電車樂園／大橋風景 Before-After 對比 -->
+    <!-- 左欄：電車英雄照 -->
     <div class="p05-left-panel" id="leftPanel">
-        <iframe 
-            src="p04效果測試/p05.html" 
-            width="100%" 
-            height="650px" 
-            frameborder="0" 
-            scrolling="no"
-            style="border: 1px solid #333; border-radius: 8px; background: #121212;">
-        </iframe>
-        <div class="compare-caption" aria-hidden="true"><span>電車樂園</span><span>查理大橋</span></div>
-        <div class="compare-layer compare-layer--after">
-            <img src="surprise/p05_right.png" class="hero-image" alt="查理大橋風景">
-        </div>
-        <div class="compare-layer compare-layer--before" id="compareBefore">
-            <img src="surprise/p05_base.png" class="hero-image" id="heroImg" alt="布拉格42號古董電車大跨頁">
-        </div>
-        <div class="compare-handle" id="compareHandle" aria-hidden="true"></div>
-        <input type="range" min="0" max="100" value="50" class="compare-drag-input" id="compareDrag"
-               aria-label="拖曳比較電車樂園與查理大橋照片">
+        <img src="surprise/p05-hero.png" class="hero-image" id="heroImg" alt="布拉格42號古董電車">
         <div class="gun-barrel-overlay" id="gunBarrel"></div>
     </div>
 
     <!-- 右欄：手帳尋寶區 -->
-    <div class="p03-right-panel" id="rightPanel">
+    <div class="p05-right-panel" id="rightPanel">
+
+        <!-- 金邊花框 -->
+        <div class="floral-frame">
+            <span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#F4F1EA;padding:0 8px;color:#A07800;font-size:13px;letter-spacing:4px;">✦ ◆ ✦</span>
+            <span style="position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);background:#F4F1EA;padding:0 8px;color:#A07800;font-size:13px;letter-spacing:4px;">✦ ◆ ✦</span>
+        </div>
+
+        <!-- SVG 花角 -->
+        <svg class="floral-corner floral-corner-tl" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
+            <line x1="14" y1="88" x2="14" y2="42" stroke="#7A8C5A" stroke-width="2.5"/>
+            <line x1="14" y1="88" x2="48" y2="88" stroke="#7A8C5A" stroke-width="2.5"/>
+            <path d="M14 62 Q0 50 5 36" stroke="#6B7B4A" stroke-width="1.8" fill="none"/>
+            <ellipse cx="6" cy="49" rx="13" ry="6" fill="#8A9C5A" transform="rotate(-45 6 49)" opacity="0.9"/>
+            <path d="M14 68 Q28 55 42 60" stroke="#6B7B4A" stroke-width="1.8" fill="none"/>
+            <ellipse cx="28" cy="62" rx="13" ry="6" fill="#7A8C4A" transform="rotate(20 28 62)" opacity="0.9"/>
+            <circle cx="14" cy="26" r="11" fill="#F2B8A0"/><circle cx="25" cy="16" r="11" fill="#E8A890"/>
+            <circle cx="36" cy="14" r="10" fill="#F2B8A0"/><circle cx="3"  cy="16" r="10" fill="#E8A890"/>
+            <circle cx="3"  cy="30" r="10" fill="#F2B8A0"/><circle cx="27" cy="32" r="10" fill="#E8A890"/>
+            <circle cx="14" cy="22" r="12" fill="#D4AF37"/><circle cx="14" cy="22" r="6" fill="#8A6010"/>
+        </svg>
+        <svg class="floral-corner floral-corner-tr" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
+            <line x1="14" y1="88" x2="14" y2="42" stroke="#7A8C5A" stroke-width="2.5"/>
+            <line x1="14" y1="88" x2="48" y2="88" stroke="#7A8C5A" stroke-width="2.5"/>
+            <path d="M14 62 Q0 50 5 36" stroke="#6B7B4A" stroke-width="1.8" fill="none"/>
+            <ellipse cx="6" cy="49" rx="13" ry="6" fill="#8A9C5A" transform="rotate(-45 6 49)" opacity="0.9"/>
+            <path d="M14 68 Q28 55 42 60" stroke="#6B7B4A" stroke-width="1.8" fill="none"/>
+            <ellipse cx="28" cy="62" rx="13" ry="6" fill="#7A8C4A" transform="rotate(20 28 62)" opacity="0.9"/>
+            <circle cx="14" cy="26" r="11" fill="#E0C0E8"/><circle cx="25" cy="16" r="11" fill="#D0B0D8"/>
+            <circle cx="36" cy="14" r="10" fill="#E0C0E8"/><circle cx="3"  cy="16" r="10" fill="#D0B0D8"/>
+            <circle cx="3"  cy="30" r="10" fill="#E0C0E8"/><circle cx="27" cy="32" r="10" fill="#D0B0D8"/>
+            <circle cx="14" cy="22" r="12" fill="#D4AF37"/><circle cx="14" cy="22" r="6" fill="#8A6010"/>
+        </svg>
+        <svg class="floral-corner floral-corner-bl" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
+            <line x1="14" y1="88" x2="14" y2="42" stroke="#7A8C5A" stroke-width="2.5"/>
+            <line x1="14" y1="88" x2="48" y2="88" stroke="#7A8C5A" stroke-width="2.5"/>
+            <path d="M14 62 Q0 50 5 36" stroke="#6B7B4A" stroke-width="1.8" fill="none"/>
+            <ellipse cx="6" cy="49" rx="13" ry="6" fill="#8A9C5A" transform="rotate(-45 6 49)" opacity="0.9"/>
+            <path d="M14 68 Q28 55 42 60" stroke="#6B7B4A" stroke-width="1.8" fill="none"/>
+            <ellipse cx="28" cy="62" rx="13" ry="6" fill="#7A8C4A" transform="rotate(20 28 62)" opacity="0.9"/>
+            <circle cx="14" cy="26" r="11" fill="#B8D0F0"/><circle cx="25" cy="16" r="11" fill="#A8C0E0"/>
+            <circle cx="36" cy="14" r="10" fill="#B8D0F0"/><circle cx="3"  cy="16" r="10" fill="#A8C0E0"/>
+            <circle cx="3"  cy="30" r="10" fill="#B8D0F0"/><circle cx="27" cy="32" r="10" fill="#A8C0E0"/>
+            <circle cx="14" cy="22" r="12" fill="#D4AF37"/><circle cx="14" cy="22" r="6" fill="#8A6010"/>
+        </svg>
+        <svg class="floral-corner floral-corner-br" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
+            <line x1="14" y1="88" x2="14" y2="42" stroke="#7A8C5A" stroke-width="2.5"/>
+            <line x1="14" y1="88" x2="48" y2="88" stroke="#7A8C5A" stroke-width="2.5"/>
+            <path d="M14 62 Q0 50 5 36" stroke="#6B7B4A" stroke-width="1.8" fill="none"/>
+            <ellipse cx="6" cy="49" rx="13" ry="6" fill="#8A9C5A" transform="rotate(-45 6 49)" opacity="0.9"/>
+            <path d="M14 68 Q28 55 42 60" stroke="#6B7B4A" stroke-width="1.8" fill="none"/>
+            <ellipse cx="28" cy="62" rx="13" ry="6" fill="#7A8C4A" transform="rotate(20 28 62)" opacity="0.9"/>
+            <circle cx="14" cy="26" r="11" fill="#F0D880"/><circle cx="25" cy="16" r="11" fill="#E0C870"/>
+            <circle cx="36" cy="14" r="10" fill="#F0D880"/><circle cx="3"  cy="16" r="10" fill="#E0C870"/>
+            <circle cx="3"  cy="30" r="10" fill="#F0D880"/><circle cx="27" cy="32" r="10" fill="#E0C870"/>
+            <circle cx="14" cy="22" r="12" fill="#D4AF37"/><circle cx="14" cy="22" r="6" fill="#8A6010"/>
+        </svg>
 
         <!-- 黃銅拉桿 -->
         <div class="timeline-slider-container">
@@ -215,49 +223,38 @@
             <input type="range" min="0" max="100" value="50" class="brass-slider" id="timeSlider">
         </div>
 
-        <!-- 金句詩區 -->
-        <div class="p05-poem-zone" id="poemZone">
-            <span class="poem-line" id="p05PoemLine1">叮叮聲掠過查理大橋，帶走一整天的疲憊──</span>
-            <span class="poem-line" id="p05PoemLine2">那是台大醫院、哈佛醫學院畢業名醫粘曉青與鄭惠文，放下重擔後的城市漫步足跡。</span>
-        </div>
-
-        <!-- 地圖容器：火藥塔落日 -->
+        <!-- 地圖容器：查理大橋 -->
         <div class="map-hotspots-container">
             <div class="map-hotspots-layer">
-
-                <!-- ① 火藥塔中世紀大拱門 -->
-                <div class="map-node" style="left:35%;top:72%;" onclick="triggerLightbox('surprise/p05-spot-01.png',event)">⚙️
-                    <div class="node-tooltip"><img src="surprise/p05-spot-01.png" alt="火藥塔"></div>
-                </div>
-
-                <!-- ② 哥德式尖頂 -->
-                <div class="map-node" style="left:45%;top:22%;" onclick="triggerLightbox('surprise/p05-spot-02.png',event)">⚙️
-                    <div class="node-tooltip"><img src="surprise/p05-spot-02.png" alt="哥德尖頂"></div>
-                </div>
-
-                <!-- ③ 捷克國家銀行 -->
-                <div class="map-node" style="left:75%;top:75%;" onclick="triggerLightbox('surprise/p05-spot-03.png',event)">⚙️
-                    <div class="node-tooltip"><img src="surprise/p05-spot-03.png" alt="捷克國家銀行"></div>
-                </div>
-
-                <!-- ④ 42號電車漫步手記 -->
-                <div class="map-node" style="left:20%;top:40%;" onclick="triggerLightbox('surprise/p05-spot-04.png',event)">⚙️
-                    <div class="node-tooltip"><img src="surprise/p05-spot-04.png" alt="42號電車"></div>
-                </div>
-
+                <!-- ① 火藥塔 -->
+                <div class="map-node" data-id="1" style="left:35%; top:72%;" title="火藥塔">⚙️</div>
+                <!-- ② 哥德尖頂（天文鐘） -->
+                <div class="map-node" data-id="2" style="left:45%; top:22%;" title="哥德尖頂">⚙️</div>
+                <!-- ③ 舊市政廳 -->
+                <div class="map-node" data-id="3" style="left:75%; top:75%;" title="舊市政廳">⚙️</div>
+                <!-- ④ 42號電車 -->
+                <div class="map-node" data-id="4" style="left:20%; top:40%;" title="42號電車">⚙️</div>
             </div>
         </div>
 
+        <!-- 詩句金句 -->
+        <div class="p05-poem-zone" id="poemZone" style="text-align:center; margin:20px 0;">
+            <span class="poem-line">叮叮聲響——42 號電車在古城裡搖搖晃晃，</span><br>
+            <span class="poem-line">穿過火藥塔的哥德拱門，駛入時光深處。</span><br>
+            <span class="poem-line">那是台大醫院、哈佛醫學院畢業名醫粘曉青與鄭惠文，</span><br>
+            <span class="poem-line">放下重擔後，在布拉格的叮叮聲裡尋回的純粹。</span>
+        </div>
+
         <!-- 拍立得 -->
-        <div class="p05-polaroid" id="polaroidPic" onclick="triggerLightbox('surprise/p05_polaroid.png',event)">
-            <img src="surprise/p05_polaroid.png" alt="火藥塔漫步拍立得">
+        <div class="p05-polaroid" id="polaroidPic">
+            <img src="surprise/p05-spot-04.png" alt="42號電車拍立得">
         </div>
 
     </div>
 </div>
 
 <script>
-    /* 007 槍管滑鼠動態追蹤 */
+    /* 007 槍管滑鼠追蹤 */
     const leftPanel = document.getElementById('leftPanel');
     leftPanel.addEventListener('mousemove', (e) => {
         const rect = leftPanel.getBoundingClientRect();
@@ -267,57 +264,131 @@
         document.getElementById('gunBarrel').style.setProperty('--mouse-y', `${y}%`);
     });
 
-    /* 逐行淡入：每一行間隔 3 秒，讓讀者讀完這行再出現下一行 */
-    let p05PoemRevealed = false;
-    let p05PoemTimers = [];
-    const p05PoemLineIds = ['p05PoemLine1', 'p05PoemLine2'];
-    function revealP05Poem() {
-        if (p05PoemRevealed) return;
-        p05PoemRevealed = true;
-        p05PoemLineIds.forEach((id, i) => {
-            p05PoemTimers.push(setTimeout(() => { document.getElementById(id)?.classList.add('show'); }, i * 3000));
+    /* Web Audio API（純合成，零外部依賴） */
+    let _actx = null;
+    function actx() {
+        if (!_actx) _actx = new (window.AudioContext || window.webkitAudioContext)();
+        return _actx;
+    }
+    function playDing() {
+        const ctx = actx(), now = ctx.currentTime;
+        [554.4, 659.3].forEach((f, i) => {
+            const osc = ctx.createOscillator(), g = ctx.createGain();
+            osc.type = 'sine'; osc.frequency.value = f;
+            g.gain.setValueAtTime(0.12, now + i * 0.15);
+            g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.15 + 0.3);
+            osc.connect(g); g.connect(ctx.destination);
+            osc.start(now + i * 0.15); osc.stop(now + i * 0.15 + 0.4);
         });
     }
-    function hideP05Poem() {
-        p05PoemRevealed = false;
-        p05PoemTimers.forEach(t => clearTimeout(t));
-        p05PoemTimers = [];
-        p05PoemLineIds.forEach(id => document.getElementById(id)?.classList.remove('show'));
+    function playSax() {
+        const ctx = actx(), now = ctx.currentTime;
+        [311.1, 349.2, 392.0, 466.2].forEach((f, i) => {
+            const osc = ctx.createOscillator(), g = ctx.createGain();
+            const flt = ctx.createBiquadFilter();
+            osc.type = 'sawtooth'; osc.frequency.value = f;
+            flt.type = 'lowpass'; flt.frequency.value = 600;
+            g.gain.setValueAtTime(0.2, now + i * 0.12);
+            g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.9);
+            osc.connect(flt); flt.connect(g); g.connect(ctx.destination);
+            osc.start(now + i * 0.12); osc.stop(now + i * 0.12 + 1.0);
+        });
+    }
+    function playMusicBox() {
+        const ctx = actx(), now = ctx.currentTime;
+        [523.3, 659.3, 784.0, 1046.5].forEach((f, i) => {
+            const osc = ctx.createOscillator(), g = ctx.createGain();
+            osc.type = 'sine'; osc.frequency.value = f;
+            g.gain.setValueAtTime(0.12, now + i * 0.08);
+            g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.4);
+            osc.connect(g); g.connect(ctx.destination);
+            osc.start(now + i * 0.08); osc.stop(now + i * 0.08 + 0.5);
+        });
     }
 
-    /* 時光拉桿：現在只負責金句詩區的淡入/淡出，不再連動拍立得或
-       電車照片的濾鏡（那些效果跟這顆拉桿的語意無關，之前只是剛好共用
-       同一個 input 事件）。 */
-    const slider = document.getElementById('timeSlider');
+    document.addEventListener('click', () => { actx(); }, { once: true });
+
+    /* 詩句動畫 — 逐行淡入 */
+    function showPoemLines() {
+        const lines = document.querySelectorAll('#poemZone .poem-line');
+        lines.forEach((l, i) => {
+            setTimeout(() => l.classList.add('fade-in-active'), i * 2000);
+        });
+    }
+    function hidePoemLines() {
+        document.querySelectorAll('#poemZone .poem-line')
+            .forEach(l => l.classList.remove('fade-in-active'));
+    }
+
+    /* 黃銅滑桿互動 */
+    const slider  = document.getElementById('timeSlider');
+    const polaroid = document.getElementById('polaroidPic');
+    let hasPlayedLeft = false, hasPlayedRight = false;
+
     slider.addEventListener('input', (e) => {
         const val = parseInt(e.target.value);
-        if (val >= 70) {
-            revealP05Poem();
+        if (val <= 30) {
+            polaroid.style.transform = 'rotate(-5deg) scale(1.15)';
+            hidePoemLines();
+            document.getElementById('heroImg').style.filter = 'brightness(1.05) saturate(1.2)';
+            if (!hasPlayedLeft) { playMusicBox(); hasPlayedLeft = true; hasPlayedRight = false; }
+        } else if (val >= 70) {
+            document.getElementById('heroImg').style.filter = 'sepia(0.4) brightness(0.7)';
+            if (!hasPlayedRight) { playSax(); showPoemLines(); hasPlayedRight = true; hasPlayedLeft = false; }
         } else {
-            hideP05Poem();
+            polaroid.style.transform = 'rotate(-5deg) scale(1)';
+            hidePoemLines();
+            document.getElementById('heroImg').style.filter = 'brightness(1)';
+            hasPlayedLeft = false; hasPlayedRight = false;
         }
     });
 
-    /* 真正的 Before/After 對比拉桿：電車樂園（上層） vs 查理大橋（下層）。
-       拖曳時用 clip-path 精準裁切上層寬度，金色拉桿與拖曳輸入層都跟著
-       同一個 --split 百分比走，滑鼠/觸控/鍵盤（方向鍵）都適用。
-       拍立得（.p05-polaroid）刻意不連動這顆拉桿，維持原本亮度與斜貼。 */
-    const compareDrag = document.getElementById('compareDrag');
-    function setComparePosition(val) {
-        leftPanel.style.setProperty('--split', val + '%');
-    }
-    setComparePosition(compareDrag.value);
-    compareDrag.addEventListener('input', (e) => {
-        setComparePosition(e.target.value);
+    /* 熱區資料 */
+    const spotsData = {
+        1: { title: '火藥塔',   img: 'surprise/p05-spot-01.png', play: playDing },
+        2: { title: '哥德尖頂', img: 'surprise/p05-spot-02.png', play: playDing },
+        3: { title: '舊市政廳', img: 'surprise/p05-spot-03.png', play: playDing },
+        4: { title: '42號電車', img: 'surprise/p05-spot-04.png', play: playSax  }
+    };
+
+    /* Global Lightbox */
+    const lightbox = document.createElement('div');
+    lightbox.id = 'global-lightbox';
+    lightbox.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);display:none;justify-content:center;align-items:center;z-index:9999;cursor:pointer;';
+    lightbox.innerHTML = `
+        <div style="position:relative;max-width:85%;max-height:85%;text-align:center;">
+            <img id="lightbox-img" src="" alt=""
+                 style="max-width:100%;max-height:80vh;border:2px solid #D4AF37;border-radius:6px;box-shadow:0 0 30px rgba(0,0,0,0.6);">
+            <h3 id="lightbox-title"
+                style="color:#D4AF37;margin-top:12px;font-size:1.2rem;letter-spacing:3px;font-family:sans-serif;"></h3>
+            <span style="position:absolute;top:-36px;right:0;color:#fff;font-size:28px;line-height:1;">&times;</span>
+        </div>`;
+    document.body.appendChild(lightbox);
+    lightbox.addEventListener('click', () => { lightbox.style.display = 'none'; });
+
+    /* 熱區點擊 */
+    document.querySelectorAll('.map-node').forEach(node => {
+        node.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const data = spotsData[node.dataset.id];
+            if (!data) return;
+            if (data.play) data.play();
+            document.getElementById('lightbox-img').src = data.img;
+            document.getElementById('lightbox-title').innerText = data.title;
+            lightbox.style.display = 'flex';
+        });
     });
 
-    /* Lightbox */
-    function triggerLightbox(imgName, e) {
-        if (e) e.stopPropagation();
-        if (window.parent && window.parent.handleLightbox) {
-            window.parent.handleLightbox(imgName);
-        }
-    }
+    /* 拍立得點擊 */
+    polaroid.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.getElementById('lightbox-img').src = 'surprise/p05-spot-04.png';
+        document.getElementById('lightbox-title').innerText = '42號電車漫步';
+        lightbox.style.display = 'flex';
+    });
+
+    /* 金句 1.5 秒後自動淡入 */
+    setTimeout(showPoemLines, 1500);
 </script>
 </body>
 </html>
