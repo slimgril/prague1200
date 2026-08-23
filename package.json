@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Prague 1200 static site",
   "scripts": {
-    "start": "serve -s . -l ${PORT:-3000}"
+    "start": "serve -s . -l $PORT"
   },
   "dependencies": {
     "serve": "^14.2.0"
