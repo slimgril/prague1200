@@ -1,0 +1,11 @@
+{
+  "name": "prague1200-ship",
+  "version": "1.0.0",
+  "description": "Prague 1200 static site",
+  "scripts": {
+    "start": "npx serve -s . -l 3000"
+  },
+  "dependencies": {
+    "serve": "^14.2.0"
+  }
+}
