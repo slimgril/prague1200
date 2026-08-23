@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P05 成果互動展示：探索朝聖之路的最終殿堂</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #121212; color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        header { background: #1e1e1e; padding: 15px 20px; text-align: center; border-bottom: 1px solid #333; z-index: 10; }
+        header h1 { font-size: 20px; color: #e9b949; } /* 採用神聖的金黃色調 */
+        
+        .main-container { flex: 1; display: flex; flex-direction: row; width: 100%; position: relative; }
+        
+        /* 左欄：拉桿開門區域 */
+        .left-column { flex: 1.2; position: relative; overflow: hidden; background: #000; display: flex; justify-content: center; align-items: center; border-right: 2px solid #333; }
+        .image-container { position: relative; width: 100%; height: 100%; max-height: 80vh; aspect-ratio: 4/3; }
+        .img-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: contain; background-position: center; background-repeat: no-repeat; pointer-events: none; }
+        
+        /* 🔒 寫死 Mac 本機絕對路徑，綁定您的 P05 專屬隱喻素材 */
+        .img-before { 
+            background-image: 
+                url('p05_before.png'),
+                url('file:///Users/mac/Documents/Projects/Prague visitor pass/dist/prague1200/p04效果測試/p05_before.PNG'),
+                url('file:///Users/mac/Documents/Projects/Prague visitor pass/dist/prague1200/p04效果測試/p05_before.png.png'),
+                url('p05_before.png'); 
+        }
+        .img-after { 
+            background-image: 
+                url('p05_after.png'),
+                url('file:///Users/mac/Documents/Projects/Prague visitor pass/dist/prague1200/p04效果測試/p05_after.PNG'),
+                url('file:///Users/mac/Documents/Projects/Prague visitor pass/dist/prague1200/p04效果測試/p05_after.png.png'),
+                url('p05_after.png'); 
+            clip-path: inset(0 50% 0 0); 
+        }
+        
+        /* 視覺上的垂直分割線與手把 */
+        .slider-line { position: absolute; top: 0; bottom: 0; left: 50%; width: 4px; background: #e9b949; z-index: 20; pointer-events: none; box-shadow: 0 0 10px rgba(233,185,73,0.8); }
+        .slider-button { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; background: #e9b949; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #121212; font-weight: bold; font-size: 22px; box-shadow: 0 0 15px rgba(0,0,0,0.5); border: 3px solid #fff; }
+        .slider-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; z-index: 30; -webkit-tap-highlight-color: transparent; }
+
+        /* 右欄：P05 全新長期維度穩定指標 */
+        .right-column { flex: 0.8; background: #181818; padding: 30px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .chart-box { width: 100%; max-width: 320px; background: #222; border-radius: 12px; padding: 25px; border: 1px solid #333; text-align: center; }
+        .chart-title { font-size: 16px; margin-bottom: 25px; color: #aaa; font-weight: 500; line-height: 1.4; }
+        
+        .bar-container { width: 80px; height: 260px; background: #333; margin: 0 auto; border-radius: 8px; position: relative; overflow: hidden; display: flex; align-items: flex-end; }
+        .bar-fill { width: 100%; height: 55%; background: linear-gradient(to top, #757575, #9e9e9e); transition: height 0.1s ease-out, background 0.3s ease; }
+        
+        .data-value { font-size: 42px; font-weight: 800; margin-top: 20px; color: #9e9e9e; transition: color 0.3s ease; }
+        .data-label { font-size: 14px; color: #888; margin-top: 5px; letter-spacing: 1px; }
+
+        /* 詩意留白驚喜彈出層 */
+        .toast-msg { position: absolute; top: 25px; left: 50%; transform: translateX(-50%) translateY(-20px); background: linear-gradient(135deg, #e9b949, #b18519); color: #121212; padding: 15px 30px; border-radius: 30px; font-weight: bold; font-size: 15px; box-shadow: 0 10px 25px rgba(233,185,73,0.4); opacity: 0; visibility: hidden; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 40; pointer-events: none; text-align: center; line-height: 1.5; border: 1px solid rgba(255,255,255,0.4); }
+        .toast-msg.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+
+        @media (max-width: 768px) {
+            .main-container { flex-direction: column; }
+            .left-column { flex: 1.2; border-right: none; border-bottom: 2px solid #333; }
+            .right-column { flex: 0.8; padding: 15px; }
+            .bar-container { height: 160px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>P05 成果互動展示：解鎖演算法自主優化的長效軌跡</h1>
+    </header>
+
+    <div class="main-container">
+        <div id="toast" class="toast-msg">🏛️ 跨越查理大橋的起點，終抵神聖殿堂！<br>自主迭代完成，系統長效穩定度達顛峰 🌟</div>
+
+        <div class="left-column">
+            <div class="image-container">
+                <div class="img-layer img-before"></div>
+                <div class="img-layer img-after" id="afterImage"></div>
+                <div class="slider-line" id="sliderLine" style="left: 50%;">
+                    <div class="slider-button">↔</div>
+                </div>
+                <input type="range" min="0" max="100" value="50" class="slider-input" id="sliderInput">
+            </div>
+        </div>
+
+        <div class="right-column">
+            <div class="chart-box">
+                <div class="chart-title" id="chartTitle">探索朝聖起點 (運行初期)</div>
+                <div class="bar-container">
+                    <div class="bar-fill" id="barFill"></div>
+                </div>
+                <div class="data-value" id="dataValue">55%</div>
+                <div class="data-label" id="dataLabel">SYSTEM STABILITY</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sliderInput = document.getElementById('sliderInput');
+        const afterImage = document.getElementById('afterImage');
+        const sliderLine = document.getElementById('sliderLine');
+        const barFill = document.getElementById('barFill');
+        const dataValue = document.getElementById('dataValue');
+        const chartTitle = document.getElementById('chartTitle');
+        const toast = document.getElementById('toast');
+
+        // P05 設定從 55% 穩定度自主優化飆升到 98% 完美殿堂
+        const startScore = 55;
+        const endScore = 98;
+
+        sliderInput.addEventListener('input', (e) => {
+            const value = e.target.value;
+            afterImage.style.clipPath = `inset(0 ${100 - value}% 0 0)`;
+            sliderLine.style.left = `${value}%`;
+
+            const currentScore = Math.round(startScore + ((endScore - startScore) * (value / 100)));
+            dataValue.innerText = `${currentScore}%`;
+            barFill.style.height = `${currentScore}%`;
+
+            if (value >= 70) {
+                barFill.style.background = 'linear-gradient(to top, #e9b949, #ffeb3b)';
+                dataValue.style.color = '#ffeb3b';
+                chartTitle.innerText = '✨ 抵達終點殿堂 (自主運行優化後)';
+                toast.classList.add('show');
+            } else {
+                barFill.style.background = 'linear-gradient(to top, #757575, #9e9e9e)';
+                dataValue.style.color = '#9e9e9e';
+                chartTitle.innerText = '探索朝聖起點 (運行初期)';
+                toast.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>
