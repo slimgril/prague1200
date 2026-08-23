@@ -3,50 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>P04 成果互動展示：系統部署效益對比</title>
+    <title>布拉格1200 · P04 魯道夫廳的完整故事</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #121212; color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         header { background: #1e1e1e; padding: 15px 20px; text-align: center; border-bottom: 1px solid #333; z-index: 10; }
         header h1 { font-size: 20px; color: #00adb5; }
-        
+
         .main-container { flex: 1; display: flex; flex-direction: row; width: 100%; position: relative; }
-        
+
         /* 左欄：拉桿開門區域 */
         .left-column { flex: 1.2; position: relative; overflow: hidden; background: #000; display: flex; justify-content: center; align-items: center; border-right: 2px solid #333; }
         .image-container { position: relative; width: 100%; height: 100%; max-height: 80vh; aspect-ratio: 4/3; }
         .img-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: contain; background-position: center; background-repeat: no-repeat; pointer-events: none; }
-        
-        /* 🔒 寫死 Mac 本機絕對路徑，並啟用多重相容格式追蹤，徹底防黑屏 */
-        .img-before { 
-            background-image: 
-                url('image_before.png'),
-                url('file:///Users/mac/Documents/Projects/Prague visitor pass/dist/prague1200/p04效果測試/image_before.PNG'),
-                url('file:///Users/mac/Documents/Projects/Prague visitor pass/dist/prague1200/p04效果測試/image_before.png.png'),
-                url('image_before.png'); 
+
+        .img-before { background-image: url('image_before.png'); }
+        .img-after {
+            background-image: url('image_after.png');
+            clip-path: inset(0 50% 0 0);
         }
-        .img-after { 
-            background-image: 
-                url('image_after.png'),
-                url('file:///Users/mac/Documents/Projects/Prague visitor pass/dist/prague1200/p04效果測試/image_after.PNG'),
-                url('file:///Users/mac/Documents/Projects/Prague visitor pass/dist/prague1200/p04效果測試/image_after.png.png'),
-                url('image_after.png'); 
-            clip-path: inset(0 50% 0 0); 
-        }
-        
+
         /* 視覺上的垂直分割線與手把 */
         .slider-line { position: absolute; top: 0; bottom: 0; left: 50%; width: 4px; background: #00adb5; z-index: 20; pointer-events: none; box-shadow: 0 0 10px rgba(0,173,181,0.8); }
         .slider-button { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; background: #00adb5; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 22px; box-shadow: 0 0 15px rgba(0,0,0,0.5); border: 3px solid #fff; }
         .slider-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; z-index: 30; -webkit-tap-highlight-color: transparent; }
 
-        /* 右欄：P04 數據指標條狀圖 */
+        /* 右欄：P04 心動指標 */
         .right-column { flex: 0.8; background: #181818; padding: 30px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .chart-box { width: 100%; max-width: 320px; background: #222; border-radius: 12px; padding: 25px; border: 1px solid #333; text-align: center; }
         .chart-title { font-size: 18px; margin-bottom: 25px; color: #aaa; font-weight: 500; }
-        
+
         .bar-container { width: 80px; height: 260px; background: #333; margin: 0 auto; border-radius: 8px; position: relative; overflow: hidden; display: flex; align-items: flex-end; }
         .bar-fill { width: 100%; height: 67%; background: linear-gradient(to top, #ff5722, #ff9800); transition: height 0.1s ease-out, background 0.3s ease; }
-        
+
         .data-value { font-size: 42px; font-weight: 800; margin-top: 20px; color: #ff5722; transition: color 0.3s ease; }
         .data-label { font-size: 14px; color: #888; margin-top: 5px; letter-spacing: 1px; }
 
@@ -64,11 +53,11 @@
 <body>
 
     <header>
-        <h1>P04 成果互動展示：拖動拉桿體驗系統優化效益</h1>
+        <h1>拖動時光拉桿，見證便服到禮服的蛻變</h1>
     </header>
 
     <div class="main-container">
-        <div id="toast" class="toast-msg">✨ 智慧推薦發威！布拉格黃金核心轉化率已突破歷史新高 🚀</div>
+        <div id="toast" class="toast-msg">✨ 禮服上身，魯道夫音樂廳的浪漫時刻 🎻</div>
 
         <div class="left-column">
             <div class="image-container">
@@ -83,12 +72,12 @@
 
         <div class="right-column">
             <div class="chart-box">
-                <div class="chart-title" id="chartTitle">系統部署前指標 (P04)</div>
+                <div class="chart-title" id="chartTitle">音樂會前的悸動 (P04)</div>
                 <div class="bar-container">
                     <div class="bar-fill" id="barFill"></div>
                 </div>
                 <div class="data-value" id="dataValue">67%</div>
-                <div class="data-label" id="dataLabel">PRAGUE VISITOR SATISFACTION</div>
+                <div class="data-label" id="dataLabel">浪漫心動指數</div>
             </div>
         </div>
     </div>
@@ -117,12 +106,12 @@
             if (value >= 70) {
                 barFill.style.background = 'linear-gradient(to top, #00adb5, #00f2fe)';
                 dataValue.style.color = '#00f2fe';
-                chartTitle.innerText = '✨ 系統優化後指標 (P05)';
+                chartTitle.innerText = '✨ 禮服登場的璀璨時刻 (P04)';
                 toast.classList.add('show');
             } else {
                 barFill.style.background = 'linear-gradient(to top, #ff5722, #ff9800)';
                 dataValue.style.color = '#ff5722';
-                chartTitle.innerText = '系統部署前指標 (P04)';
+                chartTitle.innerText = '音樂會前的悸動 (P04)';
                 toast.classList.remove('show');
             }
         });

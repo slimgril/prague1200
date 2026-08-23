@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>P05 成果互動展示：探索朝聖之路的最終殿堂</title>
+    <title>布拉格1200 · P05 跨越查理大橋的朝聖路</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #121212; color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
@@ -65,11 +65,11 @@
 <body>
 
     <header>
-        <h1>P05 成果互動展示：解鎖演算法自主優化的長效軌跡</h1>
+        <h1>拖動時光拉桿，走一趟查理大橋到聖殿的朝聖路</h1>
     </header>
 
     <div class="main-container">
-        <div id="toast" class="toast-msg">🏛️ 跨越查理大橋的起點，終抵神聖殿堂！布拉格系統長效穩定度達顛峰 🌟</div>
+        <div id="toast" class="toast-msg">🏛️ 跨越查理大橋，終抵布拉格的信仰之巔 🌟</div>
 
         <div class="left-column">
             <div class="image-container">
@@ -84,12 +84,12 @@
 
         <div class="right-column">
             <div class="chart-box">
-                <div class="chart-title" id="chartTitle">探索朝聖起點 (運行初期)</div>
+                <div class="chart-title" id="chartTitle">朝聖起點的忐忑 (P05)</div>
                 <div class="bar-container">
                     <div class="bar-fill" id="barFill"></div>
                 </div>
                 <div class="data-value" id="dataValue">55%</div>
-                <div class="data-label" id="dataLabel">CAMINO DE SANTIAGO STABILITY</div>
+                <div class="data-label" id="dataLabel">信仰感動指數</div>
             </div>
         </div>
     </div>
@@ -119,12 +119,12 @@
             if (value >= 70) {
                 barFill.style.background = 'linear-gradient(to top, #e9b949, #ffeb3b)';
                 dataValue.style.color = '#ffeb3b';
-                chartTitle.innerText = '✨ 抵達終點殿堂 (自主運行優化後)';
+                chartTitle.innerText = '✨ 抵達聖殿的震撼 (P05)';
                 toast.classList.add('show');
             } else {
                 barFill.style.background = 'linear-gradient(to top, #757575, #9e9e9e)';
                 dataValue.style.color = '#9e9e9e';
-                chartTitle.innerText = '探索朝聖起點 (運行初期)';
+                chartTitle.innerText = '朝聖起點的忐忑 (P05)';
                 toast.classList.remove('show');
             }
         });

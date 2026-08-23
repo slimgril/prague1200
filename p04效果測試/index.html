@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>P04 成果互動展示：系統部署效益對比</title>
+    <title>布拉格1200 · P04 魯道夫廳的蛻變時刻</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #121212; color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
@@ -64,11 +64,11 @@
 <body>
 
     <header>
-        <h1>P04 成果互動展示：拖動拉桿體驗系統優化效益</h1>
+        <h1>拖動時光拉桿，見證便服到禮服的蛻變</h1>
     </header>
 
     <div class="main-container">
-        <div id="toast" class="toast-msg">✨ 黃金 10 點精準度暴衝！<br>核心轉化率已突破歷史新高 🚀</div>
+        <div id="toast" class="toast-msg">✨ 禮服上身，魯道夫音樂廳的浪漫時刻 🎻</div>
 
             <div class="image-container">
                 <div class="img-layer img-before"></div>
@@ -82,15 +82,15 @@
 
         <div class="right-column">
             <a href="p04_efficiency.html" style="color: #00adb5; font-size: 18px; font-family: sans-serif; text-decoration: none;">
-                點擊這裡觀看 P04 部署效益對比！
+                點擊這裡，回顧 P04 魯道夫廳的完整故事
             </a>
             <div class="chart-box">
-                <div class="chart-title" id="chartTitle">系統部署前指標 (P04)</div>
+                <div class="chart-title" id="chartTitle">音樂會前的悸動 (P04)</div>
                 <div class="bar-container">
                     <div class="bar-fill" id="barFill"></div>
                 </div>
                 <div class="data-value" id="dataValue">67%</div>
-                <div class="data-label" id="dataLabel">CORE PRECISION</div>
+                <div class="data-label" id="dataLabel">浪漫心動指數</div>
             </div>
         </div>
     </div>
@@ -119,12 +119,12 @@
             if (value >= 70) {
                 barFill.style.background = 'linear-gradient(to top, #00adb5, #00f2fe)';
                 dataValue.style.color = '#00f2fe';
-                chartTitle.innerText = '✨ 系統優化後指標 (P05)';
+                chartTitle.innerText = '✨ 禮服登場的璀璨時刻 (P04)';
                 toast.classList.add('show');
             } else {
                 barFill.style.background = 'linear-gradient(to top, #ff5722, #ff9800)';
                 dataValue.style.color = '#ff5722';
-                chartTitle.innerText = '系統部署前指標 (P04)';
+                chartTitle.innerText = '音樂會前的悸動 (P04)';
                 toast.classList.remove('show');
             }
         });
