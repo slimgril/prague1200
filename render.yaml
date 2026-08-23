@@ -1,6 +1,0 @@
-services:
-  - type: web
-    name: prague1200-ship
-    env: node
-    startCommand: node server.js
-    healthCheckPath: /
