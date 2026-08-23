@@ -235,7 +235,21 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--dark); f
   display:none; overflow-y:auto; height:100%;
   padding:60px 20px 80px; scroll-behavior:smooth;
 }
-.scroll-pg { max-width:var(--page-w); margin:0 auto 24px; border-radius:6px; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.4); min-height:var(--page-h); }
+/* 修正：這裡原本只有 min-height，沒有 height——.scroll-pg 只設「最小」高度時，
+   裡面 .page{height:100%} 對一個高度不確定（auto）的父層算不出百分比，只能
+   當作 auto，導致再裡面那顆 position:absolute; height:100% 的 <iframe> 也跟著
+   算不出高度，實測結果是整個塌成 0px，內容完全看不到（手機/平板直向寬度一定
+   會 < 880px，一定會走到這個 #scroll-view 分支，等於百分之百中招）。
+   改法：給一個「真的有值」的 height，而且用 svh／dvh 而不是寫死的 px——
+   svh（small viewport height）是 Safari 網址列/工具列「展開到最大」時的可視
+   高度，選它是為了讓每一頁的高度在捲動時保持穩定，不會因為 Safari 工具列
+   收合/展開而跳動（用 dvh 會跟著工具列即時變動，捲動中觀感反而更差）；
+   前面加一行純 vh 當備援，是給還不認識 svh 的舊瀏覽器兜底（不支援的單位會讓
+   整條宣告失效，直接維持前一條有效宣告，不會整層排版垮掉）；clamp() 的
+   上下限則避免極端視窗尺寸（例如手機橫向很矮、或大平板直向很高）出現過矮
+   或過高的頁面。旋轉裝置時，svh/dvh 是瀏覽器原生即時運算的單位，會自動
+   跟著新的視窗尺寸重算，不需要額外寫 JS 監聽 orientationchange。 */
+.scroll-pg { max-width:var(--page-w); margin:0 auto 24px; border-radius:6px; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.4); min-height:var(--page-h); height:clamp(500px, 70vh, 800px); height:clamp(500px, 70svh, 800px); }
 
 /* ═══════════════════════════════════════
    COVER — Cinematic artistic opening

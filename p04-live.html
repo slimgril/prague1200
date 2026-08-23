@@ -309,8 +309,30 @@
                 </div>
 
                 <!-- ⑤ clock -->
-                <div class="map-node" style="left:30%;top:25%;" onclick="triggerLightbox('surprise/p04_clock.mov',event)">⏰
-                    <div class="node-tooltip"><video src="surprise/p04_clock.mov" muted autoplay loop playsinline></video></div>
+                <!-- 修正：原本指向 surprise/p04_clock.mov，但這個檔案其實不存在
+                     （資料夾裡實際存在的是 p04_clock.mp4），影片一直是 404，
+                     不管哪個瀏覽器打開都只會看到空白，也不會有任何錯誤提示。
+                     改用真正存在的 .mp4，並且：(1) 改成標準的 <source> 寫法、
+                     標明 type="video/mp4"；(2) 加上 poster——影片開始播放前
+                     （或播放失敗時）先顯示這張截圖，畫面才不會整個空白；
+                     (3) 額外掛一個 onerror 保底，確保「載入失敗」一定看得到
+                     東西、不會是一片空白——這裡刻意把 onerror 掛在 <source>
+                     上而不是 <video> 上：實測過（用一個確定不存在的檔名測試）
+                     發現用 <source> 寫法時，來源載入失敗只會在 <source>
+                     元素上觸發 error 事件，<video> 本身不一定會跟著觸發，
+                     掛在 <video> 上會抓不到，畫面照樣空白。觸發後把
+                     <video> 藏起來、換成旁邊那個真正的 <img> 顯示。 -->
+                <div class="map-node" style="left:30%;top:25%;" onclick="triggerLightbox('surprise/p04_clock.mp4',event)">⏰
+                    <div class="node-tooltip">
+                        <video muted autoplay loop playsinline
+                               poster="surprise/p04_clock-optimized@2x.webp">
+                            <source src="surprise/p04_clock.mp4" type="video/mp4"
+                                    onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.style.display='block';">
+                        </video>
+                        <img src="surprise/p04_clock-optimized.webp"
+                             srcset="surprise/p04_clock-optimized.webp 1x, surprise/p04_clock-optimized@2x.webp 2x"
+                             width="200" height="150" alt="布拉格天文鐘" loading="lazy" style="display:none;">
+                    </div>
                 </div>
 
                 <!-- ⑥ salon -->
