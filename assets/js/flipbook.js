@@ -150,11 +150,25 @@ class SoftFlipBook {
   }
 
   /* ── 等首屏圖片下載完成、decode()、再等兩次 rAF 確認真的畫出來了 ──
-     不只是等 iframe 的 load 事件：load 不代表內部圖片都已解碼繪製完成。 */
+     不只是等 iframe 的 load 事件：load 不代表內部圖片都已解碼繪製完成。
+     P04/P05 的互動模組是「iframe 裡面又包一層 iframe」，模組內的圖片（例如
+     滑桿比較圖）原本完全不在這個檢查範圍內，導致「圖還在下載、卻已經被
+     判定成 ready」——所以這裡改成呼叫 _waitForImagesDeep()，會往內層同源
+     iframe 遞迴檢查，把巢狀模組裡的圖也一併等到。 */
   async _waitForCriticalPaint(frame) {
     let doc;
     try { doc = frame.contentDocument; } catch (e) { return; }
     if (!doc) return;
+
+    await this._waitForImagesDeep(doc);
+
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  }
+
+  /* ── 遞迴等待某個 document 內（含所有同源巢狀 iframe 內）所有 <img> 都
+     下載、decode 完成。depth 上限是安全閥，避免萬一巢狀太深卡住整個翻頁。 ── */
+  async _waitForImagesDeep(doc, depth = 0) {
+    if (!doc || depth > 3) return;
 
     // 排除 src="" 的圖片（例如燈箱用的預留 <img>，點擊時才會被填入真正的
     // src）——空 src 的 <img> 依規範永遠不會觸發 load 或 error，等下去只會
@@ -173,7 +187,37 @@ class SoftFlipBook {
       });
     }));
 
-    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const nestedFrames = Array.from(doc.querySelectorAll('iframe'));
+    await Promise.all(nestedFrames.map(inner => this._waitForNestedFrame(inner, depth)));
+  }
+
+  /* ── 等內層 iframe 的 document 準備好（HTML 解析完成）之後，才對它遞迴
+     掃描圖片；同樣用輪詢 readyState，不能只靠 load 事件（理由同外層）。 ── */
+  _waitForNestedFrame(inner, depth) {
+    return new Promise(resolve => {
+      let settled = false;
+      let polling = null;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        if (polling) clearInterval(polling);
+        let innerDoc;
+        try { innerDoc = inner.contentDocument; } catch (e) { resolve(); return; }
+        this._waitForImagesDeep(innerDoc, depth + 1).then(resolve);
+      };
+      const tryCheck = () => {
+        let innerDoc;
+        try { innerDoc = inner.contentDocument; } catch (e) { return false; }
+        if (!innerDoc || innerDoc.readyState === 'loading') return false;
+        finish();
+        return true;
+      };
+      if (tryCheck()) return;
+      polling = setInterval(() => { if (tryCheck()) clearInterval(polling); }, 50);
+      inner.addEventListener('load', () => tryCheck(), { once: true });
+      inner.addEventListener('error', () => finish(), { once: true });
+      setTimeout(() => finish(), FLIP_CONFIG.prepareTimeout);
+    });
   }
 
   _activateFrame(idx) {

@@ -52,6 +52,12 @@
 </head>
 <body>
 
+    <!-- 隱藏預載圖：img-before/img-after 是用 CSS background-image 畫出來的，
+         瀏覽器不會把它們算進 document.images，翻頁引擎的「跨頁預載」偵測不到，
+         這裡補兩張看不見的 <img> 讓引擎抓得到、能真正等到圖下載完成才翻頁。 -->
+    <img src="image_before.png" alt="" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" aria-hidden="true">
+    <img src="image_after.png" alt="" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" aria-hidden="true">
+
     <header>
         <h1>拖動時光拉桿，見證便服到禮服的蛻變</h1>
     </header>

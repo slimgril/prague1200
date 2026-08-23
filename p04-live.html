@@ -165,12 +165,12 @@
             opacity: 0;
         }
         .poem-line.visible {
-            animation: fadeInPoem 1.8s ease forwards;
+            animation: fadeInPoem 3s ease forwards;
         }
         .poem-line:nth-child(1).visible { animation-delay: 0s; }
-        .poem-line:nth-child(2).visible { animation-delay: 2s; }
-        .poem-line:nth-child(3).visible { animation-delay: 4s; }
-        .poem-line:nth-child(4).visible { animation-delay: 6s; }
+        .poem-line:nth-child(2).visible { animation-delay: 6s; }
+        .poem-line:nth-child(3).visible { animation-delay: 12s; }
+        .poem-line:nth-child(4).visible { animation-delay: 18s; }
     </style>
 </head>
 <body>
@@ -185,7 +185,7 @@
 
     <!-- 左欄：P04 互動拉桿模組（取代原本靜態合照，讓模組真正顯示出來） -->
     <div class="p03-left-panel" id="leftPanel">
-        <iframe src="p04效果測試/index.html" title="P04 互動拉桿展示"
+        <iframe src="p04效果測試/index.html?v=28" title="P04 互動拉桿展示"
                 style="width:100%;height:100%;border:0;display:block;"></iframe>
     </div>
 
@@ -330,14 +330,17 @@
 </div>
 
 <script>
-    /* 007 槍管滑鼠動態追蹤 */
+    /* 007 槍管滑鼠動態追蹤（左欄改成 iframe 模組後，gunBarrel/heroImg 這兩個
+       元素已經不存在了，這裡加上判斷式，避免每次滑鼠移動都拋錯） */
     const leftPanel = document.getElementById('leftPanel');
     leftPanel.addEventListener('mousemove', (e) => {
+        const gunBarrel = document.getElementById('gunBarrel');
+        if (!gunBarrel) return;
         const rect = leftPanel.getBoundingClientRect();
         const x = ((e.clientX - rect.left) / rect.width) * 100;
         const y = ((e.clientY - rect.top) / rect.height) * 100;
-        document.getElementById('gunBarrel').style.setProperty('--mouse-x', `${x}%`);
-        document.getElementById('gunBarrel').style.setProperty('--mouse-y', `${y}%`);
+        gunBarrel.style.setProperty('--mouse-x', `${x}%`);
+        gunBarrel.style.setProperty('--mouse-y', `${y}%`);
     });
 
     /* Web Audio API 雙音軌 */
@@ -422,20 +425,21 @@
 
     slider.addEventListener('input', (e) => {
         const val = parseInt(e.target.value);
+        const heroImg = document.getElementById('heroImg'); // 左欄已改成 iframe 模組，heroImg 可能不存在
         if (val <= 30) {
             polaroid.style.transform = 'rotate(6deg) scale(1.15)';
             hidePoemLines();
-            document.getElementById('heroImg').style.filter = 'sepia(0) brightness(1)';
+            if (heroImg) heroImg.style.filter = 'sepia(0) brightness(1)';
             if (b7Gain) b7Gain.gain.value = 1.4;
             if (!hasPlayedLeft) { playMusicBox(); hasPlayedLeft = true; hasPlayedRight = false; }
         } else if (val >= 70) {
-            document.getElementById('heroImg').style.filter = 'sepia(0.5) brightness(0.65)';
+            if (heroImg) heroImg.style.filter = 'sepia(0.5) brightness(0.65)';
             if (b7Gain) b7Gain.gain.value = 3.5;
             if (!hasPlayedRight) { playSymphony(); showPoemLines(); hasPlayedRight = true; hasPlayedLeft = false; }
         } else {
             polaroid.style.transform = 'rotate(6deg) scale(1)';
             hidePoemLines();
-            document.getElementById('heroImg').style.filter = 'sepia(0) brightness(1)';
+            if (heroImg) heroImg.style.filter = 'sepia(0) brightness(1)';
             if (b7Gain) b7Gain.gain.value = 2.8;
             hasPlayedLeft = false; hasPlayedRight = false;
         }

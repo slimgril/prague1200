@@ -17,21 +17,10 @@
         .image-container { position: relative; width: 100%; height: 100%; max-height: 80vh; aspect-ratio: 4/3; }
         .img-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: contain; background-position: center; background-repeat: no-repeat; pointer-events: none; }
         
-        /* 🔒 寫死 Mac 本機絕對路徑，並啟用多重相容格式追蹤，徹底防黑屏 */
-        .img-before { 
-            background-image: 
-                url('file:///Users/mac/Documents/Projects/Prague visitor pass/dist/prague1200/p04效果測試/image_before.png'),
-                url('file:///Users/mac/Documents/Projects/Prague visitor pass/dist/prague1200/p04效果測試/image_before.PNG'),
-                url('file:///Users/mac/Documents/Projects/Prague visitor pass/dist/prague1200/p04效果測試/image_before.png.png'),
-                url('image_before.png'); 
-        }
-        .img-after { 
-            background-image: 
-                url('file:///Users/mac/Documents/Projects/Prague visitor pass/dist/prague1200/p04效果測試/image_after.png'),
-                url('file:///Users/mac/Documents/Projects/Prague visitor pass/dist/prague1200/p04效果測試/image_after.PNG'),
-                url('file:///Users/mac/Documents/Projects/Prague visitor pass/dist/prague1200/p04效果測試/image_after.png.png'),
-                url('image_after.png'); 
-            clip-path: inset(0 50% 0 0); 
+        .img-before { background-image: url('image_before.png'); }
+        .img-after {
+            background-image: url('image_after.png');
+            clip-path: inset(0 50% 0 0);
         }
         
         /* 視覺上的垂直分割線與手把 */
@@ -63,6 +52,12 @@
 </head>
 <body>
 
+    <!-- 隱藏預載圖：img-before/img-after 實際上是用 CSS background-image 畫出來的，
+         瀏覽器不會把它們算進 document.images，翻頁引擎的「跨頁預載」偵測不到，
+         這裡補兩張看不見的 <img> 讓引擎抓得到、能真正等到圖下載完成才翻頁。 -->
+    <img src="image_before.png" alt="" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" aria-hidden="true">
+    <img src="image_after.png" alt="" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" aria-hidden="true">
+
     <header>
         <h1>拖動時光拉桿，見證便服到禮服的蛻變</h1>
     </header>
@@ -70,6 +65,7 @@
     <div class="main-container">
         <div id="toast" class="toast-msg">✨ 禮服上身，魯道夫音樂廳的浪漫時刻 🎻</div>
 
+        <div class="left-column">
             <div class="image-container">
                 <div class="img-layer img-before"></div>
                 <div class="img-layer img-after" id="afterImage"></div>

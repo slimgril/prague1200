@@ -12,26 +12,15 @@
         
         .main-container { flex: 1; display: flex; flex-direction: row; width: 100%; position: relative; }
         
-        /* 左欄：拉桿開門區域 */
-        .left-column { flex: 1.2; position: relative; overflow: hidden; background: #000; display: flex; justify-content: center; align-items: center; border-right: 2px solid #333; }
+        /* 左欄：拉桿開門區域（圖片欄位加大，讓比較照更清楚） */
+        .left-column { flex: 1.7; position: relative; overflow: hidden; background: #000; display: flex; justify-content: center; align-items: center; border-right: 2px solid #333; }
         .image-container { position: relative; width: 100%; height: 100%; max-height: 80vh; aspect-ratio: 4/3; }
         .img-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: contain; background-position: center; background-repeat: no-repeat; pointer-events: none; }
         
-        /* 🔒 寫死 Mac 本機絕對路徑，綁定您的 P05 專屬隱喻素材 */
-        .img-before { 
-            background-image: 
-                url('p05_before.png'),
-                url('file:///Users/mac/Documents/Projects/Prague visitor pass/dist/prague1200/p04效果測試/p05_before.PNG'),
-                url('file:///Users/mac/Documents/Projects/Prague visitor pass/dist/prague1200/p04效果測試/p05_before.png.png'),
-                url('p05_before.png'); 
-        }
-        .img-after { 
-            background-image: 
-                url('p05_after.png'),
-                url('file:///Users/mac/Documents/Projects/Prague visitor pass/dist/prague1200/p04效果測試/p05_after.PNG'),
-                url('file:///Users/mac/Documents/Projects/Prague visitor pass/dist/prague1200/p04效果測試/p05_after.png.png'),
-                url('p05_after.png'); 
-            clip-path: inset(0 50% 0 0); 
+        .img-before { background-image: url('p05_before.png'); }
+        .img-after {
+            background-image: url('p05_after.png');
+            clip-path: inset(0 50% 0 0);
         }
         
         /* 視覺上的垂直分割線與手把 */
@@ -40,7 +29,7 @@
         .slider-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; z-index: 30; -webkit-tap-highlight-color: transparent; }
 
         /* 右欄：P05 全新長期維度穩定指標 */
-        .right-column { flex: 0.8; background: #181818; padding: 30px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .right-column { flex: 0.7; background: #181818; padding: 30px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .chart-box { width: 100%; max-width: 320px; background: #222; border-radius: 12px; padding: 25px; border: 1px solid #333; text-align: center; }
         .chart-title { font-size: 16px; margin-bottom: 25px; color: #aaa; font-weight: 500; line-height: 1.4; }
         
@@ -54,15 +43,25 @@
         .toast-msg { position: absolute; top: 25px; left: 50%; transform: translateX(-50%) translateY(-20px); background: linear-gradient(135deg, #e9b949, #b18519); color: #121212; padding: 15px 30px; border-radius: 30px; font-weight: bold; font-size: 15px; box-shadow: 0 10px 25px rgba(233,185,73,0.4); opacity: 0; visibility: hidden; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 40; pointer-events: none; text-align: center; line-height: 1.5; border: 1px solid rgba(255,255,255,0.4); }
         .toast-msg.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
 
+        /* 這個模組平常是嵌在主頁的 iframe 裡（寬度大約 500-700px 上下），
+           會落在這個手機版斷點內、變成上下堆疊——這其實是好事（照片可以用
+           滿版寬度），真正讓圖偏小的是這裡的堆疊比例，所以把圖片區塊的
+           flex 加大、圖表區塊縮小，讓照片在堆疊模式下也分到更多高度。 */
         @media (max-width: 768px) {
             .main-container { flex-direction: column; }
-            .left-column { flex: 1.2; border-right: none; border-bottom: 2px solid #333; }
-            .right-column { flex: 0.8; padding: 15px; }
+            .left-column { flex: 1.8; border-right: none; border-bottom: 2px solid #333; }
+            .right-column { flex: 0.6; padding: 15px; }
             .bar-container { height: 160px; }
         }
     </style>
 </head>
 <body>
+
+    <!-- 隱藏預載圖：img-before/img-after 是用 CSS background-image 畫出來的，
+         瀏覽器不會把它們算進 document.images，翻頁引擎的「跨頁預載」偵測不到，
+         這裡補兩張看不見的 <img> 讓引擎抓得到、能真正等到圖下載完成才翻頁。 -->
+    <img src="p05_before.png" alt="" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" aria-hidden="true">
+    <img src="p05_after.png" alt="" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" aria-hidden="true">
 
     <header>
         <h1>拖動時光拉桿，走一趟查理大橋到聖殿的朝聖路</h1>
