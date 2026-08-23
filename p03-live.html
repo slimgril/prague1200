@@ -327,6 +327,35 @@
             color: #554433;
             font-family: 'Georgia', 'Baskerville', serif;
         }
+
+        /* 窄畫面（≤880px）：這頁桌面版是左右對開，但底層是「同一張」跨頁大圖
+           鋪滿整個 100vw×100vh 容器背景，左右兩個面板本身都是透明的，只是
+           露出這張共用大圖的不同區域，右頁再疊上金色尋寶熱區／黃銅拉桿／
+           拍立得。堆疊成上下兩段後，容器高寬比大幅改變，cover 裁切出來的
+           畫面範圍也會跟著變，熱區金圈與底圖景物的精準對位無法再像桌面版
+           那樣完全吻合（這是共用背景圖裁切機制的限制，不是本次修改造成的
+           新錯誤）——但每個熱區仍保留可點擊、彈出正確景點說明的功能，不影響
+           資訊完整性。這裡把左頁縮成上方一小段照片橫幅（含隱藏熱點與反思
+           金句），右頁尋寶區改成下方一個有「明確」高度的區塊，讓拉桿／
+           金圈／拍立得的 top:%／left:% 定位在新版面下仍有依據可算。 */
+        @media (max-width: 880px) {
+            html, body { overflow: visible; height: auto; }
+            .p03-container {
+                flex-direction: column; height: auto;
+                background-position: center 32% !important;
+            }
+            .p03-left-panel, .p03-right-panel { width: 100% !important; }
+            .p03-left-panel { height: 22vh; height: 22svh; min-height: 160px; }
+            .p03-poem-zone {
+                position: static !important; width: 92% !important;
+                margin: 10px auto; padding: 0; line-height: 1.5 !important;
+            }
+            .p03-poem-line { font-size: 15px !important; margin-bottom: 6px !important; }
+            .p03-right-panel { height: 55vh; height: 55svh; min-height: 400px; }
+            .timeline-slider-container { width: 88% !important; }
+            .map-hotspots-container { width: 90% !important; left: 5% !important; }
+            .p03-polaroid { width: 84px !important; }
+        }
     </style>
 </head>
 <body>

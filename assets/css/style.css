@@ -1364,4 +1364,19 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--dark); f
   #scroll-view   { display:block !important; }
   html,body { overflow:auto; }
   #app { overflow:auto; }
+
+  /* 雙頁／雙欄／對開書構圖頁面（P01、P03、P08、P09、P10、P11）在窄畫面下，
+     頁面內部會把原本左右並排的兩頁改成上下堆疊顯示（見各 pXX-live.html
+     自己的 @media(max-width:880px) 區塊）。堆疊之後内容高度自然會比單一
+     頁面高出不少——如果還是套用一般章節卡片固定的 clamp(500px,70svh,800px)
+     高度，超出的部分會被 .scroll-pg 的 overflow:hidden 直接切掉、完全看不到
+     （跟先前「iframe 高度塌陷成 0px」是同一種「超出可視範圍就消失」的錯誤，
+     只是這次是內容比容器高，而不是容器比內容矮）。
+     這裡另外定義一個「加高版」卡片高度，只套用在 assets/js/app.js 建立捲動
+     模式頁面時額外標記的 .scroll-pg--tall（只加在上面列出的雙頁頁面），
+     其餘單欄頁面的卡片高度完全不受影響，維持原本設計。 */
+  .scroll-pg.scroll-pg--tall {
+    height:clamp(760px, 152vh, 1600px);
+    height:clamp(760px, 152svh, 1600px);
+  }
 }

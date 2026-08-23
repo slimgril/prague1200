@@ -237,6 +237,51 @@
     .ck-lb-caption { margin-top: 14px; font-family: 'Caveat', cursive; font-size: 1rem; color: rgba(255,255,255,0.75); }
     .ck-lb-close { position: absolute; top: -36px; right: 0; color: rgba(255,255,255,0.4); font-size: 2rem; cursor: pointer; }
     .ck-lb-close:hover { color: #fff; }
+
+    /* 窄畫面（≤880px）：桌面版左右對開（左頁 42% 電影感大圖／右頁 58% 病歷
+       表），改成「左頁↓右頁」上下堆疊。病歷表本身內容較多（主訴／診斷／
+       醫囑三段文字＋簽名／印章），改成 height:auto 讓內容自然撐開，不再
+       硬塞進固定高度；.handwrite／.section-title 原本只用 62% 寬度是配合
+       桌面版右側還有拍立得貼在旁邊的排版，窄畫面改吃滿寬度以縮短換行、
+       避免文字被壓得更擠。8 張裝飾用拍立得縮圖（.ck-photo）原本用
+       right:%/top:% 疊在病歷表右側／下緣，若照搬到窄畫面會直接蓋住主訴／
+       診斷文字，因此窄畫面下先隱藏（讀者仍可從左頁大圖與其他頁面的燈箱
+       瀏覽照片），避免遮擋或壓縮核心病歷內容，也避免堆疊後高度暴衝超出
+       捲動卡片可視範圍。配合 style.css 的 .scroll-pg--tall 加高卡片。 */
+    @media (max-width: 880px) {
+      html, body { overflow: visible; height: auto; }
+      .p09-spread { flex-direction: column; height: auto; }
+      .p09-left, .p09-right { width: 100%; }
+      .p09-left { height: 27vh; height: 27svh; min-height: 210px; }
+      .p09-left-caption { bottom: 14px; }
+      .p09-left-caption h1 { font-size: 1.05rem; margin-bottom: 5px; }
+      .p09-left-caption p { font-size: 0.95rem; }
+      .p09-left-caption .eyebrow { margin-bottom: 5px; }
+      .p09-steps { top: 14px; }
+      .p09-steps .n { font-size: 1.3rem; }
+      .p09-right {
+        height: auto; min-height: 0; padding: 12px; overflow: visible;
+        display: block;
+      }
+      .chart { height: auto; padding: 14px 14px 12px; }
+      .chart-header { margin-bottom: 8px; }
+      .heart-logo { width: 36px; height: 36px; }
+      .clinic-zh { font-size: 1rem; }
+      .title-record { font-size: 1.2rem; }
+      .info-table td { padding: 4px 6px; font-size: 10.5px; }
+      .info-table .value { font-size: 13px; }
+      .notes-area {
+        flex: none; height: auto; overflow: visible; padding: 10px 14px 16px;
+        background-size: 100% 24px;
+      }
+      .section-title { width: 100%; font-size: 9px; margin-top: 9px; margin-bottom: 3px; }
+      .handwrite { width: 100%; font-size: 13.5px; line-height: 1.42; }
+      .ck-photo { display: none; }
+      .night-sticky { position: static; width: 100%; margin-top: 10px; transform: none; padding: 8px 10px; }
+      .night-sticky .q { font-size: 0.85rem; }
+      .signature-block { position: static; margin: 10px auto 0; }
+      .stamp { position: static; margin: 8px auto 0; transform: rotate(-6deg); width: 78px; height: 78px; }
+    }
   </style>
 </head>
 <body>

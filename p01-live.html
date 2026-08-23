@@ -116,6 +116,33 @@
       margin-top:16px;font-style:italic;color:#8A6D3B;
       font-size:14px;line-height:1.7;
     }
+
+    /* 窄畫面（≤880px）：桌面版左右對開（左頁 40% PVP 資訊卡／右頁 60% 起跑線
+       大圖），改成「左頁↓右頁」上下堆疊。左頁內的三個元素（標題、票卡、
+       目標數字）原本是用 top:% 相對整個頁面高度絕對定位，堆疊後每一半都要
+       有「明確」的高度（不是 min-height）這三個 top:% 才有依據可算，否則
+       會跟先前 .scroll-pg 高度塌陷是同一種錯誤。這裡讓左右兩頁各佔一半
+       高度（配合 assets/css/style.css 的 .scroll-pg--tall 加高卡片，
+       兩頁合計仍保持在同一張捲動卡片高度內，不會被裁切）。 */
+    @media (max-width: 880px) {
+      html, body { overflow: visible; height: auto; }
+      .p01-page { flex-direction: column; width: 100%; height: auto; overflow: visible; }
+      .p01-left {
+        flex: none; width: 100%;
+        height: 49vh; height: 49svh; min-height: 300px;
+      }
+      .p01-title-block { top: 5%; }
+      .p01-card-wrap { top: 34%; width: min(300px, 80%); }
+      .p01-stats { top: 66%; gap: 5px; }
+      .p01-stat { font-size: 11.5px !important; }
+      .p01-stat.key { font-size: 12.5px !important; }
+      .p01-right {
+        flex: none; width: 100%;
+        height: 45vh; height: 45svh; min-height: 340px;
+        padding: 6% 7% 5%;
+      }
+      .p01-right-title { font-size: clamp(26px, 8vw, 38px); }
+    }
   </style>
 </head>
 <body>

@@ -35,11 +35,21 @@ async function init() {
      P10）。修法：每個跨頁網址也統一加上 ?v=CHAPTER_ASSET_VERSION，之後只
      要有任何一個 pXX-live.html 內容變動，就把這個版本號 +1，瀏覽器就會直接
      抓新的，不會再被舊的快取檔卡住。 */
-  const CHAPTER_ASSET_VERSION = 29;
+  const CHAPTER_ASSET_VERSION = 30;
   const spreads = Array.from({ length: 12 }, (_, i) => {
     const id = 'p' + String(i).padStart(2, '0');
     return { title: id, url: `${id}-live.html?v=${CHAPTER_ASSET_VERSION}`, preview: `previews/${id}.webp` };
   });
+
+  /* 2c. 窄畫面「雙頁／雙欄／對開書構圖」加高卡片名單：這幾頁桌面版是左右
+     兩頁並排，於 max-width:880px 時改成上下堆疊（見各 pXX-live.html 自己的
+     @media 區塊），堆疊後內容變高，捲動模式的章節卡片需要比一般單欄頁面
+     更高的高度才裝得下、不被裁切——對應 style.css 裡的 .scroll-pg--tall
+     （只加高這幾頁的卡片，其餘單欄頁面完全不受影響）。P00 封面窄畫面雖然
+     只是隱藏留白、右欄改滿版（不是真的堆疊兩頁），但右欄病歷卡本身
+     min-height:86vh 加上實際內容，量測後仍略高於一般卡片高度，所以也
+     一併列入加高名單，避免卡片底部被裁掉一小截。 */
+  const TALL_SCROLL_SPREAD_IDS = new Set(['p00', 'p01', 'p03', 'p08', 'p09', 'p10', 'p11']);
 
   /* 3. Init the flipbook（跨頁預載管理器內建在 SoftFlipBook 裡：目前跨頁
      一顯示完成就背景準備下一跨頁，翻頁動畫本身一定等內容 ready 才開始，
@@ -60,7 +70,7 @@ async function init() {
   if (scrollView) {
     spreads.forEach(sp => {
       const wrap = document.createElement('div');
-      wrap.className = 'scroll-pg';
+      wrap.className = 'scroll-pg' + (TALL_SCROLL_SPREAD_IDS.has(sp.title) ? ' scroll-pg--tall' : '');
       wrap.appendChild(buildLiveSpread(sp.url));
       scrollView.appendChild(wrap);
     });

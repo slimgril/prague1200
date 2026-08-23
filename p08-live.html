@@ -157,6 +157,37 @@
     @keyframes hintFade {
       0%, 100% { opacity: 0.2; } 50% { opacity: 0.6; }
     }
+
+    /* 窄畫面（≤880px）：這頁桌面版不是左右兩頁對開，而是 7 張檔案照片用
+       left:%/top:% 散落在一整片 100vw 的桌面畫布上，每張圖固定 180x135px。
+       手機直向寬度只有桌面的三分之一左右，同樣的 % 座標換算下來，卡片會
+       彼此重疊、甚至被推出畫面外，等於「內容被壓縮、圖片被切一半」的
+       另一種型態。修法：改成正常文件流的可換行卡片牆（flex-wrap），
+       不再用絕對座標亂數散落；.document-item 由 absolute 改成 relative
+       （不是 static——它自己還是 .doc-label／.doc-stamp 這些子元素的定位
+       基準，只是不再用 left/top 脫離文件流），圖片改用 aspect-ratio 維持
+       180:135＝4:3 原始比例、寬度吃滿卡片，不再被裁切成看不出全貌。 */
+    @media (max-width: 880px) {
+      html, body { overflow: visible; height: auto; }
+      #archive-desk {
+        height: auto; min-height: 100%;
+        display: flex; flex-wrap: wrap;
+        justify-content: center; align-content: flex-start;
+        gap: 16px; padding: 76px 16px 50px;
+      }
+      .desk-title { position: static; margin: 0 0 8px; width: 100%; transform: none; }
+      .document-item {
+        position: relative !important;
+        left: auto !important; top: auto !important;
+        transform: none !important;
+        width: 42%; min-width: 130px; max-width: 220px;
+        padding: 8px 8px 30px 8px;
+      }
+      .document-item:hover { transform: scale(1.05) !important; }
+      .document-item img { width: 100%; height: auto; aspect-ratio: 4 / 3; }
+      .doc-label { font-size: 0.8rem; }
+      .desk-hint { position: static; margin-top: 4px; width: 100%; transform: none; }
+    }
   </style>
 </head>
 <body>

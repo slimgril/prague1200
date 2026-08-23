@@ -305,6 +305,34 @@
       text-align: center; margin-top: 4px;
       letter-spacing: 0.02em;
     }
+
+    /* 窄畫面（≤880px）：桌面版左右對開（左頁 50% 雙計時器／右頁 50% 回顧
+       輪播＋終章金句），改成「左頁↓右頁」上下堆疊，左右各自維持「明確」
+       高度（不是 min-height），.photo-carousel 原本靠 height:58% 撐開，
+       父層 .right-page 若只給 min-height 會跟先前 .scroll-pg 塌陷成 0px
+       同一種錯誤，這裡一併修正。配合 style.css 的 .scroll-pg--tall
+       加高卡片，兩頁合計仍在同一張捲動卡片高度內。 */
+    @media (max-width: 880px) {
+      html, body { overflow: visible; height: auto; }
+      body { flex-direction: column; }
+      .left-page, .right-page { width: 100%; }
+      .left-page { height: 51vh; height: 51svh; min-height: 360px; padding: 24px 0; }
+      .divider { display: none; }
+      .right-page { height: 43vh; height: 43svh; min-height: 320px; }
+      .photo-carousel { height: 24vh; height: 24svh; min-height: 140px; flex: none; }
+      .finale-quote { padding: 20px 90px 20px 24px; }
+      .left-content { padding: 16px 24px; }
+      .play-trigger { width: 48px; height: 48px; margin: 0 auto 10px; }
+      .play-hint { margin-bottom: 10px; }
+      .day-label { font-size: 1.7rem; margin-bottom: 10px; }
+      .chapter-badge { margin-bottom: 8px; }
+      .finish-banner { margin-bottom: 12px; }
+      .dual-counter { gap: 10px; margin: 0 auto 10px; }
+      .counter-value { font-size: 1.8rem; min-width: 0; }
+      .counter-label { min-width: 78px; }
+      .progress-track { margin: 4px auto 12px; }
+      .quote-line { font-size: 1.05rem; }
+    }
   </style>
 </head>
 <body>

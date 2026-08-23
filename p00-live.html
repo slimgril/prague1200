@@ -113,6 +113,17 @@
         .section-tag { font-size: 13px; font-weight: 700; color: #A3452F; margin-bottom: 6px; letter-spacing: 1px; }
         .section-desc { font-size: 12px; color: #5C2A44; line-height: 1.8; text-align: justify; }
         .stats-highlight { font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700; color: #4A0F2C; margin-top: 5px; line-height: 1.6; letter-spacing: 1px; }
+
+        /* 窄畫面（≤880px）：桌面版是左半頁純黑留白＋右半頁病歷卡的左右對開，
+           左半頁本身沒有任何內容，只是預留給裝訂線的安全空白。手機直向畫面
+           如果照搬「左頁↓右頁」堆疊，讀者會先滑過一整塊空白黑畫面才看到
+           真正內容，等於白白多滑一頁——所以這裡改成直接隱藏空白左頁，
+           讓右頁病歷卡滿版顯示，桌面版（>880px）完全不受影響。 */
+        @media (max-width: 880px) {
+            .cover-left-blank { display: none; }
+            .cover-right-content { width: 100%; min-height: 100%; }
+            .medical-report-card { width: 100%; max-width: 480px; }
+        }
     </style>
 </head>
 <body>

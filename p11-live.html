@@ -271,6 +271,25 @@
       letter-spacing: 0.35em;
       color: rgba(138,109,59,0.5);
     }
+
+    /* 窄畫面（≤880px）：桌面版左右對開（左頁 50% 加映片段／右頁 50% 尾聲
+       金句），改成「左頁↓右頁」上下堆疊，左右各自維持「明確」高度
+       （不是 min-height），避免跟先前 .scroll-pg 塌陷同樣的錯誤。配合
+       style.css 的 .scroll-pg--tall 加高卡片，兩頁合計仍在同一張捲動
+       卡片高度內。 */
+    @media (max-width: 880px) {
+      html, body { overflow: visible; height: auto; }
+      body { flex-direction: column; }
+      .left-page, .right-page { width: 100%; }
+      .left-page { height: 51vh; height: 51svh; min-height: 380px; }
+      .divider { display: none; }
+      .right-page { height: 43vh; height: 43svh; min-height: 320px; padding: 28px 24px; }
+      .film-frame { width: min(220px, 58vw); }
+      .play-control { margin-top: 12px; }
+      .left-caption { margin-top: 8px; font-size: 0.78rem; }
+      .quote-line { font-size: 1.05rem; }
+      .closing-quote { max-width: 92%; }
+    }
   </style>
 </head>
 <body>
