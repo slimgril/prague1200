@@ -35,7 +35,7 @@ async function init() {
      P10）。修法：每個跨頁網址也統一加上 ?v=CHAPTER_ASSET_VERSION，之後只
      要有任何一個 pXX-live.html 內容變動，就把這個版本號 +1，瀏覽器就會直接
      抓新的，不會再被舊的快取檔卡住。 */
-  const CHAPTER_ASSET_VERSION = 37;
+  const CHAPTER_ASSET_VERSION = 38;
   const spreads = Array.from({ length: 12 }, (_, i) => {
     const id = 'p' + String(i).padStart(2, '0');
     return { title: id, url: `${id}-live.html?v=${CHAPTER_ASSET_VERSION}`, preview: `previews/${id}.webp` };

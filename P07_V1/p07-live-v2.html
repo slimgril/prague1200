@@ -284,14 +284,19 @@
       font-size: 0.92rem; color: var(--ivory);
       letter-spacing: 0.04em; line-height: 1.6; margin: 0 0 10px;
       text-shadow: 0 2px 10px rgba(0,0,0,0.7);
-      transform: translate3d(0, 153px, 0);
+      /* 跟下面 .certificate 的新位置對齊（原本靠近 finaleZone 頂端，
+         現在證書往下移了很多，金句淡入淡出的原地位置也要跟著往下移） */
+      transform: translate3d(0, 40vh, 0);
     }
     /* 蓋章、收藏卡收回之後，金句容器才淡入、放大向讀者靠近；
        裡面每一句（.quote-line）各自獨立淡入，由 JS 逐句加上 .show，
-       停留 3 秒讓讀者讀完才出下一句 */
+       停留 3 秒讓讀者讀完才出下一句
+       字級：原本 2.76rem 讀者反應太大，這裡縮小「兩階」——判斷為約
+       兩個字級階，改成 2.0rem（約縮小 27%），如果還是太大／太小可以
+       再請我微調 */
     body[data-phase="quoteBloom"] .church-quote {
       opacity: 1;
-      font-size: 2.76rem;
+      font-size: 2.0rem;
       transition: opacity 900ms ease, font-size 700ms cubic-bezier(0.22,1,0.36,1);
     }
     .quote-line { opacity: 0; transition: opacity 900ms ease; }
@@ -311,10 +316,17 @@
        ／視覺焦點 → 路徑紀錄（像護照內頁，不用表格不用太正式）→ 右下角
        金色印記，稍微壓到框線外，像真的蓋章壓下去。象牙紙色，不是深色
        玻璃面板。 */
+    /* 證書休息位置：根據草圖，比原本（finaleZone 頂端附近）低很多，大約
+       落在畫面 44%～66% 高度的位置——改成 position:absolute + top:40vh，
+       這樣不管 finaleZone 本身多高都精準落在畫面下方，而不是跟著文件流走。
+       休息位置離畫面真正的右上角很遠了，所以「從右上角飛入／飛出」的
+       transform 也要跟著放大到 -42vh 左右的量級，視覺上才會像是真的從
+       畫面右上角一路飛過來／飛回去，而不是原地小小地彈出來。 */
     .certificate {
-      position: relative; opacity: 0; pointer-events: none;
+      position: absolute; top: 40vh; left: 0; right: 0;
+      opacity: 0; pointer-events: none;
       transform-origin: top right;
-      transform: translate3d(0, -18px, 0) scale(0.18);
+      transform: translate3d(40px, -42vh, 0) scale(0.18);
     }
     body[data-phase="certificateReveal"] .certificate,
     body[data-phase="certificateHold"] .certificate,
@@ -324,9 +336,11 @@
       transform: translate3d(0,0,0) scale(1);
       transition: opacity 350ms ease, transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
     }
+    /* 蓋完章、停留 1 秒後，證書緩緩從右上角退出——刻意放慢到 3 秒
+       （原本 800ms 太快，讀者幾乎看不到證書飛走的過程） */
     body[data-phase="certificateCollect"] .certificate {
-      opacity: 0; transform: translate3d(60px, -70px, 0) scale(0.12);
-      transition: opacity 700ms ease 150ms, transform 800ms cubic-bezier(0.4, 0, 0.6, 1);
+      opacity: 0; transform: translate3d(70px, -42vh, 0) scale(0.12);
+      transition: opacity 3000ms ease, transform 3000ms cubic-bezier(0.4, 0, 0.6, 1);
     }
     /* 羊皮紙已經去背成不規則邊緣的裁片（不是方方正正的照片），所以
        整張卡片改用 mask 裁成紙張本身的形狀，邊框／外框拿掉（不規則
@@ -428,6 +442,29 @@
       100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.4); }
     }
 
+    /* 彩花：古地圖背景一出現（mapReveal 開始）就灑一波，慶祝抵達終點——
+       整個作品最重要的一刻，要有慎重的感覺。動畫時間（3s）比 mapReveal
+       這一階段本身（現在只有 2 秒）還長，所以刻意不用 body[data-phase=...]
+       選取器（那樣時間一到階段切換，動畫會被硬生生截斷），改成 JS 在
+       setPhase('mapReveal') 那一刻直接產生節點、animation 直接寫在
+       inline style 上，讓它不受之後階段切換影響，可以完整播完 3 秒。 */
+    .confetti-burst { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 9; }
+    .confetti-piece {
+      position: absolute; top: -4%; left: var(--cx, 50%);
+      width: var(--csize, 8px); height: var(--csize, 8px);
+      background: var(--ccolor, #d4af37);
+      border-radius: var(--cradius, 2px);
+      opacity: 0;
+      animation: confettiFall 3s cubic-bezier(0.25,0.46,0.45,0.94) forwards;
+      animation-delay: var(--cdelay, 0s);
+    }
+    @keyframes confettiFall {
+      0%   { opacity: 0; transform: translate3d(0, 0, 0) rotate(0deg); }
+      8%   { opacity: 1; }
+      82%  { opacity: 1; }
+      100% { opacity: 0; transform: translate3d(var(--cdx, 0), 92vh, 0) rotate(var(--crot, 540deg)); }
+    }
+
     /* 提示：手機版「攝影機跟隨」屬於獨立工程，這版先不做（見交付說明），
        維持桌面單一畫面骨架。 */
   </style>
@@ -452,6 +489,9 @@
         <circle cx="85" cy="15" r="1.5" fill="#E8D9AE"/>
       </svg>
     </div>
+
+    <!-- 彩花層：抵達終點、古地圖浮現的那一刻灑一波慶祝，見下方 generateConfetti() -->
+    <div class="confetti-burst" id="confettiBurst" aria-hidden="true"></div>
 
     <audio id="finale-bgm" preload="auto" src="../surprise/p07-finale-zaichufa.mp3"></audio>
     <!-- 蓋章瞬間的鐘聲：單一聲響＋自然回音，不循環、不疊加音樂 -->
@@ -604,12 +644,12 @@
       TRAVEL: { '1-2': 4000, '2-3': 4000, '3-4': 4000, '4-5': 4000, '5-6': 4000 },
       APPROACH: 4000, APPROACH_TEXT_OUT: 1200,
       PRE_ARRIVAL_LEAD: 2000, // 抵達前 2 秒：配樂開始淡出＋教堂開始淡入
-      ARRIVE: 1200, CHURCH_FADE: 1300, MAP: 1000,
+      ARRIVE: 1200, CHURCH_FADE: 1300, MAP: 2000, // 地圖出現後隔 2 秒，證書才飛入
       CERT_REVEAL: 1000,
-      HOLD_CERT: 3000,        // 收藏卡飛出後，先停留 3 秒還沒蓋章
+      HOLD_CERT: 2000,        // 證書出現後，先停留 2 秒還沒蓋章
       SEAL: 750,               // 印章飛入蓋下去
-      HOLD_POST_SEAL: 1400,    // 蓋完章後再停留一下，讓讀者看清楚蓋好的樣子
-      COLLECT: 800,             // 收藏卡飛回右上角
+      HOLD_POST_SEAL: 1000,    // 蓋完章後隔 1 秒，證書才開始飛出
+      COLLECT: 3000,            // 證書緩緩飛回右上角收起來（要跟下面 CSS 的 3000ms transition 對齊）
       QUOTE_LINE_HOLD: 3000,   // 金句每一句停留 3 秒，讀者讀完才出下一句
     };
 
@@ -764,6 +804,8 @@
         hideCard(n);
       });
       document.querySelectorAll('.quote-line').forEach(el => el.classList.remove('show'));
+      const confettiLayer = document.getElementById('confettiBurst');
+      if (confettiLayer) confettiLayer.innerHTML = '';
       setPhase('ready');
 
       setPhase('departing');
@@ -820,6 +862,32 @@
       }
     }
 
+    /* 彩花：mapReveal 開始那一刻呼叫，維持約 3 秒（見上面 confettiFall
+       keyframes），animation 直接掛在每個節點自己身上，不受之後階段切換
+       （certificateReveal 等）影響，可以完整播完 */
+    function generateConfetti() {
+      const layer = document.getElementById('confettiBurst');
+      if (!layer) return;
+      layer.innerHTML = '';
+      if (prefersReducedMotion) return;
+      const colors = ['#d4af37', '#f3d77a', '#e8d9ae', '#c6a02c', '#ffffff', '#ff4fa3'];
+      for (let i = 0; i < 46; i++) {
+        const span = document.createElement('span');
+        span.className = 'confetti-piece';
+        span.style.setProperty('--cx', (Math.random() * 100).toFixed(1) + '%');
+        span.style.setProperty('--cdx', ((Math.random() - 0.5) * 160).toFixed(0) + 'px');
+        span.style.setProperty('--csize', (5 + Math.random() * 6).toFixed(1) + 'px');
+        span.style.setProperty('--crot', (360 + Math.random() * 540).toFixed(0) + 'deg');
+        span.style.setProperty('--cdelay', (Math.random() * 0.6).toFixed(2) + 's');
+        span.style.setProperty('--ccolor', colors[Math.floor(Math.random() * colors.length)]);
+        span.style.setProperty('--cradius', Math.random() < 0.5 ? '50%' : '2px');
+        layer.appendChild(span);
+      }
+      // 3.7 秒後清乾淨（動畫最長 3s + 最長 0.6s 延遲），避免重播時舊節點殘留疊加
+      clearTimeout(generateConfetti._cleanupTimer);
+      generateConfetti._cleanupTimer = setTimeout(() => { layer.innerHTML = ''; }, 3700);
+    }
+
     /* 金句逐句淡入：金句平時完全不出現，蓋完章、收藏卡飛回右上角收起來
        以後才開始，一句出現、停留 T.QUOTE_LINE_HOLD 讓讀者讀完，才出下
        一句；最後一句也停留同樣時間後，呼叫端再切到 epilogue 讓整句一起
@@ -840,7 +908,7 @@
         setPhase('arrived'); statusText('皇家之路完成');
         await wait(400);
         setPhase('churchFade'); await wait(300);
-        setPhase('mapReveal'); await wait(400);
+        setPhase('mapReveal'); generateConfetti(); await wait(400);
         setPhase('certificateReveal'); await wait(400);
         setPhase('certificateHold'); await wait(T.HOLD_CERT);
         generateSealDust(); playBell(); playStamp(); setPhase('sealAward'); setGranted();
@@ -862,6 +930,7 @@
       await wait(T.CHURCH_FADE);
 
       setPhase('mapReveal');                             // 只有古地圖單獨浮現
+      generateConfetti();                                 // 同時灑一波彩花，慶祝抵達終點
       await wait(T.MAP);
 
       setPhase('certificateReveal');                     // 地圖淡出，收藏卡從右上角飛出
@@ -926,6 +995,8 @@
       if (bgm) { bgm.pause(); bgm.currentTime = 0; bgm.volume = 0; }
       if (bell) { bell.pause(); bell.currentTime = 0; }
       if (stamp) { stamp.pause(); stamp.currentTime = 0; }
+      const confettiLayerOnLeave = document.getElementById('confettiBurst');
+      if (confettiLayerOnLeave) confettiLayerOnLeave.innerHTML = '';
       musicStarted = false;
       document.body.classList.remove('station4-reveal');
       document.getElementById('routeLight').classList.remove('show');
