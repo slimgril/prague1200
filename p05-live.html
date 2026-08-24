@@ -11,10 +11,9 @@
 
         .p05-container { display: flex; width: 100%; height: 100%; position: relative; }
 
-        /* 左欄 54%（原本 40%，圖片欄位加大——這個模組實際是靠 iframe 寬度
-           帶動照片框的大小，寬度加大，照片框跟著等比例變大） */
+        /* 左欄 40% */
         .p05-left-panel {
-            width: 54%; height: 100%;
+            width: 40%; height: 100%;
             background-color: #0A0A0A;
             position: relative; overflow: hidden;
             display: flex; align-items: center; justify-content: center;
@@ -25,9 +24,9 @@
             transition: filter 0.5s ease;
         }
 
-        /* 右欄 46% */
+        /* 右欄 60% */
         .p05-right-panel {
-            width: 46%; height: 100%;
+            width: 60%; height: 100%;
             background-color: #F4F1EA;
             background-image: linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px);
             background-size: 100% 24px;
@@ -111,22 +110,12 @@
             100% { box-shadow: 0 0 4px #FFD700; opacity: 1; }
         }
 
-        /* 拍立得 */
-        .p05-polaroid {
-            position: absolute; bottom: 3%; right: 6%;
-            width: 230px; background: #FFFFFF; padding: 10px 10px 28px 10px;
-            box-shadow: 0 8px 28px rgba(0,0,0,0.14);
-            transform: rotate(-5deg); transform-origin: bottom right;
-            transition: all 0.4s ease; cursor: pointer; z-index: 25;
-        }
-        .p05-polaroid img { width: 100%; height: auto; display: block; border: 1px solid #EEE; }
-        .p05-polaroid:hover { transform: rotate(-5deg) scale(1.08); box-shadow: 0 14px 36px rgba(0,0,0,0.22); }
-
-        /* 詩句 — transition 模式 */
+        /* 詩句 — transition 模式（右下角拍立得已拿掉，金句改用右欄
+           幾乎全寬，排版更舒展，不再被照片擠壓） */
         .p05-poem-zone {
             position: absolute;
             top: calc(66% + 1.5em);
-            left: 8%; width: 55%;
+            left: 8%; width: 84%;
             text-align: center; opacity: 1;
             z-index: 40; pointer-events: none;
         }
@@ -138,7 +127,7 @@
             line-height: 1.6; margin-bottom: 4px;
             opacity: 0;
             transform: translateY(8px);
-            transition: opacity 3s ease, transform 3s ease;
+            transition: opacity 1.5s ease, transform 1.5s ease;
         }
         .poem-line.fade-in-active {
             opacity: 1; transform: translateY(0);
@@ -151,7 +140,7 @@
 
     <!-- 左欄：P05 互動拉桿模組（取代原本靜態電車照，讓模組真正顯示出來） -->
     <div class="p05-left-panel" id="leftPanel">
-        <iframe src="p04效果測試/p05.html?v=28" title="P05 互動拉桿展示"
+        <iframe src="p04效果測試/p05.html" title="P05 互動拉桿展示"
                 style="width:100%;height:100%;border:0;display:block;"></iframe>
     </div>
 
@@ -246,11 +235,6 @@
             <span class="poem-line">放下重擔後，在布拉格的叮叮聲裡尋回的純粹。</span>
         </div>
 
-        <!-- 拍立得 -->
-        <div class="p05-polaroid" id="polaroidPic">
-            <img src="surprise/p05-spot-04.png" alt="42號電車拍立得">
-        </div>
-
     </div>
 </div>
 
@@ -309,11 +293,11 @@
 
     document.addEventListener('click', () => { actx(); }, { once: true });
 
-    /* 詩句動畫 — 逐行淡入：每行淡入 3 秒，停留 3 秒閱讀，再換下一行淡入 */
+    /* 詩句動畫 — 逐行淡入 */
     function showPoemLines() {
         const lines = document.querySelectorAll('#poemZone .poem-line');
         lines.forEach((l, i) => {
-            setTimeout(() => l.classList.add('fade-in-active'), i * 6000);
+            setTimeout(() => l.classList.add('fade-in-active'), i * 2000);
         });
     }
     function hidePoemLines() {
@@ -323,24 +307,17 @@
 
     /* 黃銅滑桿互動 */
     const slider  = document.getElementById('timeSlider');
-    const polaroid = document.getElementById('polaroidPic');
     let hasPlayedLeft = false, hasPlayedRight = false;
 
     slider.addEventListener('input', (e) => {
         const val = parseInt(e.target.value);
-        const heroImg = document.getElementById('heroImg'); // 左欄已改成 iframe 模組，heroImg 可能不存在
         if (val <= 30) {
-            polaroid.style.transform = 'rotate(-5deg) scale(1.15)';
             hidePoemLines();
-            if (heroImg) heroImg.style.filter = 'brightness(1.05) saturate(1.2)';
             if (!hasPlayedLeft) { playMusicBox(); hasPlayedLeft = true; hasPlayedRight = false; }
         } else if (val >= 70) {
-            if (heroImg) heroImg.style.filter = 'sepia(0.4) brightness(0.7)';
             if (!hasPlayedRight) { playSax(); showPoemLines(); hasPlayedRight = true; hasPlayedLeft = false; }
         } else {
-            polaroid.style.transform = 'rotate(-5deg) scale(1)';
             hidePoemLines();
-            if (heroImg) heroImg.style.filter = 'brightness(1)';
             hasPlayedLeft = false; hasPlayedRight = false;
         }
     });
@@ -379,14 +356,6 @@
             document.getElementById('lightbox-title').innerText = data.title;
             lightbox.style.display = 'flex';
         });
-    });
-
-    /* 拍立得點擊 */
-    polaroid.addEventListener('click', (e) => {
-        e.stopPropagation();
-        document.getElementById('lightbox-img').src = 'surprise/p05-spot-04.png';
-        document.getElementById('lightbox-title').innerText = '42號電車漫步';
-        lightbox.style.display = 'flex';
     });
 
     /* 金句 1.5 秒後自動淡入 */
