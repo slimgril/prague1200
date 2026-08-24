@@ -51,12 +51,14 @@
        → 收藏卡收回、金句畫面時再沉澱回較深的暖色調。每段顏色差異
        拉大，讓底色轉換清楚「有反應」，不是只有兩段近似深色。 */
     body[data-phase="approaching"],
+    body[data-phase="preArrival"],
     body[data-phase="arrived"] { background-color: #201512; }
     body[data-phase="churchFade"] { background-color: #3a2a18; }
     body[data-phase="mapReveal"],
     body[data-phase="certificateReveal"],
+    body[data-phase="certificateHold"],
     body[data-phase="sealAward"],
-    body[data-phase="certificateHold"] { background-color: #5c4527; }
+    body[data-phase="certificatePostSeal"] { background-color: #5c4527; }
     body[data-phase="certificateCollect"],
     body[data-phase="epilogue"] { background-color: #3f2f1c; }
 
@@ -84,6 +86,9 @@
       transition: opacity 1.4s ease, filter 1.4s ease, transform 1.2s ease;
       transform: scale(1);
     }
+    /* 抵達前最後 2 秒（preArrival）就開始淡入，不用等真正抵達（arrived）
+       那一刻才浮現，跟配樂淡出同步開始 */
+    body[data-phase="preArrival"] .hero-fixed-bg,
     body[data-phase="arrived"] .hero-fixed-bg {
       opacity: 0.92; filter: blur(0px) brightness(1.06); transform: scale(1.06);
     }
@@ -91,8 +96,9 @@
     body[data-phase="churchFade"] .hero-fixed-bg,
     body[data-phase="mapReveal"] .hero-fixed-bg,
     body[data-phase="certificateReveal"] .hero-fixed-bg,
-    body[data-phase="sealAward"] .hero-fixed-bg,
     body[data-phase="certificateHold"] .hero-fixed-bg,
+    body[data-phase="sealAward"] .hero-fixed-bg,
+    body[data-phase="certificatePostSeal"] .hero-fixed-bg,
     body[data-phase="certificateCollect"] .hero-fixed-bg,
     body[data-phase="epilogue"] .hero-fixed-bg {
       opacity: 0; filter: blur(0px) brightness(0.4); transform: scale(1);
@@ -269,44 +275,31 @@
     body[data-phase="quoteBloom"] .completion-mark,
     body[data-phase="epilogue"] .completion-mark { opacity: 1; }
 
+    /* 金句平時完全不出現（不再跟著教堂一起淡入）——只有蓋完章、收藏卡
+       飛回右上角收起來以後才會出現，直接原地定位在證書原本的位置
+       （靠右邊一半的位置），不需要再位移，因為出現之前本來就看不見 */
     .church-quote {
       opacity: 0;
-      transition: opacity 0.9s ease, transform 700ms cubic-bezier(0.22,1,0.36,1), font-size 700ms cubic-bezier(0.22,1,0.36,1);
+      transition: opacity 0.9s ease, font-size 700ms cubic-bezier(0.22,1,0.36,1);
       font-size: 0.92rem; color: var(--ivory);
       letter-spacing: 0.04em; line-height: 1.6; margin: 0 0 10px;
       text-shadow: 0 2px 10px rgba(0,0,0,0.7);
-      transform: translate3d(0,0,0);
-    }
-    body[data-phase="arrived"] .church-quote,
-    body[data-phase="churchFade"] .church-quote,
-    body[data-phase="mapReveal"] .church-quote,
-    body[data-phase="certificateReveal"] .church-quote,
-    body[data-phase="sealAward"] .church-quote,
-    body[data-phase="certificateHold"] .church-quote { opacity: 1; }
-
-    /* 收藏卡開始縮回：金句先淡出＋同時「瞬移」到證書原本所在的位置。
-       淡出（260ms）比位移（620ms）快，位移的尾段發生在已經完全透明
-       之後，肉眼看不到滑動過程，才不會有「從上面飛下來」的錯覺 */
-    body[data-phase="certificateCollect"] .church-quote {
-      opacity: 0;
       transform: translate3d(0, 153px, 0);
-      transition: opacity 260ms ease, transform 620ms cubic-bezier(0.22,1,0.36,1);
     }
-
-    /* 蓋章、收藏卡收回之後，金句就在證書原本的位置原地慢慢產生、
-       放大向讀者靠近，停留 3 秒 */
+    /* 蓋章、收藏卡收回之後，金句容器才淡入、放大向讀者靠近；
+       裡面每一句（.quote-line）各自獨立淡入，由 JS 逐句加上 .show，
+       停留 3 秒讓讀者讀完才出下一句 */
     body[data-phase="quoteBloom"] .church-quote {
       opacity: 1;
-      transform: translate3d(0, 153px, 0);
       font-size: 2.76rem;
       transition: opacity 900ms ease, font-size 700ms cubic-bezier(0.22,1,0.36,1);
     }
+    .quote-line { opacity: 0; transition: opacity 900ms ease; }
+    .quote-line.show { opacity: 1; }
 
-    /* 停留結束後縮回原本大小，但定格位置仍是證書原本的位置，
-       不再飛回最上方 */
+    /* 全部句子都讀完、停留結束後縮回原本大小，定格在證書原本的位置 */
     body[data-phase="epilogue"] .church-quote {
       opacity: 1;
-      transform: translate3d(0, 153px, 0);
       font-size: 0.92rem;
       transition: font-size 700ms cubic-bezier(0.22,1,0.36,1);
     }
@@ -324,8 +317,9 @@
       transform: translate3d(0, -18px, 0) scale(0.18);
     }
     body[data-phase="certificateReveal"] .certificate,
+    body[data-phase="certificateHold"] .certificate,
     body[data-phase="sealAward"] .certificate,
-    body[data-phase="certificateHold"] .certificate {
+    body[data-phase="certificatePostSeal"] .certificate {
       opacity: 1; pointer-events: auto;
       transform: translate3d(0,0,0) scale(1);
       transition: opacity 350ms ease, transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -415,7 +409,7 @@
       text-shadow: 0 1px 0 rgba(59,38,10,0.4);
     }
     body[data-phase="sealAward"] .certificate__seal,
-    body[data-phase="certificateHold"] .certificate__seal {
+    body[data-phase="certificatePostSeal"] .certificate__seal {
       opacity: 1; transform: translateY(0) scale(1) rotate(-8deg);
       transition: opacity 140ms ease, transform 420ms cubic-bezier(0.18,0.9,0.35,1.15);
     }
@@ -462,6 +456,8 @@
     <audio id="finale-bgm" preload="auto" src="../surprise/p07-finale-zaichufa.mp3"></audio>
     <!-- 蓋章瞬間的鐘聲：單一聲響＋自然回音，不循環、不疊加音樂 -->
     <audio id="finale-bell" preload="auto" src="../surprise/p07-finale-bell-single.mp3"></audio>
+    <!-- 蓋章瞬間的印章敲擊聲：喀＋沉重回彈，跟鐘聲一起播放，讓讀者確實感覺到「用力蓋下去」 -->
+    <audio id="finale-stamp" preload="auto" src="../surprise/p07-finale-stamp-thud.mp3"></audio>
 
     <!-- 路徑：維持 V2 做法，一進頁面就完整顯示一條漸層路徑 -->
     <svg class="winding-path" preserveAspectRatio="none" viewBox="0 0 100 100">
@@ -552,7 +548,7 @@
     <!-- 終章區：證書從這裡展開（終點右上、下方預留區） -->
     <div id="finaleZone">
       <p class="completion-mark">✓ 皇家之路已完成</p>
-      <p class="church-quote">當音樂穿過城市，<br>記憶在最高處定格。</p>
+      <p class="church-quote"><span class="quote-line">當音樂穿過城市，</span><br><span class="quote-line">記憶在最高處定格。</span></p>
       <p class="journey-status" id="journeyStatus" aria-live="polite"></p>
       <div class="certificate" id="certificate">
         <div class="certificate__inner">
@@ -587,15 +583,17 @@
     /* ============================================================
        單一 JourneyPhase 狀態機（用 body[data-phase] 驅動所有 CSS）：
        ready → departing → traveling ⇄ landmark（每站重複）→ approaching
-       → arrived → churchFade → mapReveal → certificateReveal →
-       sealAward → certificateHold → certificateCollect → epilogue
+       → preArrival → arrived → churchFade → mapReveal → certificateReveal
+       → certificateHold（未蓋章先停留）→ sealAward（蓋章）→
+       certificatePostSeal（蓋完再停留）→ certificateCollect（收藏卡飛回
+       右上角）→ quoteBloom（金句逐句淡入放大）→ epilogue
        所有計時器集中在 timers[]，離開頁面（__onSpreadDeactivated）
        一律清掉，不會在元件卸載後還去更新畫面。
 
        老闆最新指示：教堂／古地圖／收藏卡三者只能選一個當主角，不要
        同框——所以終章拿掉了「路線回顧」（會跟地圖同框），改成單純
-       依序切換：教堂→(全退)→地圖→(全退)→收藏卡→蓋章→停留→收回→
-       只留路徑＋金句。 */
+       依序切換：教堂→(全退)→地圖→(全退)→收藏卡→停留→蓋章→停留→收回→
+       只留路徑＋金句（金句平時不出現，蓋完章、收藏卡飛走以後才逐句淡入）。 */
     const STAGE_KEY = 'prague1200_p07v2_certificate_granted';
     const STATION_XY = { 1:[8,88], 2:[20,78], 3:[33,58], 4:[52,64], 5:[68,38], 6:[85,15] };
     const STATIONS = [1,2,3,4,5,6];
@@ -605,12 +603,19 @@
       EXPAND: 450, HOLD: 2200, COLLAPSE: 350,
       TRAVEL: { '1-2': 4000, '2-3': 4000, '3-4': 4000, '4-5': 4000, '5-6': 4000 },
       APPROACH: 4000, APPROACH_TEXT_OUT: 1200,
-      ARRIVE: 1200, CHURCH_FADE: 1300, MAP: 1500,
-      CERT_REVEAL: 1000, SEAL: 750, HOLD_CERT: 3000, COLLECT: 800, QUOTE_BLOOM: 3000,
+      PRE_ARRIVAL_LEAD: 2000, // 抵達前 2 秒：配樂開始淡出＋教堂開始淡入
+      ARRIVE: 1200, CHURCH_FADE: 1300, MAP: 1000,
+      CERT_REVEAL: 1000,
+      HOLD_CERT: 3000,        // 收藏卡飛出後，先停留 3 秒還沒蓋章
+      SEAL: 750,               // 印章飛入蓋下去
+      HOLD_POST_SEAL: 1400,    // 蓋完章後再停留一下，讓讀者看清楚蓋好的樣子
+      COLLECT: 800,             // 收藏卡飛回右上角
+      QUOTE_LINE_HOLD: 3000,   // 金句每一句停留 3 秒，讀者讀完才出下一句
     };
 
-    const bgm = document.getElementById('finale-bgm');
-    const bell = document.getElementById('finale-bell');
+    const bgm   = document.getElementById('finale-bgm');
+    const bell  = document.getElementById('finale-bell');
+    const stamp = document.getElementById('finale-stamp');
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     function playBell() {
@@ -619,6 +624,16 @@
         bell.currentTime = 0;
         bell.volume = 0.85;
         bell.play().catch(() => {});
+      } catch (e) {}
+    }
+    /* 蓋章瞬間：鐘聲＋印章敲擊聲一起播放，敲擊聲負責「用力蓋下去」的
+       衝擊感，鐘聲負責典禮感的餘韻 */
+    function playStamp() {
+      if (!stamp) return;
+      try {
+        stamp.currentTime = 0;
+        stamp.volume = 0.95;
+        stamp.play().catch(() => {});
       } catch (e) {}
     }
     let musicStarted = false;
@@ -748,6 +763,7 @@
         if (btn) btn.classList.remove('visited');
         hideCard(n);
       });
+      document.querySelectorAll('.quote-line').forEach(el => el.classList.remove('show'));
       setPhase('ready');
 
       setPhase('departing');
@@ -770,11 +786,18 @@
       }
 
       /* 場景3：接近終點——其他站點降低亮度（已由 markVisited 處理過），
-         教堂輪廓浮現、光點變慢、置中過渡文案 */
+         光點變慢、置中過渡文案。抵達前最後 2 秒才開始「配樂淡出＋教堂
+         淡入」，不是等真正抵達那一刻才切換 */
       setPhase('approaching');
       announce('皇家之路的終點，正在城市最高處等待。', T.APPROACH_TEXT_OUT);
-      document.body.classList.add('reveal-finale'); // 教堂輪廓開始浮現(既有 hero-fixed-bg 過渡)
-      await animateLightBetween(getStationLen(5), getStationLen(6), T.APPROACH);
+      document.body.classList.add('reveal-finale');
+      const approachLen5 = getStationLen(5), approachLen6 = getStationLen(6);
+      const approachMain = Math.max(0, T.APPROACH - T.PRE_ARRIVAL_LEAD);
+      const approachMidLen = approachLen5 + (approachLen6 - approachLen5) * (approachMain / T.APPROACH);
+      await animateLightBetween(approachLen5, approachMidLen, approachMain);
+      fadeOutBgm();               // 配樂開始淡出（淡出，不是硬切）
+      setPhase('preArrival');     // 同時教堂背景開始淡入
+      await animateLightBetween(approachMidLen, approachLen6, T.PRE_ARRIVAL_LEAD);
 
       await playArrivalCeremony();
       journeyRunning = false;
@@ -797,7 +820,20 @@
       }
     }
 
-    /* 教堂→地圖→收藏卡→蓋章→停留→收回→只留路徑＋金句。三者不同框，
+    /* 金句逐句淡入：金句平時完全不出現，蓋完章、收藏卡飛回右上角收起來
+       以後才開始，一句出現、停留 T.QUOTE_LINE_HOLD 讓讀者讀完，才出下
+       一句；最後一句也停留同樣時間後，呼叫端再切到 epilogue 讓整句一起
+       縮小、定格在證書原本的位置 */
+    async function playQuoteBloom() {
+      const lines = Array.from(document.querySelectorAll('.church-quote .quote-line'));
+      setPhase('quoteBloom');
+      for (const line of lines) {
+        line.classList.add('show');
+        await wait(T.QUOTE_LINE_HOLD);
+      }
+    }
+
+    /* 教堂→地圖→收藏卡→停留→蓋章→停留→收回→只留路徑＋金句。三者不同框，
        依序登場、依序完全退場，不做「路線回顧」（會跟地圖同時出現）。 */
     async function playArrivalCeremony() {
       if (prefersReducedMotion) {
@@ -805,20 +841,20 @@
         await wait(400);
         setPhase('churchFade'); await wait(300);
         setPhase('mapReveal'); await wait(400);
-        setPhase('certificateReveal');
-        await wait(400);
-        generateSealDust(); playBell(); setPhase('sealAward'); setGranted();
+        setPhase('certificateReveal'); await wait(400);
+        setPhase('certificateHold'); await wait(T.HOLD_CERT);
+        generateSealDust(); playBell(); playStamp(); setPhase('sealAward'); setGranted();
         statusText('皇家之路典藏已授予聖維特印記');
         await wait(T.SEAL);
-        setPhase('certificateHold'); await wait(T.HOLD_CERT);
+        setPhase('certificatePostSeal'); await wait(T.HOLD_POST_SEAL);
         setPhase('certificateCollect'); await wait(T.COLLECT);
-        setPhase('quoteBloom'); await wait(T.QUOTE_BLOOM);
+        await playQuoteBloom();
         setPhase('epilogue');
         return;
       }
 
       document.getElementById('routeLight').classList.remove('show');
-      setPhase('arrived');                              // 教堂登場，金句淡入
+      setPhase('arrived');                              // 教堂登場（金句這時候還不出現）
       statusText('皇家之路完成');
       await wait(T.ARRIVE);
 
@@ -828,31 +864,34 @@
       setPhase('mapReveal');                             // 只有古地圖單獨浮現
       await wait(T.MAP);
 
-      setPhase('certificateReveal');                     // 地圖淡出，收藏卡浮出
+      setPhase('certificateReveal');                     // 地圖淡出，收藏卡從右上角飛出
       await wait(T.CERT_REVEAL);
+
+      setPhase('certificateHold');                        // 先停留三秒，還沒蓋章
+      await wait(T.HOLD_CERT);
 
       generateSealDust();
       playBell();
-      setPhase('sealAward'); setGranted();                // 蓋章
+      playStamp();
+      setPhase('sealAward'); setGranted();                // 印章從右上角快速飛入蓋下去
       statusText('皇家之路典藏已授予聖維特印記');
       await wait(T.SEAL);
 
-      setPhase('certificateHold');                        // 停留三秒
-      await wait(T.HOLD_CERT);
+      setPhase('certificatePostSeal');                    // 蓋完章後再停留一下
+      await wait(T.HOLD_POST_SEAL);
 
-      setPhase('certificateCollect');                     // 收藏卡縮回
+      setPhase('certificateCollect');                     // 收藏卡飛回右上角收起來
       await wait(T.COLLECT);
 
-      setPhase('quoteBloom');                             // 金句放大到證書原位，停留3秒
-      await wait(T.QUOTE_BLOOM);
-
-      setPhase('epilogue');                               // 金句縮回，只留路徑＋金句
+      await playQuoteBloom();                             // 金句這時候才逐句淡入放大，每句停留3秒
+      setPhase('epilogue');                               // 金句縮小，定格在證書原本的位置
     }
 
     function showEpilogueInstantly() {
       clearTimers();
       document.body.classList.add('reveal-finale');
       STATIONS.forEach(n => markVisited(n));
+      document.querySelectorAll('.quote-line').forEach(el => el.classList.add('show'));
       setPhase('epilogue');
     }
 
@@ -886,6 +925,7 @@
       journeyRunning = false;
       if (bgm) { bgm.pause(); bgm.currentTime = 0; bgm.volume = 0; }
       if (bell) { bell.pause(); bell.currentTime = 0; }
+      if (stamp) { stamp.pause(); stamp.currentTime = 0; }
       musicStarted = false;
       document.body.classList.remove('station4-reveal');
       document.getElementById('routeLight').classList.remove('show');
