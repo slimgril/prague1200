@@ -306,21 +306,29 @@
       letter-spacing: 0.02em;
     }
 
-    /* 窄畫面（≤880px）：桌面版左右對開（左頁 50% 雙計時器／右頁 50% 回顧
-       輪播＋終章金句），改成「左頁↓右頁」上下堆疊，左右各自維持「明確」
-       高度（不是 min-height），.photo-carousel 原本靠 height:58% 撐開，
-       父層 .right-page 若只給 min-height 會跟先前 .scroll-pg 塌陷成 0px
-       同一種錯誤，這裡一併修正。配合 style.css 的 .scroll-pg--tall
-       加高卡片，兩頁合計仍在同一張捲動卡片高度內。 */
+    /* 窄畫面（≤880px）：萬用彈性堆疊——父容器 body 改
+       display:flex;flex-wrap:wrap，左右兩頁都設 flex:1 1 100%;
+       height:auto，畫面裝不下時右頁自動彈到左頁下面，不再靠人工算
+       vh 高度比例。.photo-carousel 原本靠 height:58%（相對父層）撐開，
+       父層一旦變成 height:auto 就會塌成 0px——這裡改用 aspect-ratio
+       讓照片輪播自己決定高度，不必依賴父層的高度。.left-signature／
+       .final-signature 原本是 bottom:Npx 絕對定位、不佔版面空間，
+       auto 高度算不到它們，會被蓋到內容上面——這裡改回 static，讓它
+       正常排進版面最下方。配合 style.css 的 .scroll-pg--tall 加高
+       卡片，兩頁合計仍在同一張捲動卡片高度內。 */
     @media (max-width: 880px) {
       html, body { overflow: visible; height: auto; }
-      body { flex-direction: column; }
-      .left-page, .right-page { width: 100%; }
-      .left-page { height: 51vh; height: 51svh; min-height: 360px; padding: 24px 0; }
+      body { display: flex; flex-wrap: wrap; width: 100%; height: auto; }
+      .left-page, .right-page { flex: 1 1 100%; width: 100%; max-width: 100%; height: auto; }
+      .left-page { padding: 24px 0 28px; }
+      .left-signature { position: static; margin-top: 14px; }
       .divider { display: none; }
-      .right-page { height: 43vh; height: 43svh; min-height: 320px; }
-      .photo-carousel { height: 24vh; height: 24svh; min-height: 140px; flex: none; }
-      .finale-quote { padding: 20px 90px 20px 24px; }
+      .right-page { height: auto; }
+      .photo-carousel {
+        position: relative; width: 100%; height: auto;
+        aspect-ratio: 16 / 9; flex: none; min-height: 0;
+      }
+      .finale-quote { flex: none; padding: 20px 90px 20px 24px; }
       .left-content { padding: 16px 24px; }
       .play-trigger { width: 48px; height: 48px; margin: 0 auto 10px; }
       .play-hint { margin-bottom: 10px; }

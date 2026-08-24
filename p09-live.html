@@ -249,10 +249,19 @@
        瀏覽照片），避免遮擋或壓縮核心病歷內容，也避免堆疊後高度暴衝超出
        捲動卡片可視範圍。配合 style.css 的 .scroll-pg--tall 加高卡片。 */
     @media (max-width: 880px) {
+      /* 萬用彈性堆疊：父容器改 flex-wrap，兩頁都設 flex:1 1 100%，
+         畫面裝不下時右頁自動彈到左頁下面，不再靠人工算 vh 高度比例。
+         左頁大圖原本用 height:100% 貼滿父層（父層高度=100vh），父層一旦
+         改成 height:auto 就會什麼都算不出來、塌成 0px——這裡直接讓圖片
+         用自己的 aspect-ratio 決定高度（寬度吃滿、比例固定），父層高度
+         自然由圖片撐出來，不用再依賴父層的 vh 高度。 */
       html, body { overflow: visible; height: auto; }
-      .p09-spread { flex-direction: column; height: auto; }
-      .p09-left, .p09-right { width: 100%; }
-      .p09-left { height: 27vh; height: 27svh; min-height: 210px; }
+      .p09-spread { display: flex; flex-wrap: wrap; height: auto; }
+      .p09-left, .p09-right { flex: 1 1 100%; width: 100%; max-width: 100%; height: auto; }
+      .p09-left img.hero {
+        width: 100%; max-width: 100%; height: auto;
+        aspect-ratio: 4 / 3; object-fit: cover;
+      }
       .p09-left-caption { bottom: 14px; }
       .p09-left-caption h1 { font-size: 1.05rem; margin-bottom: 5px; }
       .p09-left-caption p { font-size: 0.95rem; }
