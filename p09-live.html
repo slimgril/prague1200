@@ -470,6 +470,8 @@
   function closeLb() {
     document.getElementById('ck-lightbox').classList.remove('active');
   }
+  /* 點照片本身也能關閉，不用特地去點邊角的 X 或背景 */
+  document.getElementById('ck-lb-img').addEventListener('click', closeLb);
   document.getElementById('ck-lightbox').addEventListener('click', e => {
     if (e.target === e.currentTarget) closeLb();
   });

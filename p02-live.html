@@ -942,6 +942,9 @@ html,body{width:100%;height:100%;background:#111;overflow:hidden;font-family:-ap
   });
 
   lbClose.addEventListener('click', () => lb.classList.remove('open'));
+  /* 點照片本身也能關閉：右上角 X 太靠近翻頁熱區，容易點成翻頁，
+     改成點照片本身就會縮回去，不用特地去點邊角的 X */
+  lbImg.addEventListener('click', () => lb.classList.remove('open'));
   lb.addEventListener('click', e => { if(e.target===lb) lb.classList.remove('open'); });
   document.addEventListener('keydown', e => { if(e.key==='Escape') lb.classList.remove('open'); });
 

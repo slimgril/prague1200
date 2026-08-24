@@ -312,6 +312,9 @@
   function closeLightbox() {
     document.getElementById('lightbox').classList.remove('active');
   }
+  /* 點照片本身也能關閉：右上角 X 太靠近翻頁熱區，容易點成翻頁，
+     改成點照片本身就會縮回去 */
+  document.getElementById('lb-img').addEventListener('click', closeLightbox);
   document.getElementById('lightbox').addEventListener('click', function(e) {
     if (e.target === this) closeLightbox();
   });
