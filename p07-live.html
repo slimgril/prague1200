@@ -31,8 +31,11 @@
          參考／最終文案再套用。
 
        沒有真的古地圖／鐘聲音效素材，仍用既有路徑代表地圖感、沒有另外
-       加鐘聲——這兩點是已知的素材缺口，見交付訊息說明。手機版「攝影機
-       跟隨」屬於獨立的大工程，這版先不做，維持桌面單一畫面。
+       加鐘聲——這兩點是已知的素材缺口，見交付訊息說明。手機版「鏡頭
+       跟隨」已補上（見下方 panCameraTo/resetCamera）：窄畫面
+       （<=880px，跟專案其他頁面同一個斷點）自動播放旅程期間，鏡頭會
+       放大並跟著光點移動，抵達終點、教堂/地圖/證書儀式開始前會平滑
+       縮回原本比例；桌面版、手動點單一節點不受影響。
        ============================================================ */
     * { box-sizing: border-box; }
     :root {
@@ -70,6 +73,12 @@
         linear-gradient(90deg, rgba(212,175,55,0.04) 1px, transparent 1px);
       background-size: 40px 40px;
       overflow: hidden;
+      /* 手機版鏡頭跟隨：JS 會在窄畫面、自動播放旅程時放大＋平移這個
+         元素本身（transform-origin 固定在左上角，平移量在 JS 裡用左上角
+         為基準換算），body 本身的 overflow:hidden（見上面）負責裁切成
+         畫面大小的視窗——桌面版完全不受影響，因為只有 isMobileView()
+         成立時 JS 才會真的去改 transform */
+      transform-origin: 0 0;
     }
 
     /* 背景底圖：終點聖維特教堂的照片。老闆最新指示：教堂／古地圖／
@@ -465,8 +474,8 @@
       100% { opacity: 0; transform: translate3d(var(--cdx, 0), 92vh, 0) rotate(var(--crot, 540deg)); }
     }
 
-    /* 提示：手機版「攝影機跟隨」屬於獨立工程，這版先不做（見交付說明），
-       維持桌面單一畫面骨架。 */
+    /* 手機版鏡頭跟隨已實作（見 <script> 內 panCameraTo/resetCamera），
+       桌面版維持原本單一畫面骨架不受影響。 */
   </style>
 </head>
 <body data-phase="ready">
@@ -735,16 +744,54 @@
 
     function animateLightBetween(fromLen, toLen, durationMs) {
       const light = document.getElementById('routeLight');
+      const path = getPathEl();
       light.classList.add('show');
       return new Promise(resolve => {
         const start = performance.now();
         function frame(now) {
           const t = Math.min(1, (now - start) / durationMs);
-          setElementAtLength(light, fromLen + (toLen - fromLen) * t);
+          const len = fromLen + (toLen - fromLen) * t;
+          setElementAtLength(light, len);
+          const p = path.getPointAtLength(len);
+          panCameraTo(p.x, p.y);
           if (t < 1) requestAnimationFrame(frame); else resolve();
         }
         requestAnimationFrame(frame);
       });
+    }
+
+    /* 手機版鏡頭跟隨：只在窄畫面（<=880px，沿用其他頁面同一個斷點）
+       且「自動播放旅程」進行中（journeyRunning）才生效，桌面版／手動
+       點單一節點都完全不受影響（transform 永遠維持空字串，等於沒有）。
+       做法：整個 #p07Stage 放大 CAMERA_ZOOM 倍，用 translate 把目標
+       百分比座標（跟 STATION_XY／SVG 路徑同一套 0-100 座標系）平移到
+       畫面正中央——body 本身已經有 overflow:hidden，會自動把放大後
+       超出畫面的部分裁掉，等於是「畫面裁切成一個跟著光點移動的小視窗」。
+       這裡故意不用 CSS transition，每一影格都直接算新的 transform，
+       跟光點本身的移動幀率完全同步，才會像鏡頭穩穩跟著走，而不是
+       每次都重新起跑一次過渡動畫、變得黏黏的。真正需要「平滑過渡」的
+       只有「回到終章、鏡頭要縮回原本比例」那一下，見 resetCamera(true)。 */
+    const CAMERA_ZOOM = 1.7;
+    function isMobileView() { return window.innerWidth <= 880; }
+    function panCameraTo(pctX, pctY) {
+      const stage = document.getElementById('p07Stage');
+      if (!stage) return;
+      if (!isMobileView() || !journeyRunning) { stage.style.transition = 'none'; stage.style.transform = ''; return; }
+      const w = stage.clientWidth, h = stage.clientHeight;
+      if (!w || !h) return;
+      const tx = w / 2 - (pctX / 100 * w * CAMERA_ZOOM);
+      const ty = h / 2 - (pctY / 100 * h * CAMERA_ZOOM);
+      stage.style.transition = 'none';
+      stage.style.transform = 'translate(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px) scale(' + CAMERA_ZOOM + ')';
+    }
+    /* 鏡頭縮回原本比例：進終章儀式前、重播、離開頁面都要呼叫。
+       smooth=true 時配合 T.ARRIVE 的節奏，平滑縮回（不是用在每影格
+       跟隨的時候，否則會卡頓——見上面說明） */
+    function resetCamera(smooth) {
+      const stage = document.getElementById('p07Stage');
+      if (!stage) return;
+      stage.style.transition = smooth ? 'transform ' + T.ARRIVE + 'ms ease' : 'none';
+      stage.style.transform = '';
     }
 
     function markVisited(num) {
@@ -806,6 +853,7 @@
       document.querySelectorAll('.quote-line').forEach(el => el.classList.remove('show'));
       const confettiLayer = document.getElementById('confettiBurst');
       if (confettiLayer) confettiLayer.innerHTML = '';
+      resetCamera(false);
       setPhase('ready');
 
       setPhase('departing');
@@ -818,6 +866,7 @@
       setPhase('traveling');
       setElementAtLength(document.getElementById('routeLight'), getStationLen(1));
       document.getElementById('routeLight').classList.add('show');
+      panCameraTo(STATION_XY[1][0], STATION_XY[1][1]);
       await playLandmark(1);
 
       for (let i = 1; i < order.length; i++) {
@@ -905,6 +954,7 @@
        依序登場、依序完全退場，不做「路線回顧」（會跟地圖同時出現）。 */
     async function playArrivalCeremony() {
       if (prefersReducedMotion) {
+        resetCamera(false);
         setPhase('arrived'); statusText('皇家之路完成');
         await wait(400);
         setPhase('churchFade'); await wait(300);
@@ -922,6 +972,7 @@
       }
 
       document.getElementById('routeLight').classList.remove('show');
+      resetCamera(true);                                // 鏡頭平滑縮回原本比例，讓終章全螢幕儀式不受影響
       setPhase('arrived');                              // 教堂登場（金句這時候還不出現）
       statusText('皇家之路完成');
       await wait(T.ARRIVE);
@@ -958,6 +1009,7 @@
 
     function showEpilogueInstantly() {
       clearTimers();
+      resetCamera(false);
       document.body.classList.add('reveal-finale');
       STATIONS.forEach(n => markVisited(n));
       document.querySelectorAll('.quote-line').forEach(el => el.classList.add('show'));
@@ -992,6 +1044,7 @@
     window.__onSpreadDeactivated = function () {
       clearTimers();
       journeyRunning = false;
+      resetCamera(false);
       if (bgm) { bgm.pause(); bgm.currentTime = 0; bgm.volume = 0; }
       if (bell) { bell.pause(); bell.currentTime = 0; }
       if (stamp) { stamp.pause(); stamp.currentTime = 0; }
