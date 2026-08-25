@@ -170,5 +170,80 @@
             </div>
         </div>
     </div>
+
+    <!-- 封面口白：鄭惠文親口講述這趟旅程。老闆要求「音檔還沒放完之前，翻頁無效」，
+         見下方 <script>：用 audio 的 play/ended 事件同步鎖住外層翻頁書（window.parent._book.navLocked），
+         播放中把 flipForward()/flipBackward() 全部擋掉（涵蓋熱區點擊、上一頁/下一頁按鈕、
+         鍵盤方向鍵、滑動手勢——全部共用同一個入口，見 flipbook.js）。 -->
+    <audio id="coverNarration" preload="auto" src="surprise/p00-cover-narration.mp3"></audio>
+    <script>
+        (function () {
+            var audio = document.getElementById('coverNarration');
+            var hasPlayed = false;
+
+            function lockNav(locked) {
+                try {
+                    if (window.parent && window.parent._book && window.parent._book.setNavLocked) {
+                        window.parent._book.setNavLocked(locked);
+                    }
+                } catch (e) { /* 不是跑在翻頁書 iframe 裡（例如直接開這個檔案測試）就忽略 */ }
+            }
+
+            /* 樂觀先鎖：呼叫 play() 當下就先鎖住翻頁，不用等 play 事件真的觸發
+               （那是非同步的）——避免「使用者第一下觸控剛好同時是翻頁熱區、
+               又是喚醒音效的手勢」這種極端情況下，鎖晚了一步讓翻頁先滑過去。
+               如果 play() 最後失敗（瀏覽器擋自動播放），再把鎖解開。 */
+            function attemptPlay() {
+                if (hasPlayed) return;
+                lockNav(true);
+                audio.play().catch(function () {
+                    lockNav(false); // 播放失敗（例如還沒有使用者手勢），不要卡住讀者翻頁
+                });
+            }
+
+            // 真的開始出聲音才算數（play() 的 promise resolve 不代表沒有立刻
+            // 又被暫停——見下面「跟預載機制的靜音/暫停搶跑」說明），播成功
+            // 之後才鎖住 hasPlayed，避免重複觸發
+            audio.addEventListener('playing', function () { hasPlayed = true; });
+            audio.addEventListener('ended', function () { lockNav(false); });
+
+            /* 這個頁面沒有任何暫停按鈕／UI，理論上不會有「讀者自己暫停」
+               這種情況——會讓這顆 audio 觸發 pause 事件的，只剩兩種可能：
+               (1) 口白真的放完了（ended 已經處理，這裡會先被上面那個
+                   listener 攔到）；(2) 翻頁書「三顆 iframe 輪流預載」機制
+               的安全閥（_muteMedia，見 flipbook.js）——這一頁被判定為
+               「還沒真的準備好」的期間，機制會強制靜音＋暫停，等
+               __onSpreadActivated 之後才解除。但因為判斷「準備好了沒」
+               用的是輪詢＋iframe load 事件兩條路徑，理論上 load 事件
+               （要等外部字型、這個 82 秒的音檔都抓完）常常會晚於
+               __onSpreadActivated 觸發的時間，等於口白才剛開始講幾秒
+               又被這個安全閥攔腰靜音暫停一次。這裡的處理方式不是「當作
+               講完了解鎖」，而是自動接著播下去（把 nav 繼續鎖住），只有
+               真的 play() 失敗（沒辦法恢復）才放棄鎖定，避免讀者被卡住
+               翻不了頁。 */
+            audio.addEventListener('pause', function () {
+                if (audio.ended) return;
+                audio.muted = false;
+                audio.play().catch(function () { lockNav(false); });
+            });
+
+            /* 正確的播放時機很重要：翻頁書用 3 顆 iframe 輪流預載，這一頁在
+               真正「切到目前使用中」之前，flipbook.js 的預載機制會主動把
+               裡面所有 audio/video 靜音＋暫停（避免預載階段就偷跑出聲音）
+               ——如果在這個時間點之前就呼叫 play()，等於跟預載機制搶跑，
+               播了兩三格就被暫停掉，讀者幾乎聽不到。真正安全的時機是
+               window.__onSpreadActivated（flipbook.js 在確定這頁已經解除
+               靜音、正式顯示出來之後才會呼叫），所以主要播放時機掛在這裡，
+               不在頁面一載入就馬上 play()。 */
+            window.__onSpreadActivated = attemptPlay;
+
+            // 保底 1：萬一這個檔案是被直接打開測試（不在翻頁書 iframe 裡，
+            // __onSpreadActivated 永遠不會被呼叫），或瀏覽器擋掉了沒有使用者
+            // 手勢的自動播放——讀者在封面畫面上第一次點擊／觸控／按鍵，
+            // 就再試一次播放
+            document.addEventListener('pointerdown', attemptPlay, true);
+            document.addEventListener('keydown', attemptPlay, true);
+        })();
+    </script>
 </body>
 </html>

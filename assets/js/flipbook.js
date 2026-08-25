@@ -37,6 +37,11 @@ class SoftFlipBook {
     this.spreads      = opts.spreads || [];
     this.currentIndex = 0;
     this.busy         = false;
+    // 部分跨頁（例如封面口白）可以把這個設成 true，暫時擋掉所有翻頁動作
+    // （熱區點擊、上一頁/下一頁按鈕、鍵盤方向鍵、滑動手勢——flipForward()/
+    // flipBackward() 是所有翻頁路徑共用的唯一入口，這裡擋住就等於全部擋住）。
+    // 見 p00-live.html 的封面口白播放邏輯。
+    this.navLocked    = false;
     this.onSpreadChange = opts.onSpreadChange || null;
     this._playSoundFn   = opts.playFlipSound || (() => {});
 
@@ -115,6 +120,7 @@ class SoftFlipBook {
 
     const promise = new Promise(resolve => {
       let settled = false;
+      let scanned = false; // 避免輪詢／load 事件兩條路徑都成立時重複掃描
       let polling = null;
       const finish = (state) => {
         if (settled) return;
@@ -124,12 +130,20 @@ class SoftFlipBook {
         resolve();
       };
       const startScan = () => {
+        if (scanned) return;
+        scanned = true;
         this._muteMedia(frame); // 預載階段先靜音，避免提前發聲
         this._waitForCriticalPaint(frame).then(() => finish('ready'));
       };
       // 不能只等 iframe 的 load 事件——網頁裡的字型／外部資源萬一很慢或連不上，
       // load 事件會被拖住，但畫面其實早就能看了。改成輪詢 contentDocument.
       // readyState，一旦 HTML 解析完成（interactive）就直接開始掃描首屏圖片。
+      // 注意：輪詢跟下面的 load 事件都可能各自判定「可以開始掃描了」——
+      // 尤其當頁面裡有大檔案（例如音檔/影片）拖慢 load 事件，常常是輪詢
+      // 先成功、之後 load 事件又觸發一次。如果沒有上面的 scanned 旗標擋著，
+      // startScan() 裡的 _muteMedia() 會在這一頁已經切到「使用中」並解除
+      // 靜音、甚至已經開始播放聲音之後又跑一次，把剛播出來的聲音攔腰
+      // 靜音＋暫停掉（曾在 P00 封面口白音檔上實測到這個狀況）。 */
       const tryScan = () => {
         let doc;
         try { doc = frame.contentDocument; } catch (e) { return false; }
@@ -150,25 +164,11 @@ class SoftFlipBook {
   }
 
   /* ── 等首屏圖片下載完成、decode()、再等兩次 rAF 確認真的畫出來了 ──
-     不只是等 iframe 的 load 事件：load 不代表內部圖片都已解碼繪製完成。
-     P04/P05 的互動模組是「iframe 裡面又包一層 iframe」，模組內的圖片（例如
-     滑桿比較圖）原本完全不在這個檢查範圍內，導致「圖還在下載、卻已經被
-     判定成 ready」——所以這裡改成呼叫 _waitForImagesDeep()，會往內層同源
-     iframe 遞迴檢查，把巢狀模組裡的圖也一併等到。 */
+     不只是等 iframe 的 load 事件：load 不代表內部圖片都已解碼繪製完成。 */
   async _waitForCriticalPaint(frame) {
     let doc;
     try { doc = frame.contentDocument; } catch (e) { return; }
     if (!doc) return;
-
-    await this._waitForImagesDeep(doc);
-
-    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-  }
-
-  /* ── 遞迴等待某個 document 內（含所有同源巢狀 iframe 內）所有 <img> 都
-     下載、decode 完成。depth 上限是安全閥，避免萬一巢狀太深卡住整個翻頁。 ── */
-  async _waitForImagesDeep(doc, depth = 0) {
-    if (!doc || depth > 3) return;
 
     // 排除 src="" 的圖片（例如燈箱用的預留 <img>，點擊時才會被填入真正的
     // src）——空 src 的 <img> 依規範永遠不會觸發 load 或 error，等下去只會
@@ -187,37 +187,7 @@ class SoftFlipBook {
       });
     }));
 
-    const nestedFrames = Array.from(doc.querySelectorAll('iframe'));
-    await Promise.all(nestedFrames.map(inner => this._waitForNestedFrame(inner, depth)));
-  }
-
-  /* ── 等內層 iframe 的 document 準備好（HTML 解析完成）之後，才對它遞迴
-     掃描圖片；同樣用輪詢 readyState，不能只靠 load 事件（理由同外層）。 ── */
-  _waitForNestedFrame(inner, depth) {
-    return new Promise(resolve => {
-      let settled = false;
-      let polling = null;
-      const finish = () => {
-        if (settled) return;
-        settled = true;
-        if (polling) clearInterval(polling);
-        let innerDoc;
-        try { innerDoc = inner.contentDocument; } catch (e) { resolve(); return; }
-        this._waitForImagesDeep(innerDoc, depth + 1).then(resolve);
-      };
-      const tryCheck = () => {
-        let innerDoc;
-        try { innerDoc = inner.contentDocument; } catch (e) { return false; }
-        if (!innerDoc || innerDoc.readyState === 'loading') return false;
-        finish();
-        return true;
-      };
-      if (tryCheck()) return;
-      polling = setInterval(() => { if (tryCheck()) clearInterval(polling); }, 50);
-      inner.addEventListener('load', () => tryCheck(), { once: true });
-      inner.addEventListener('error', () => finish(), { once: true });
-      setTimeout(() => finish(), FLIP_CONFIG.prepareTimeout);
-    });
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
   }
 
   _activateFrame(idx) {
@@ -260,6 +230,13 @@ class SoftFlipBook {
     this._notifySpread(frame, '__onSoundKick');
   }
 
+  /* 讓個別跨頁（例如封面口白）暫時擋掉/解除所有翻頁動作，同時刷新
+     上一頁/下一頁按鈕的視覺狀態（見 p00-live.html） */
+  setNavLocked(locked) {
+    this.navLocked = !!locked;
+    this._updateNav();
+  }
+
   async _openBook() {
     await this._ensurePrepared(0);
     this._activateFrame(0);
@@ -270,9 +247,9 @@ class SoftFlipBook {
 
   _updateNav() {
     document.getElementById('nav-prev')
-      ?.classList.toggle('disabled', this.busy || this.currentIndex <= 0);
+      ?.classList.toggle('disabled', this.busy || this.navLocked || this.currentIndex <= 0);
     document.getElementById('nav-next')
-      ?.classList.toggle('disabled', this.busy || this.currentIndex >= this.totalSpreads - 1);
+      ?.classList.toggle('disabled', this.busy || this.navLocked || this.currentIndex >= this.totalSpreads - 1);
     if (this.onSpreadChange) this.onSpreadChange(this.currentIndex, this.totalSpreads);
   }
 
@@ -301,7 +278,7 @@ class SoftFlipBook {
 
   /* ── 前往下一跨頁：右半頁翻起，背面露出下一跨頁左半頁 ── */
   async flipForward() {
-    if (this.busy || this.currentIndex >= this.totalSpreads - 1) return;
+    if (this.busy || this.navLocked || this.currentIndex >= this.totalSpreads - 1) return;
     window.SoundEngine?.unlockMedia?.(); // 翻頁本身就是使用者手勢，同步解鎖一次保險
     this.busy = true;
     this._updateNav();
@@ -357,7 +334,7 @@ class SoftFlipBook {
 
   /* ── 返回上一跨頁：對稱動作 ── */
   async flipBackward() {
-    if (this.busy || this.currentIndex <= 0) return;
+    if (this.busy || this.navLocked || this.currentIndex <= 0) return;
     window.SoundEngine?.unlockMedia?.(); // 翻頁本身就是使用者手勢，同步解鎖一次保險
     this.busy = true;
     this._updateNav();
