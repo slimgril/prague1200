@@ -124,6 +124,51 @@
             .cover-right-content { width: 100%; min-height: 100%; }
             .medical-report-card { width: 100%; max-width: 480px; }
         }
+
+        /* 口白靜音／暫停按鍵：固定在畫面正下方置中——刻意不是靠左或靠右，
+           因為外層翻頁書左右各有 12% 寬的翻頁熱區疊在 iframe 最上層
+           （z-index 比這裡任何東西都高），按鈕如果落在那個範圍內，點擊
+           會被熱區攔截、按鈕本身其實按不到（這個專案已經在別的頁面踩過
+           好幾次這個坑：P07 啟動鍵、各頁 Lightbox 關閉鍵）。置中絕對安全。 */
+        .narration-controls {
+            position: fixed;
+            left: 50%;
+            bottom: 22px;
+            transform: translateX(-50%);
+            z-index: 50;
+            display: flex;
+            gap: 12px;
+        }
+        .narration-btn {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,111,176,0.55);
+            background: rgba(11,11,11,0.78);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            color: #ffd9ec;
+            font-size: 19px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.55);
+            transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease;
+            font-family: inherit;
+        }
+        .narration-btn:hover { transform: scale(1.08); border-color: #ff6fb0; }
+        .narration-btn:active { transform: scale(0.94); }
+        .narration-btn[aria-pressed="true"] {
+            background: rgba(255,111,176,0.24);
+            border-color: #ff6fb0;
+            color: #fff;
+        }
+        @media (max-width: 880px) {
+            .narration-controls { bottom: 16px; gap: 10px; }
+            .narration-btn { width: 42px; height: 42px; font-size: 17px; }
+        }
     </style>
 </head>
 <body>
@@ -176,10 +221,21 @@
          播放中把 flipForward()/flipBackward() 全部擋掉（涵蓋熱區點擊、上一頁/下一頁按鈕、
          鍵盤方向鍵、滑動手勢——全部共用同一個入口，見 flipbook.js）。 -->
     <audio id="coverNarration" preload="auto" src="surprise/p00-cover-narration.mp3"></audio>
+
+    <!-- 口白靜音／暫停控制鍵：靜音鍵只是消音，口白繼續播放、翻頁鎖不受影響；
+         暫停鍵是「暫時停止」，鎖著的翻頁會維持鎖住，等按回播放或口白播完
+         才會解開——不是拿來跳過口白的捷徑。 -->
+    <div class="narration-controls" aria-hidden="false">
+        <button type="button" id="narrationMuteBtn" class="narration-btn" aria-pressed="false" aria-label="靜音口白" title="靜音">🔊</button>
+        <button type="button" id="narrationPauseBtn" class="narration-btn" aria-pressed="false" aria-label="暫停口白" title="暫停">⏸</button>
+    </div>
     <script>
         (function () {
             var audio = document.getElementById('coverNarration');
+            var muteBtn = document.getElementById('narrationMuteBtn');
+            var pauseBtn = document.getElementById('narrationPauseBtn');
             var hasPlayed = false;
+            var userPaused = false; // 讀者自己按了暫停鍵，跟下面「被預載機制強制暫停」要分開處理
 
             function lockNav(locked) {
                 try {
@@ -207,25 +263,77 @@
             audio.addEventListener('playing', function () { hasPlayed = true; });
             audio.addEventListener('ended', function () { lockNav(false); });
 
-            /* 這個頁面沒有任何暫停按鈕／UI，理論上不會有「讀者自己暫停」
-               這種情況——會讓這顆 audio 觸發 pause 事件的，只剩兩種可能：
-               (1) 口白真的放完了（ended 已經處理，這裡會先被上面那個
-                   listener 攔到）；(2) 翻頁書「三顆 iframe 輪流預載」機制
-               的安全閥（_muteMedia，見 flipbook.js）——這一頁被判定為
-               「還沒真的準備好」的期間，機制會強制靜音＋暫停，等
-               __onSpreadActivated 之後才解除。但因為判斷「準備好了沒」
-               用的是輪詢＋iframe load 事件兩條路徑，理論上 load 事件
+            /* 除了讀者自己按下面的暫停鍵（userPaused）之外，會讓這顆 audio
+               觸發 pause 事件的只剩兩種可能：(1) 口白真的放完了（ended 已經
+               處理，這裡會先被上面那個 listener 攔到）；(2) 翻頁書「三顆
+               iframe 輪流預載」機制的安全閥（_muteMedia，見 flipbook.js）
+               ——這一頁被判定為「還沒真的準備好」的期間，機制會強制靜音＋
+               暫停，等 __onSpreadActivated 之後才解除。但因為判斷「準備好了
+               沒」用的是輪詢＋iframe load 事件兩條路徑，理論上 load 事件
                （要等外部字型、這個 82 秒的音檔都抓完）常常會晚於
-               __onSpreadActivated 觸發的時間，等於口白才剛開始講幾秒
-               又被這個安全閥攔腰靜音暫停一次。這裡的處理方式不是「當作
-               講完了解鎖」，而是自動接著播下去（把 nav 繼續鎖住），只有
-               真的 play() 失敗（沒辦法恢復）才放棄鎖定，避免讀者被卡住
-               翻不了頁。 */
+               __onSpreadActivated 觸發的時間，等於口白才剛開始講幾秒又被
+               這個安全閥攔腰靜音暫停一次。這裡的處理方式不是「當作講完了
+               解鎖」，而是自動接著播下去（把 nav 繼續鎖住），只有真的
+               play() 失敗（沒辦法恢復）才放棄鎖定，避免讀者被卡住翻不了頁。
+               但如果是讀者自己按暫停鍵造成的 pause，就不要自動幫他恢復
+               播放——那樣暫停鍵就形同虛設了。 */
             audio.addEventListener('pause', function () {
                 if (audio.ended) return;
+                if (userPaused) return;
                 audio.muted = false;
                 audio.play().catch(function () { lockNav(false); });
             });
+
+            /* 按鈕視覺狀態同步：不管是自動播放、讀者按鈕、或是被預載機制
+               強制靜音／暫停造成的變化，通通從 audio 本身的事件反推按鈕
+               長什麼樣子，不用另外自己維護一份重複的狀態 */
+            function updateButtons() {
+                if (muteBtn) {
+                    var muted = audio.muted;
+                    muteBtn.textContent = muted ? '🔇' : '🔊';
+                    muteBtn.setAttribute('aria-pressed', muted ? 'true' : 'false');
+                    muteBtn.title = muted ? '取消靜音' : '靜音';
+                    muteBtn.setAttribute('aria-label', muted ? '取消靜音' : '靜音口白');
+                }
+                if (pauseBtn) {
+                    var paused = audio.paused && !audio.ended;
+                    pauseBtn.textContent = paused ? '▶' : '⏸';
+                    pauseBtn.setAttribute('aria-pressed', paused ? 'true' : 'false');
+                    pauseBtn.title = paused ? '繼續播放' : '暫停';
+                    pauseBtn.setAttribute('aria-label', paused ? '繼續播放口白' : '暫停口白');
+                    pauseBtn.disabled = audio.ended;
+                }
+            }
+            audio.addEventListener('play', updateButtons);
+            audio.addEventListener('pause', updateButtons);
+            audio.addEventListener('ended', updateButtons);
+            audio.addEventListener('volumechange', updateButtons);
+            updateButtons();
+
+            /* 靜音鍵：只是消音，口白其實還在繼續播放、時間也繼續走，
+               翻頁鎖完全不受影響（鎖是綁在「有沒有播完」，不是「聽不聽
+               得到」）。 */
+            if (muteBtn) {
+                muteBtn.addEventListener('click', function () {
+                    audio.muted = !audio.muted;
+                });
+            }
+
+            /* 暫停鍵：真正的「暫時停止」——按下去口白真的停住不動，翻頁
+               依然鎖著（因為口白還沒放完，只是先停在這裡），按回播放鍵
+               或等口白自己放完才會解鎖，不是拿來跳過口白的捷徑。 */
+            if (pauseBtn) {
+                pauseBtn.addEventListener('click', function () {
+                    if (audio.ended) return;
+                    if (audio.paused) {
+                        userPaused = false;
+                        audio.play().catch(function () {});
+                    } else {
+                        userPaused = true;
+                        audio.pause();
+                    }
+                });
+            }
 
             /* 正確的播放時機很重要：翻頁書用 3 顆 iframe 輪流預載，這一頁在
                真正「切到目前使用中」之前，flipbook.js 的預載機制會主動把
