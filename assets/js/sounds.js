@@ -285,6 +285,13 @@ const SoundEngine = (() => {
     }, stepTime);
   }
 
+  /* ── 每頁「暫停／靜音」按鈕用：只操作目前這個背景配樂 <audio> 本身，
+     不觸發淡入淡出或歸零 currentTime，暫停/繼續是原地凍結、原地接著播。 */
+  function pauseTrack() { _clearFade(); if (_track) _track.pause(); }
+  function resumeTrack() { if (_track) _track.play().catch(() => {}); }
+  function muteTrack() { if (_track) _track.muted = true; }
+  function unmuteTrack() { if (_track) _track.muted = false; }
+
   return {
     enable()  { enabled = true;  resume(); },
     disable() { enabled = false; },
@@ -292,6 +299,7 @@ const SoundEngine = (() => {
     isEnabled() { return enabled; },
     pageTurn, tramBell, beerGlug, stampThud, tick, magic, achievement,
     fadeInTrack, fadeOutTrack, unlockMedia,
+    pauseTrack, resumeTrack, muteTrack, unmuteTrack,
   };
 })();
 

@@ -269,10 +269,11 @@
       gap: 18px;
     }
 
-    /* 紀念小物拼貼背景：跟彩花（onFinish）同時觸發淡入，離頁／重播前
-       一律歸零成完全透明——放在 .finale-quote 最底層（z-index:0），
-       金句文字與門票合影另外標記 z-index:1 蓋在上面，避免被蓋住。
-       透明度只淡入到 0.3，確保金句文字仍然清楚好讀。 */
+    /* 紀念小物拼貼背景：客戶反饋這裡收集的參觀券／票券要清楚看得到，
+       不能只是模糊的裝飾——透明度大幅提高到 0.68，跟彩花（onFinish）
+       同時觸發淡入，離頁／重播前一律歸零成完全透明。金句文字改成
+       白底文字牌方式蓋在拼貼上面（.quote-line 自己的背景色塊），
+       拼貼再清楚，文字也不會被蓋過去看不清楚。 */
     .memento-bg {
       position: absolute; inset: 0; z-index: 0;
       background: url('surprise/p10-memorabilia.jpg') center 30%/cover no-repeat;
@@ -280,7 +281,7 @@
       transition: opacity 2.4s ease;
       pointer-events: none;
     }
-    .memento-bg.show { opacity: 0.3; }
+    .memento-bg.show { opacity: 0.68; }
 
     .quote-line {
       position: relative; z-index: 1;
@@ -290,36 +291,15 @@
       opacity: 0;
       transform: translateY(14px);
       transition: opacity 1s ease, transform 1s ease;
-      text-shadow: 0 1px 8px rgba(250,248,244,0.7);
+      background: rgba(250,248,244,0.88);
+      padding: 4px 16px;
+      border-radius: 4px;
+      box-shadow: 0 2px 14px rgba(0,0,0,0.12);
     }
     .quote-line.show { opacity: 1; transform: translateY(0); }
     .quote-line.line2 {
       color: #c0392b;
       font-weight: 600;
-    }
-
-    /* 五天門票／參觀券合影：斜放小照片，填補右下角空白 */
-    .ticket-photo {
-      position: absolute; z-index: 1;
-      bottom: 22px; right: 22px;
-      width: 108px;
-      background: #fff;
-      padding: 6px 6px 16px;
-      box-shadow: 0 12px 26px rgba(0,0,0,0.28);
-      transform: rotate(-9deg) translateY(14px);
-      opacity: 0;
-      transition: opacity 1.1s ease, transform 1.1s ease;
-    }
-    .ticket-photo.show { opacity: 1; transform: rotate(-9deg) translateY(0); }
-    .ticket-photo img {
-      width: 100%; display: block;
-      filter: saturate(0.92);
-    }
-    .ticket-photo .cap {
-      font-family: 'Caveat', cursive;
-      font-size: 0.72rem; color: #6b5a4a;
-      text-align: center; margin-top: 4px;
-      letter-spacing: 0.02em;
     }
 
     /* 窄畫面（≤880px）：萬用彈性堆疊——父容器 body 改
@@ -435,10 +415,6 @@
       <div class="memento-bg" id="mementoBg" aria-hidden="true"></div>
       <div class="quote-line line1" id="quoteLine1">布拉格之春馬拉松之旅的終章，</div>
       <div class="quote-line line2" id="quoteLine2">卻是人生下階段的再起。</div>
-      <div class="ticket-photo" id="ticketPhoto">
-        <img src="surprise/pass.png" alt="五天參觀券與門票">
-        <div class="cap">5 days ・ every ticket kept</div>
-      </div>
     </div>
 
   </div>
@@ -536,7 +512,6 @@
 
         setTimeout(function () {
           document.getElementById('quoteLine1').classList.add('show');
-          document.getElementById('ticketPhoto').classList.add('show');
         }, 400);
         setTimeout(function () {
           document.getElementById('quoteLine2').classList.add('show');
@@ -564,7 +539,6 @@
         $status.classList.remove('running');
         document.getElementById('quoteLine1')?.classList.remove('show');
         document.getElementById('quoteLine2')?.classList.remove('show');
-        document.getElementById('ticketPhoto')?.classList.remove('show');
         document.getElementById('mementoBg')?.classList.remove('show');
         var layer = document.getElementById('confettiLayer');
         if (layer) layer.innerHTML = '';
@@ -655,5 +629,7 @@
       window.addEventListener('beforeunload', fadeOut);
     })();
   </script>
+
+  <script src="assets/js/global-pause.js?v=1"></script>
 </body>
 </html>
