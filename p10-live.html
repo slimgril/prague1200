@@ -268,13 +268,29 @@
       text-align: center;
       gap: 18px;
     }
+
+    /* 紀念小物拼貼背景：跟彩花（onFinish）同時觸發淡入，離頁／重播前
+       一律歸零成完全透明——放在 .finale-quote 最底層（z-index:0），
+       金句文字與門票合影另外標記 z-index:1 蓋在上面，避免被蓋住。
+       透明度只淡入到 0.3，確保金句文字仍然清楚好讀。 */
+    .memento-bg {
+      position: absolute; inset: 0; z-index: 0;
+      background: url('surprise/p10-memorabilia.jpg') center 30%/cover no-repeat;
+      opacity: 0;
+      transition: opacity 2.4s ease;
+      pointer-events: none;
+    }
+    .memento-bg.show { opacity: 0.3; }
+
     .quote-line {
+      position: relative; z-index: 1;
       font-family: 'Noto Serif TC', 'PingFang TC', serif;
       font-size: 1.3rem; line-height: 1.8;
       color: #3a2530;
       opacity: 0;
       transform: translateY(14px);
       transition: opacity 1s ease, transform 1s ease;
+      text-shadow: 0 1px 8px rgba(250,248,244,0.7);
     }
     .quote-line.show { opacity: 1; transform: translateY(0); }
     .quote-line.line2 {
@@ -284,7 +300,7 @@
 
     /* 五天門票／參觀券合影：斜放小照片，填補右下角空白 */
     .ticket-photo {
-      position: absolute;
+      position: absolute; z-index: 1;
       bottom: 22px; right: 22px;
       width: 108px;
       background: #fff;
@@ -416,6 +432,7 @@
     </div>
 
     <div class="finale-quote">
+      <div class="memento-bg" id="mementoBg" aria-hidden="true"></div>
       <div class="quote-line line1" id="quoteLine1">布拉格之春馬拉松之旅的終章，</div>
       <div class="quote-line line2" id="quoteLine2">卻是人生下階段的再起。</div>
       <div class="ticket-photo" id="ticketPhoto">
@@ -514,6 +531,7 @@
         $status.classList.remove('running');
         $status.classList.add('finished');
         spawnConfetti();
+        document.getElementById('mementoBg')?.classList.add('show'); // 跟彩花同時，紀念小物拼貼淡入
         window.dispatchEvent(new CustomEvent('p10:stop'));
 
         setTimeout(function () {
@@ -547,6 +565,7 @@
         document.getElementById('quoteLine1')?.classList.remove('show');
         document.getElementById('quoteLine2')?.classList.remove('show');
         document.getElementById('ticketPhoto')?.classList.remove('show');
+        document.getElementById('mementoBg')?.classList.remove('show');
         var layer = document.getElementById('confettiLayer');
         if (layer) layer.innerHTML = '';
         $playBtn?.classList.remove('hidden');
