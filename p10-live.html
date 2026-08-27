@@ -237,16 +237,18 @@
     }
 
     /* 上半：照片輪播 */
+    /* 輪播等高 55vh，照片一律 contain：直式與寬幅作品兩側自然留深色底，
+       不再被硬壓成 16:9（原本直式照最多被裁掉 68.4%）。 */
     .photo-carousel {
       position: relative;
-      width: 100%; height: 58%;
+      width: 100%; height: 55vh; flex: none;
       overflow: hidden;
       background: #111;
     }
     .photo-carousel img {
       position: absolute; inset: 0;
       width: 100%; height: 100%;
-      object-fit: cover;
+      object-fit: contain;
       opacity: 0;
       transition: opacity 1.4s ease;
     }
@@ -321,8 +323,8 @@
       .divider { display: none; }
       .right-page { height: auto; }
       .photo-carousel {
-        position: relative; width: 100%; height: auto;
-        aspect-ratio: 16 / 9; flex: none; min-height: 0;
+        position: relative; width: 100%; height: 55vh;
+        flex: none; min-height: 0;
       }
       .finale-quote { flex: none; padding: 20px 90px 20px 24px; }
       .left-content { padding: 16px 24px; }
@@ -336,6 +338,13 @@
       .counter-label { min-width: 78px; }
       .progress-track { margin: 4px auto 12px; }
       .quote-line { font-size: 1.05rem; }
+    }
+
+    /* 手機直式（<768px）：輪播降到 40vh。窄螢幕上 55vh 會把下方終章金句
+       擠爆捲動卡片，這裡把高度讓給文字；桌機仍維持大氣的 55vh。
+       放在 880px 區塊之後，同權重後者勝出。 */
+    @media (max-width: 767px) {
+      .photo-carousel { height: 40vh; }
     }
   </style>
 </head>

@@ -29,9 +29,10 @@
       width: 42%; height: 100%;
       position: relative; overflow: hidden; background: #0A0A0A;
     }
+    /* 去裁切：左頁大圖改 contain，寧可上下／左右留深色底，也不切掉構圖。 */
     .p09-left img.hero {
       width: 100%; height: 100%;
-      object-fit: cover; object-position: center;
+      object-fit: contain; object-position: center;
       filter: brightness(0.88) contrast(1.06); display: block;
     }
     .p09-left-overlay {
@@ -192,7 +193,9 @@
       box-shadow: 16px 18px 30px rgba(0,0,0,0.45) !important;
       z-index: 50 !important;
     }
-    .ck-photo img { display: block; object-fit: cover; filter: contrast(1.05) saturate(0.92); }
+    /* 拍立得縮圖去裁切：inline 只留 height，寬度由原始比例決定（直式照
+       自然變窄，不再被壓成橫幅）。 */
+    .ck-photo img { display: block; width: auto; object-fit: contain; filter: contrast(1.05) saturate(0.92); }
     .ck-photo-label {
       position: absolute; bottom: 2px; left: 0; right: 0;
       text-align: center; font-family: 'Caveat', cursive;
@@ -260,7 +263,7 @@
       .p09-left, .p09-right { flex: 1 1 100%; width: 100%; max-width: 100%; height: auto; }
       .p09-left img.hero {
         width: 100%; max-width: 100%; height: auto;
-        aspect-ratio: 4 / 3; object-fit: cover;
+        max-height: 50vh; object-fit: contain;
       }
       .p09-left-caption { bottom: 14px; }
       .p09-left-caption h1 { font-size: 1.05rem; margin-bottom: 5px; }
@@ -400,49 +403,49 @@
       <div class="ck-photo"
            style="right:22%;top:34%;--rot:rotate(6deg);transform:rotate(6deg);"
            onclick="openLb('surprise/p09-castle.jpg','CK城堡・波希米亞最大城堡群')">
-        <img src="surprise/p09-castle.jpg" style="width:148px;height:108px;" alt="CK城堡">
+        <img src="surprise/p09-castle.jpg" style="height:108px;width:auto;" alt="CK城堡">
         <div class="ck-photo-label">CK Castle</div>
       </div>
       <div class="ck-photo"
            style="right:18%;top:31%;--rot:rotate(-5deg);transform:rotate(-5deg);"
            onclick="openLb('surprise/p09-tower.jpg','彩繪塔')">
-        <img src="surprise/p09-tower.jpg" style="width:118px;height:90px;" alt="彩繪塔">
+        <img src="surprise/p09-tower.jpg" style="height:90px;width:auto;" alt="彩繪塔">
         <div class="ck-photo-label">Castle Tower</div>
       </div>
       <div class="ck-photo"
            style="right:28%;top:56%;z-index:9;--rot:rotate(-7deg);transform:rotate(-7deg);"
            onclick="openLb('surprise/p09-doctors.jpg','粘曉青・鄭惠文醫師')">
-        <img src="surprise/p09-doctors.jpg" style="width:132px;height:100px;" alt="醫師合照">
+        <img src="surprise/p09-doctors.jpg" style="height:100px;width:auto;" alt="醫師合照">
         <div class="ck-photo-label">Dr. Nian &amp; Jheng</div>
       </div>
       <div class="ck-photo"
            style="right:22%;top:54%;--rot:rotate(8deg);transform:rotate(8deg);"
            onclick="openLb('surprise/p09-bridge.jpg','斗篷橋')">
-        <img src="surprise/p09-bridge.jpg" style="width:110px;height:82px;" alt="斗篷橋">
+        <img src="surprise/p09-bridge.jpg" style="height:82px;width:auto;" alt="斗篷橋">
         <div class="ck-photo-label">Cloak Bridge</div>
       </div>
       <div class="ck-photo"
            style="right:16%;top:70%;--rot:rotate(4deg);transform:rotate(4deg);"
            onclick="openLb('surprise/p09-alley.jpg','Latrán 石板小巷')">
-        <img src="surprise/p09-alley.jpg" style="width:112px;height:84px;" alt="小巷">
+        <img src="surprise/p09-alley.jpg" style="height:84px;width:auto;" alt="小巷">
         <div class="ck-photo-label">Latrán Alley</div>
       </div>
       <div class="ck-photo"
            style="right:26%;top:71%;--rot:rotate(-6deg);transform:rotate(-6deg);"
            onclick="openLb('surprise/p09-river.jpg','伏爾塔瓦河畔')">
-        <img src="surprise/p09-river.jpg" style="width:120px;height:86px;" alt="河畔">
+        <img src="surprise/p09-river.jpg" style="height:86px;width:auto;" alt="河畔">
         <div class="ck-photo-label">Vltava River</div>
       </div>
       <div class="ck-photo"
            style="right:40%;top:68%;--rot:rotate(3deg);transform:rotate(3deg);"
            onclick="openLb('surprise/p09-rooftop.jpg','紅瓦屋頂')">
-        <img src="surprise/p09-rooftop.jpg" style="width:100px;height:76px;" alt="紅瓦">
+        <img src="surprise/p09-rooftop.jpg" style="height:76px;width:auto;" alt="紅瓦">
         <div class="ck-photo-label">Rooftops</div>
       </div>
       <div class="ck-photo"
            style="right:38%;top:48%;--rot:rotate(-9deg);transform:rotate(-9deg);"
            onclick="openLb('surprise/p09-detail.jpg','Sgraffito 刮畫')">
-        <img src="surprise/p09-detail.jpg" style="width:92px;height:70px;" alt="細節">
+        <img src="surprise/p09-detail.jpg" style="height:70px;width:auto;" alt="細節">
         <div class="ck-photo-label">Sgraffito</div>
       </div>
 
@@ -478,5 +481,92 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
 </script>
   <script src="assets/js/global-pause.js?v=1"></script>
+
+<!-- ── 文字摺紙機制（就地化：本頁專用，不依賴任何全域 CSS／JS 檔案）──────
+     自動量測內容高度，超過 90px（約三行字）才掛載「展開更多」按鈕；
+     未超過則完全不介入，也不會留下按鈕。漸層遮罩沒入本區塊的實際底色
+     （本頁右頁為淺藍病歷紙 #dde3ee，金色在此不可讀，按鈕承襲本頁主色 --navy #1a2a5e） ── ─────────────────────────────────────────────── -->
+<style>
+  .story-text-container { position: relative; overflow: hidden; transition: max-height 0.4s ease-in-out; }
+  .story-text-container.collapsed { max-height: 90px; }
+  .story-text-container.expanded  { max-height: 1200px; }
+  .text-fade-overlay {
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 40px;
+    pointer-events: none; z-index: 2; transition: opacity 0.3s ease;
+    background: linear-gradient(transparent, #dde3ee);
+  }
+  .story-text-container.expanded .text-fade-overlay { opacity: 0; }
+  .read-more-btn {
+    display: block; width: 100%; padding: 8px 0; margin-top: 5px;
+    background: transparent; border: none; color: var(--navy);
+    font-family: inherit; font-size: 0.74rem; font-weight: 500;
+    letter-spacing: 0.06em; cursor: pointer; text-align: center;
+  }
+  .read-more-btn:hover { text-decoration: underline; }
+  .read-more-btn:focus-visible { outline: 1px solid var(--navy); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .story-text-container { transition: none; } }
+</style>
+<script>
+(function () {
+  var LIMIT = 90;
+
+  function apply(el) {
+    if (!el) return;
+    el.classList.add('story-text-container');
+    el.classList.remove('collapsed', 'expanded');
+
+    var btn = el.nextElementSibling;
+    btn = (btn && btn.classList && btn.classList.contains('read-more-btn')) ? btn : null;
+
+    /* 內容不長：不掛載，並清掉先前留下的元件（供動態換文字後重新量測） */
+    if (el.scrollHeight <= LIMIT) {
+      var stale = el.querySelector('.text-fade-overlay');
+      if (stale && stale.parentNode) stale.parentNode.removeChild(stale);
+      if (btn && btn.parentNode) btn.parentNode.removeChild(btn);
+      return;
+    }
+
+    if (!el.querySelector('.text-fade-overlay')) {
+      var fade = document.createElement('div');
+      fade.className = 'text-fade-overlay';
+      el.appendChild(fade);
+    }
+
+    if (!btn) {
+      btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'read-more-btn';
+      el.parentNode.insertBefore(btn, el.nextSibling);
+      btn.addEventListener('click', function () {
+        var opening = el.classList.contains('collapsed');
+        el.classList.toggle('collapsed', !opening);
+        el.classList.toggle('expanded', opening);
+        btn.textContent = opening ? '收起內容 ▴' : '展開更多 ▾';
+        btn.setAttribute('aria-expanded', opening ? 'true' : 'false');
+        if (!opening) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+    }
+    btn.textContent = '展開更多 ▾';
+    btn.setAttribute('aria-expanded', 'false');
+    el.classList.add('collapsed');
+  }
+
+  function scan() {
+    var list = document.querySelectorAll('.handwrite');
+    for (var i = 0; i < list.length; i++) apply(list[i]);
+  }
+  window.mountTextFold = scan;
+
+  var t;
+  window.addEventListener('resize', function () {
+    clearTimeout(t);
+    t = setTimeout(scan, 200);
+  });
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scan);
+  else scan();
+})();
+</script>
+
 </body>
 </html>

@@ -63,9 +63,10 @@
       box-shadow: 18px 18px 40px rgba(0,0,0,0.8), 0 0 20px rgba(212,175,55,0.2);
       z-index: 50;
     }
+    /* 去裁切：寬度固定 180px，高度交給原始比例決定（直式檔案卡自然變高）。 */
     .document-item img {
-      width: 180px; height: 135px;
-      object-fit: cover; display: block;
+      width: 180px; height: auto; max-height: 50vh;
+      object-fit: contain; display: block;
       filter: contrast(1.05) saturate(0.9);
     }
     /* 圖片載入失敗占位 */
@@ -184,7 +185,7 @@
         padding: 8px 8px 30px 8px;
       }
       .document-item:hover { transform: scale(1.05) !important; }
-      .document-item img { width: 100%; height: auto; aspect-ratio: 4 / 3; }
+      .document-item img { width: 100%; height: auto; max-height: 50vh; object-fit: contain; }
       .doc-label { font-size: 0.8rem; }
       .desk-hint { position: static; margin-top: 4px; width: 100%; transform: none; }
     }
@@ -305,6 +306,8 @@
       document.getElementById('lb-title').textContent = this.dataset.title;
       document.getElementById('lb-text').textContent = this.dataset.diagnosis;
       lb.classList.add('active');
+      /* 病歷文字為動態寫入，開啟時重新量測是否需要摺疊 */
+      if (window.mountTextFold) window.mountTextFold();
     });
   });
 
@@ -345,5 +348,92 @@
 </script>
 
   <script src="assets/js/global-pause.js?v=1"></script>
+
+<!-- ── 文字摺紙機制（就地化：本頁專用，不依賴任何全域 CSS／JS 檔案）──────
+     自動量測內容高度，超過 90px（約三行字）才掛載「展開更多」按鈕；
+     未超過則完全不介入，也不會留下按鈕。漸層遮罩沒入本區塊的實際底色
+     （本頁病歷面板為深色 #1A130F，按鈕用全站金色 #D4AF37） ── ─────────────────────────────────────────────── -->
+<style>
+  .story-text-container { position: relative; overflow: hidden; transition: max-height 0.4s ease-in-out; }
+  .story-text-container.collapsed { max-height: 90px; }
+  .story-text-container.expanded  { max-height: 1200px; }
+  .text-fade-overlay {
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 40px;
+    pointer-events: none; z-index: 2; transition: opacity 0.3s ease;
+    background: linear-gradient(transparent, #1A130F);
+  }
+  .story-text-container.expanded .text-fade-overlay { opacity: 0; }
+  .read-more-btn {
+    display: block; width: 100%; padding: 8px 0; margin-top: 5px;
+    background: transparent; border: none; color: #D4AF37;
+    font-family: inherit; font-size: 0.74rem; font-weight: 500;
+    letter-spacing: 0.06em; cursor: pointer; text-align: center;
+  }
+  .read-more-btn:hover { text-decoration: underline; }
+  .read-more-btn:focus-visible { outline: 1px solid #D4AF37; outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .story-text-container { transition: none; } }
+</style>
+<script>
+(function () {
+  var LIMIT = 90;
+
+  function apply(el) {
+    if (!el) return;
+    el.classList.add('story-text-container');
+    el.classList.remove('collapsed', 'expanded');
+
+    var btn = el.nextElementSibling;
+    btn = (btn && btn.classList && btn.classList.contains('read-more-btn')) ? btn : null;
+
+    /* 內容不長：不掛載，並清掉先前留下的元件（供動態換文字後重新量測） */
+    if (el.scrollHeight <= LIMIT) {
+      var stale = el.querySelector('.text-fade-overlay');
+      if (stale && stale.parentNode) stale.parentNode.removeChild(stale);
+      if (btn && btn.parentNode) btn.parentNode.removeChild(btn);
+      return;
+    }
+
+    if (!el.querySelector('.text-fade-overlay')) {
+      var fade = document.createElement('div');
+      fade.className = 'text-fade-overlay';
+      el.appendChild(fade);
+    }
+
+    if (!btn) {
+      btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'read-more-btn';
+      el.parentNode.insertBefore(btn, el.nextSibling);
+      btn.addEventListener('click', function () {
+        var opening = el.classList.contains('collapsed');
+        el.classList.toggle('collapsed', !opening);
+        el.classList.toggle('expanded', opening);
+        btn.textContent = opening ? '收起內容 ▴' : '展開更多 ▾';
+        btn.setAttribute('aria-expanded', opening ? 'true' : 'false');
+        if (!opening) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+    }
+    btn.textContent = '展開更多 ▾';
+    btn.setAttribute('aria-expanded', 'false');
+    el.classList.add('collapsed');
+  }
+
+  function scan() {
+    var list = document.querySelectorAll('.diagnosis-text');
+    for (var i = 0; i < list.length; i++) apply(list[i]);
+  }
+  window.mountTextFold = scan;
+
+  var t;
+  window.addEventListener('resize', function () {
+    clearTimeout(t);
+    t = setTimeout(scan, 200);
+  });
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scan);
+  else scan();
+})();
+</script>
+
 </body>
 </html>
