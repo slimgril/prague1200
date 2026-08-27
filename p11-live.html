@@ -70,9 +70,12 @@
     }
     .left-eyebrow.show { opacity: 1; transform: translateY(0); }
 
+    /* 動字不動影：播放器死鎖 270px 寬，不隨文字展開被拉扯放大，
+       用小框精緻度隱藏 360x640 低解析度影片的馬賽克。 */
     .film-frame {
       position: relative;
       width: 270px;
+      max-width: 100%;
       aspect-ratio: 9 / 16;
       border-radius: 16px;
       overflow: hidden;
@@ -90,7 +93,7 @@
     .film-frame.show { opacity: 1; transform: scale(1) translateY(0); }
     .film-frame video {
       width: 100%; height: 100%;
-      object-fit: cover; display: block;
+      object-fit: contain; display: block;
     }
     .film-frame::after {
       content: '';
@@ -287,7 +290,7 @@
       .left-page { padding: 28px 0; }
       .divider { display: none; }
       .right-page { height: auto; padding: 28px 24px; }
-      .film-frame { width: min(220px, 58vw); }
+      .film-frame { width: 270px; max-width: 100%; }
       .play-control { margin-top: 12px; }
       .left-caption { margin-top: 8px; font-size: 0.78rem; }
       .quote-line { font-size: 1.05rem; }
@@ -304,7 +307,8 @@
 
     <div class="left-eyebrow" id="leftEyebrow">▌ BONUS SCENE ／ 加映片段</div>
 
-    <div class="film-frame" id="filmFrame">
+    <!-- 外框寬度死鎖 270px（動字不動影），高度由通用方案依影片實際比例決定 -->
+    <div class="film-frame" id="filmFrame" data-video-frame data-video-fit="width">
       <video id="p11Video" src="surprise/p11.mp4" playsinline preload="auto"></video>
     </div>
 
@@ -469,5 +473,55 @@
     })();
   </script>
   <script src="assets/js/global-pause.js?v=1"></script>
+
+<!-- ── 通用影片顯示方案（就地化：本頁專用，不依賴任何全域檔案）──────────
+     一套規則吃下 16:9 / 9:16 / 4:3 / 1:1，不必為每支影片手寫比例：
+
+     1. 影片一律 object-fit: contain —— 永遠不裁切構圖
+     2. 讀取影片自身的 videoWidth / videoHeight，把外框的 aspect-ratio
+        設成和影片完全一致 —— 既不裁切，也不會出現黑邊
+     3. 外框尺寸不超過影片的原生像素 —— 低解析度影片不會被拉大放糊
+
+     用法：外框加 data-video-frame，並選一個模式
+       data-video-fit="width"   外框寬度固定，高度跟著比例走（預設）
+       data-video-fit="height"  外框高度固定，寬度跟著比例走
+     ─────────────────────────────────────────────────────────────── -->
+<style>
+  [data-video-frame] { background: #000; overflow: hidden; }
+  [data-video-frame] > video { width: 100%; height: 100%; object-fit: contain; display: block; }
+</style>
+<script>
+(function () {
+  function fit(frame) {
+    var v = frame.querySelector('video');
+    if (!v || !v.videoWidth || !v.videoHeight) return;
+    var w = v.videoWidth, h = v.videoHeight;
+    frame.style.aspectRatio = w + ' / ' + h;
+    if (frame.dataset.videoFit === 'height') {
+      frame.style.width = 'auto';
+      frame.style.maxHeight = h + 'px';   /* 不超過原生高度 */
+    } else {
+      frame.style.height = 'auto';
+      frame.style.maxWidth = w + 'px';    /* 不超過原生寬度 */
+    }
+  }
+  function bind(frame) {
+    var v = frame.querySelector('video');
+    if (!v) return;
+    if (v.readyState >= 1) fit(frame);
+    else v.addEventListener('loadedmetadata', function () { fit(frame); });
+    v.addEventListener('error', function () {
+      frame.setAttribute('data-video-error', '1');
+    });
+  }
+  function scan() {
+    var l = document.querySelectorAll('[data-video-frame]');
+    for (var i = 0; i < l.length; i++) bind(l[i]);
+  }
+  window.mountVideoFrames = scan;
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scan);
+  else scan();
+})();
+</script>
 </body>
 </html>

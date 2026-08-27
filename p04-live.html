@@ -94,8 +94,10 @@
             pointer-events: none; transition: all 0.25s ease;
             box-shadow: 0 4px 20px rgba(0,0,0,0.7); z-index: 100;
         }
-        .node-tooltip img,
-        .node-tooltip video { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .node-tooltip img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        /* 影片改 contain，外框比例交給通用影片方案依實際 videoWidth/Height 決定；
+           圖片維持原本的 cover 不動（不在本次影片任務範圍內）。 */
+        .node-tooltip video { width: 100%; height: 100%; object-fit: contain; display: block; background: #000; }
         .map-node:hover .node-tooltip { opacity: 1; transform: translateX(-50%) scale(1); }
 
         /* 拍立得 — 膠捲效果 */
@@ -309,13 +311,13 @@
                 </div>
 
                 <!-- ⑤ clock -->
-                <div class="map-node" style="left:30%;top:25%;" onclick="triggerLightbox('surprise/p04_clock.mov',event)">⏰
-                    <div class="node-tooltip"><video src="surprise/p04_clock.mov" muted autoplay loop playsinline></video></div>
+                <div class="map-node" style="left:30%;top:25%;" onclick="triggerLightbox('surprise/p04_clock.mp4',event)">⏰
+                    <div class="node-tooltip" data-video-frame data-video-fit="height"><video src="surprise/p04_clock.mp4" muted autoplay loop playsinline></video></div>
                 </div>
 
                 <!-- ⑥ salon -->
-                <div class="map-node" style="left:55%;top:15%;" onclick="triggerLightbox('surprise/p04_salon.mov',event)">🎨
-                    <div class="node-tooltip"><video src="surprise/p04_salon.mov" muted autoplay loop playsinline></video></div>
+                <div class="map-node" style="left:55%;top:15%;" onclick="triggerLightbox('surprise/p04_salon.mp4',event)">🎨
+                    <div class="node-tooltip" data-video-frame data-video-fit="height"><video src="surprise/p04_salon.mp4" muted autoplay loop playsinline></video></div>
                 </div>
 
             </div>
@@ -473,7 +475,14 @@
             vid.src = src;
             vid.controls = true;
             vid.autoplay = true;
-            vid.style.cssText = 'max-width:90vw;max-height:85vh;border:2px solid #D4AF37;border-radius:6px;';
+            vid.style.cssText = 'max-width:90vw;max-height:85vh;border:2px solid #D4AF37;border-radius:6px;background:#000;object-fit:contain;';
+            /* 不超過影片原生像素，避免低解析度影片被拉大成馬賽克 */
+            vid.addEventListener('loadedmetadata', function () {
+                if (vid.videoWidth && vid.videoHeight) {
+                    vid.style.maxWidth  = 'min(90vw, ' + vid.videoWidth + 'px)';
+                    vid.style.maxHeight = 'min(85vh, ' + vid.videoHeight + 'px)';
+                }
+            });
             vid.onclick = (ev) => ev.stopPropagation(); // 影片維持點擊控制列，不因點擊本身關閉
             overlay.appendChild(vid);
         } else {
@@ -486,6 +495,56 @@
         }
         document.body.appendChild(overlay);
     }
+</script>
+
+<!-- ── 通用影片顯示方案（就地化：本頁專用，不依賴任何全域檔案）──────────
+     一套規則吃下 16:9 / 9:16 / 4:3 / 1:1，不必為每支影片手寫比例：
+
+     1. 影片一律 object-fit: contain —— 永遠不裁切構圖
+     2. 讀取影片自身的 videoWidth / videoHeight，把外框的 aspect-ratio
+        設成和影片完全一致 —— 既不裁切，也不會出現黑邊
+     3. 外框尺寸不超過影片的原生像素 —— 低解析度影片不會被拉大放糊
+
+     用法：外框加 data-video-frame，並選一個模式
+       data-video-fit="width"   外框寬度固定，高度跟著比例走（預設）
+       data-video-fit="height"  外框高度固定，寬度跟著比例走
+     ─────────────────────────────────────────────────────────────── -->
+<style>
+  [data-video-frame] { background: #000; overflow: hidden; }
+  [data-video-frame] > video { width: 100%; height: 100%; object-fit: contain; display: block; }
+</style>
+<script>
+(function () {
+  function fit(frame) {
+    var v = frame.querySelector('video');
+    if (!v || !v.videoWidth || !v.videoHeight) return;
+    var w = v.videoWidth, h = v.videoHeight;
+    frame.style.aspectRatio = w + ' / ' + h;
+    if (frame.dataset.videoFit === 'height') {
+      frame.style.width = 'auto';
+      frame.style.maxHeight = h + 'px';   /* 不超過原生高度 */
+    } else {
+      frame.style.height = 'auto';
+      frame.style.maxWidth = w + 'px';    /* 不超過原生寬度 */
+    }
+  }
+  function bind(frame) {
+    var v = frame.querySelector('video');
+    if (!v) return;
+    if (v.readyState >= 1) fit(frame);
+    else v.addEventListener('loadedmetadata', function () { fit(frame); });
+    v.addEventListener('error', function () {
+      frame.setAttribute('data-video-error', '1');
+    });
+  }
+  function scan() {
+    var l = document.querySelectorAll('[data-video-frame]');
+    for (var i = 0; i < l.length; i++) bind(l[i]);
+  }
+  window.mountVideoFrames = scan;
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scan);
+  else scan();
+})();
 </script>
   <script src="assets/js/global-pause.js?v=1"></script>
 </body>
